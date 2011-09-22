@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FiducialFinder.h"
+#include "Globals.h"
 #include <iostream>
 
 #define FIDUCIAL_MASK_PATH	"fiducial_mask.bmp"
@@ -32,7 +33,8 @@ int FiducialFinder::DecodeFiducial(IplImage* src, Fiducial & candidate)
 
 	CvSeq *contour ;
 
-	cvCopy(src,fiducial_processed_image,fiducial_mask);	
+	cvCopy(src,fiducial_processed_image);
+	Globals::fiducial_image_marker = src;
 
 	cvFindContours (fiducial_processed_image, fiducial_storage, &contour, sizeof (CvContour), CV_RETR_CCOMP);
 	fiducial_nodes.clear();
