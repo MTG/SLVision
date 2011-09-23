@@ -3,15 +3,13 @@
 #include "Globals.h"
 #include <iostream>
 
-#define FIDUCIAL_MASK_PATH	"fiducial_mask.bmp"
-
 FiducialFinder::FiducialFinder(int _fiducial_window_size)
 {
 	fiducial_window_size = _fiducial_window_size;
-	fiducial_mask = cvLoadImage(FIDUCIAL_MASK_PATH,0);
 	fiducial_storage = cvCreateMemStorage (0);
 	fiducial_processed_image = cvCreateImage(cvSize(fiducial_window_size,fiducial_window_size),IPL_DEPTH_8U,1);
 	fiducial_blob_moments = (CvMoments*)malloc( sizeof(CvMoments) );
+	InitFID();
 }
 
 FiducialFinder::~FiducialFinder()
@@ -51,7 +49,6 @@ int FiducialFinder::DecodeFiducial(IplImage* src, Fiducial & candidate)
 			x <70-MIN_DIST_TO_SIDE && 
 			y<70-MIN_DIST_TO_SIDE)
 		{
-			
 			//if(show_fid_processor)cvDrawContours(screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0);	
 			CvSeq * temp;
 			temp = c;
@@ -77,15 +74,15 @@ int FiducialFinder::DecodeFiducial(IplImage* src, Fiducial & candidate)
 	bx /= counter;
 	by /= counter;
 	axis = 0;
-	
-	//if(counter == 0 ) // --> use previous data
+	//Get the fiducial orientation
 	GetMinDistToFiducialAxis(axis,bx,by);
 	if(counter != 0)
 	candidate.SetOrientation(axis);
-	
-	//if(can't get the id) //--> use the previous data
+	//Get the fiducial ID
 	fiducial_nodes.sort();	
-	if(BinaryListToInt(fiducial_nodes) == FID)std::cout<< "eureka" <<std::endl;
+	int tmpid = GetId(BinaryListToInt(fiducial_nodes));
+	if(tmpid != -1) candidate.SetId(tmpid);
+
 	return 1;	
 }
 
@@ -126,7 +123,7 @@ unsigned int FiducialFinder::BinaryListToInt(const intList &data)
 {
 	int cnt = 0;
 	unsigned int candidate = 0;
-	for(intList::iterator it = fiducial_nodes.begin(); it != fiducial_nodes.end(); it++)
+	for(intList::const_iterator it = data.begin(); it != data.end(); it++)
 	{
 		for (int i = 0; i < (*it); i++)
 			cnt++;
@@ -134,4 +131,71 @@ unsigned int FiducialFinder::BinaryListToInt(const intList &data)
 		cnt++;
 	}
 	return candidate;
+}
+
+unsigned int FiducialFinder::StringBinaryListToInt(char* data)
+{
+	intList list;
+	int i = 0;
+	unsigned int candidate = 0;
+	while(data[i] != '\0')
+	{
+		if(data[i] == '1')
+			list.push_back(1);
+		else list.push_back(0);
+		i++;
+	}
+	i = 0;
+	for(intList::reverse_iterator it = list.rbegin(); it != list.rend(); it++)
+	{
+		if(*it ==1)
+		{
+			candidate += 1<<i;
+		}
+		i++;
+	}
+	return candidate;
+}
+
+int FiducialFinder::GetId(unsigned int candidate)
+{
+	if(idmap.find(candidate) != idmap.end())
+	{
+		return idmap[candidate];
+	}
+	return -1;
+}
+
+void FiducialFinder::InitFID()
+{
+	idmap.clear();
+	char* id[] = { 
+		"100000011111\0", 
+		"100000001111\0",
+		"100000101111\0",
+		"100010011111\0",
+		"100010101111\0",
+		"100001011111\0",
+		"100100101111\0",
+		"100100111111\0",
+		"100101011111\0",
+		"100001001111\0",
+		"101010101111\0",
+		"100010001111\0",
+		"o"
+	};
+
+	int i = 0;
+	while( id[i][0] != 'o' )
+	{
+		idmap[StringBinaryListToInt(id[i])] = i;
+		i++;
+	}
+
+	std::cout << "fiducial id transcoded" << std::endl;
+	for ( IDMap::iterator it = idmap.begin(); it != idmap.end();it++)
+	{
+		std::cout << it->first << "   " << it->second << std::endl;
+	}
+	
 }

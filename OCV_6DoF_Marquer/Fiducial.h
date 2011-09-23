@@ -16,7 +16,7 @@ class Fiducial
 	float area;
 	unsigned int fiducial_id;
 	int orientation;
-	static unsigned int id_generator;
+//	static unsigned int id_generator;
 	bool is_updated;
 	double removed_time;
 public:
@@ -38,6 +38,6 @@ public:
 	void RemoveStart(double actual_time);
 	void SetOrientation(int o);
 	//fiducial id generator
-	static unsigned int GetNewId();
+//	static unsigned int GetNewId();
 };
 

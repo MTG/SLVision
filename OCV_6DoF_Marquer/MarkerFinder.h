@@ -49,6 +49,8 @@ class MarkerFinder :
 	CvMat *dstPoints2D;
 	CvPoint3D32f baseMarkerPoints[4];
 
+	char text[100];
+
 public:
 	MarkerFinder(void);
 	~MarkerFinder(void);

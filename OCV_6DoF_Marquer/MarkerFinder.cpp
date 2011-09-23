@@ -182,8 +182,9 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 					//notzeroCount=cvCountNonZero(tempmask);
 
 					//std::cout << "temp_ssid " << tmp_ssid << "  ssidGenerator " << ssidGenerator << std::endl;
-					if(tmp_ssid == 0 /*&& temporal.GetFiducialID() != -1*/)
+					if(tmp_ssid == 0)
 					{
+						if(temporal.GetFiducialID() == -1) break;
 						//add fiducial
 						fiducial_map[ssidGenerator++] = new Fiducial(temporal);
 						tmp_ssid = ssidGenerator-1;
@@ -221,6 +222,7 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
 					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
 					cvFindExtrinsicCameraParams2(&object_points,&image_points,intrinsic,distortion,rotation,translation);
+					//to get rotation matrix /h/ttp://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
 					cvProjectPoints2(srcPoints3D,rotation,translation,intrinsic,distortion,dstPoints2D);
 					//
 					CvPoint startpoint;
@@ -267,8 +269,8 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 		}
 		if(Globals::is_view_enabled)
 		{
-//			sprintf_s(text,"%i",it->first); 
-//			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->GetX(), (int)it->second->GetY()),FONT_HELP,0,0,255);
+			sprintf_s(text,"%i , %i",it->second->GetFiducialID(), it->first); 
+			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->GetX(), (int)it->second->GetY()),FONT_HELP,0,255,0);
 		}
 
 

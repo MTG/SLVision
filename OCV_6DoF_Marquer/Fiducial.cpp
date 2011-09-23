@@ -6,7 +6,7 @@
 #define AREA_OFFSET 1000
 #define REMOVE_OFFSET 500
 
-unsigned int Fiducial::id_generator = 0;
+//unsigned int Fiducial::id_generator = 0;
 
 Fiducial::Fiducial(void):x(0),y(0),area(0),a(cvPoint(0,0)),b(cvPoint(0,0)),c(cvPoint(0,0)),d(cvPoint(0,0)),fiducial_id(-1),orientation(0),is_updated(false),removed_time(-1)
 {
@@ -25,7 +25,7 @@ Fiducial::Fiducial(const Fiducial &copy):removed_time(-1)
 	b = cvPoint(copy.b.x,copy.b.y);
 	c = cvPoint(copy.c.x,copy.c.y);
 	d = cvPoint(copy.d.x,copy.d.y);
-	fiducial_id = GetNewId();
+	fiducial_id = copy.fiducial_id;
 	orientation = copy.orientation;
 	area = copy.area;
 	is_updated = true;
@@ -147,11 +147,11 @@ void Fiducial::SetOrientation(int o)
 /****************************************
 * Fiduail ID Generator
 *****************************************/
-///id generator
+/*///id generator
 unsigned int Fiducial::GetNewId()
 {
 	return id_generator++;
-}
+}*/
 
 
 /****************************************
