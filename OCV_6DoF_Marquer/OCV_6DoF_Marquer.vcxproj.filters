@@ -13,34 +13,20 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="oscpack">
+      <UniqueIdentifier>{c075ff39-8027-4d5f-be2f-da568c3113f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="oscpack\osc">
+      <UniqueIdentifier>{c12a1886-916f-4895-b55e-8880cb32fd23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="oscpack\ip">
+      <UniqueIdentifier>{bd2e396b-ad24-45e1-b7e0-cea6164cd8b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FiducialFinder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Fiducial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Globals.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FrameProcessor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MarkerFinder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OCV_6DoF_Marquer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -59,5 +45,91 @@
     <ClCompile Include="MarkerFinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TuioServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\ip\IpEndpointName.cpp">
+      <Filter>oscpack\ip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\ip\NetworkingUtils.cpp">
+      <Filter>oscpack\ip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\ip\UdpSocket.cpp">
+      <Filter>oscpack\ip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscOutboundPacketStream.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscPrintReceivedElements.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscReceivedElements.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscTypes.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Fiducial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FiducialFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameProcessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MarkerFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TuioServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\IpEndpointName.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\NetworkingUtils.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\PacketListener.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\TimerListener.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\UdpSocket.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\MessageMappingOscPacketListener.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscException.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscHostEndianness.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscOutboundPacketStream.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscPacketListener.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscPrintReceivedElements.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscReceivedElements.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscTypes.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

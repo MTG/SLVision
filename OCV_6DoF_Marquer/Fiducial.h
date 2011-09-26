@@ -20,6 +20,9 @@ class Fiducial
 	bool is_updated;
 	double removed_time;
 public:
+	float yaw,pitch,roll;
+	float xpos, ypos, zpos;
+
 	Fiducial(void);
 	Fiducial(const Fiducial &copy);
 	~Fiducial(void);

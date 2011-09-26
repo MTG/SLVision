@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+//#include "StdAfx.h"
 #include "Fiducial.h"
 #include <iostream>
 
@@ -10,6 +10,9 @@
 
 Fiducial::Fiducial(void):x(0),y(0),area(0),a(cvPoint(0,0)),b(cvPoint(0,0)),c(cvPoint(0,0)),d(cvPoint(0,0)),fiducial_id(-1),orientation(0),is_updated(false),removed_time(-1)
 {
+	yaw=0;
+	pitch=0;
+	roll=0;
 }
 
 
@@ -29,6 +32,10 @@ Fiducial::Fiducial(const Fiducial &copy):removed_time(-1)
 	orientation = copy.orientation;
 	area = copy.area;
 	is_updated = true;
+
+	yaw=0;
+	pitch=0;
+	roll=0;
 }
 
 void Fiducial::clear()

@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+////#include "StdAfx.h"
 #include "Globals.h"
 
 IplImage*	Globals::screen						= NULL;
@@ -17,6 +17,9 @@ float		Globals::Font::axis_hscale			= 0.8f;
 float		Globals::Font::axis_vscale			= 0.8f;
 CvFont		Globals::Font::font_info;
 CvFont		Globals::Font::font_axis;
+
+char*		Globals::address					= "127.0.0.1";//"10.80.7.19";//
+int			Globals::port						= 3333;
 
 
 int			Globals::screen_to_show				= 0;
@@ -59,14 +62,17 @@ void Globals::Font::InitFont()
 
 void Globals::Font::Write(IplImage* dest, char* text, const CvPoint &position, int font_type, short r, short g, short b)
 {
-	switch(font_type)
+	if(dest != NULL && text != NULL)
 	{
-		case FONT_AXIS:
-			cvPutText(dest, text, position, &font_axis,CV_RGB(r,g,b));
-		break;
-		default:
-		case FONT_HELP:
-			cvPutText(dest, text, position, &font_info,CV_RGB(r,g,b));
-		break;
+		switch(font_type)
+		{
+			case FONT_AXIS:
+				cvPutText(dest, text, position, &font_axis,CV_RGB(r,g,b));
+			break;
+			default:
+			case FONT_HELP:
+				cvPutText(dest, text, position, &font_info,CV_RGB(r,g,b));
+			break;
+		}
 	}
 }

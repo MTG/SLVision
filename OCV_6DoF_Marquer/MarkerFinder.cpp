@@ -1,6 +1,6 @@
-#include "StdAfx.h"
+////#include "StdAfx.h"
 #include "MarkerFinder.h"
-
+#include "TuioServer.h"
 #include <iostream>
 
 MarkerFinder::MarkerFinder()
@@ -25,13 +25,13 @@ MarkerFinder::~MarkerFinder(void)
 	delete(fiducial_finder);
 }
 
-
 void MarkerFinder::InitGeometry()
 {
 	intrinsic = (CvMat*)cvLoad("intrinsic.xml"); //
 	distortion = (CvMat*)cvLoad("distortion.xml"); //
 
 	rotation = cvCreateMat (1, 3, CV_32FC1);
+	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);
 	
 	srcPoints3D = cvCreateMat (4, 1, CV_32FC3);
@@ -188,12 +188,12 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 						//add fiducial
 						fiducial_map[ssidGenerator++] = new Fiducial(temporal);
 						tmp_ssid = ssidGenerator-1;
-						std::cout << "new" << std::endl;
+//std::cout << "new" << std::endl;
 					}
 					else if( tmp_ssid > 0)
 					{
 						fiducial_map[tmp_ssid]->Update(temporal);
-						//std::cout << "update" << std::endl;
+//std::cout << "update" << std::endl;
 					}
 
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
@@ -222,15 +222,22 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
 					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
 					cvFindExtrinsicCameraParams2(&object_points,&image_points,intrinsic,distortion,rotation,translation);
-					//to get rotation matrix /h/ttp://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
+					//to get rotation matrix /http://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
 					cvProjectPoints2(srcPoints3D,rotation,translation,intrinsic,distortion,dstPoints2D);
 					//
-					CvPoint startpoint;
-					CvPoint endpoint;
-					
-					startpoint=cvPoint((int)dstPoints2D->data.fl[0], (int)dstPoints2D->data.fl[1]);
+					cvRodrigues2(rotation,rotationMatrix);
+					fiducial_map[tmp_ssid]->yaw = atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]); //atan2([1,0], [0,0])
+					fiducial_map[tmp_ssid]->pitch = atan2(-rotationMatrix->data.fl[6],sqrt( rotationMatrix->data.fl[7]*rotationMatrix->data.fl[7] + rotationMatrix->data.fl[8]*rotationMatrix->data.fl[8])); //atan2([2,0], sqrt([2,1]'2 + [2,2]'2))
+					fiducial_map[tmp_ssid]->roll = atan2(rotationMatrix->data.fl[7],rotationMatrix->data.fl[8]); //atan2([2,1], [2,2])
+					fiducial_map[tmp_ssid]->xpos = translation->data.fl[0];
+					fiducial_map[tmp_ssid]->ypos = translation->data.fl[1];
+					fiducial_map[tmp_ssid]->zpos = translation->data.fl[2];
+					//xpos, ypos, zpos
 					if(Globals::is_view_enabled)
 					{
+						CvPoint startpoint;
+						CvPoint endpoint;
+						startpoint=cvPoint((int)dstPoints2D->data.fl[0], (int)dstPoints2D->data.fl[1]);
 						for(j=1;j<4;j++)
 						{
 							endpoint=  cvPoint((int)dstPoints2D->data.fl[(j)*3],(int)dstPoints2D->data.fl[1+(j)*3]);
@@ -261,6 +268,8 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 	{
 		if(it->second->IsUpdated())
 		{
+//Send Data
+			TuioServer::Instance().Add3DObjectMessage(it->first,0,it->second->GetFiducialID(),it->second->xpos,it->second->ypos,it->second->zpos,it->second->yaw,it->second->pitch,it->second->roll);
 		}
 		else
 		{
@@ -280,7 +289,18 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 
 	for(std::vector<unsigned int>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
 	{
-		std::cout << "removed " << *it << std::endl;
+//	std::cout << "removed " << *it << std::endl;
 		fiducial_map.erase(*it);
 	}
+}
+
+AliveList MarkerFinder::GetAlive()
+{
+	AliveList to_return;
+	for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
+	{
+		to_return.push_back(it->first);
+	}
+	//std::vector<unsigned long>
+	return to_return;
 }

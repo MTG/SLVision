@@ -1,7 +1,7 @@
 // OCV_6DoF_Marquer.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+////#include "StdAfx.h"
 
 #include <cv.h>
 #include <cxcore.h>
@@ -10,6 +10,7 @@
 
 #include "Globals.h"
 #include "MarkerFinder.h"
+#include "TuioServer.h"
 
 //Helping Functions
 void ToggleDisplayFIDProcessor();
@@ -20,7 +21,7 @@ bool show_fid_processor;
 double	process_time;
 
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {	
 	Globals::cv_camera_capture = NULL;
 	char presskey;
@@ -72,11 +73,14 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		else if(presskey == 'V')
 			ToggleDisplayFIDProcessor();
+
+		TuioServer::Instance().SendBundle();
 	}
 
 	cvReleaseCapture(&Globals::cv_camera_capture);
 	cvReleaseImage(&Globals::main_image);
-	delete(markerfinder);
+	delete (markerfinder);
+	delete (&TuioServer::Instance());
 
 	//Destroy windows
 	if(show_fid_processor)cvDestroyWindow(FIDUCIAL_TITTLE);

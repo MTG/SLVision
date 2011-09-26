@@ -32,6 +32,12 @@ public:
 	static bool				is_view_enabled;	//flag window image enabled or disabled
 
 	static int				screen_to_show; //0 normal, 1 threshold, 2 none
+	/************************
+	*Tuio Globals
+	*************************/
+	static char*			address;
+	static int				port;
+
 	static void SetView(int view);
 	static void SwitchScreen();
 

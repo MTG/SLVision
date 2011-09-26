@@ -51,10 +51,13 @@ class MarkerFinder :
 
 	char text[100];
 
+	CvMat *rotationMatrix;
+
 public:
 	MarkerFinder(void);
 	~MarkerFinder(void);
 	void ProcessFrame(IplImage*	main_image);
+	AliveList GetAlive();
 protected:
 	void InitGeometry();
 	void InitFrames(IplImage*	main_image);

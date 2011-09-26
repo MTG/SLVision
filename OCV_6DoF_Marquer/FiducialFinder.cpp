@@ -1,4 +1,4 @@
-#include "stdafx.h"
+////#include "StdAfx.h"
 #include "FiducialFinder.h"
 #include "Globals.h"
 #include <iostream>
