@@ -229,8 +229,8 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->yaw = atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]); //atan2([1,0], [0,0])
 					fiducial_map[tmp_ssid]->pitch = atan2(-rotationMatrix->data.fl[6],sqrt( rotationMatrix->data.fl[7]*rotationMatrix->data.fl[7] + rotationMatrix->data.fl[8]*rotationMatrix->data.fl[8])); //atan2([2,0], sqrt([2,1]'2 + [2,2]'2))
 					fiducial_map[tmp_ssid]->roll = atan2(rotationMatrix->data.fl[7],rotationMatrix->data.fl[8]); //atan2([2,1], [2,2])
-					fiducial_map[tmp_ssid]->xpos = translation->data.fl[0];
-					fiducial_map[tmp_ssid]->ypos = translation->data.fl[1];
+					fiducial_map[tmp_ssid]->xpos = ((translation->data.fl[0] + Globals::width )/ 2)/Globals::width;
+					fiducial_map[tmp_ssid]->ypos = ((translation->data.fl[1] + Globals::height )/ 2)/Globals::height;
 					fiducial_map[tmp_ssid]->zpos = translation->data.fl[2];
 					//xpos, ypos, zpos
 					if(Globals::is_view_enabled)

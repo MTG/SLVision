@@ -1,5 +1,6 @@
 ////#include "StdAfx.h"
 #include "TuioServer.h"
+#include <time.h>
 
 TuioServer*	TuioServer::pinstance = NULL;
 
@@ -40,12 +41,17 @@ void TuioServer::AddFrameMessage()
 {
 	(*packet_stream) << osc::BeginMessage( "/tuio2/frm" );
 	(*packet_stream) << (int)(frame_seq++);
-	(*packet_stream) << (long)(0);
+	(*packet_stream) << getCurrentTime();
+	(*packet_stream) << APP_NAME;
+	(*packet_stream) << Globals::dim;
 	(*packet_stream) << osc::EndMessage;
 }
 
-void TuioServer::AddAliveMessage()	
+int TuioServer::AddAliveMessage()	
 {
+	alive.clear();
+	if(!bundle_started)StartBundle();
+	int i = 0;
 	//processors
 	(*packet_stream) << osc::BeginMessage( "/tuio2/alv" );
 	for(Processors::iterator it = processors.begin(); it != processors.end(); it++)
@@ -53,11 +59,13 @@ void TuioServer::AddAliveMessage()
 		AliveList tmp = (*it)->GetAlive();
 		for(AliveList::iterator it2 = tmp.begin(); it2 != tmp.end(); it2++)
 		{
-			(*packet_stream) << (int)(*it);
+			(*packet_stream) << (int)(*it2);
+			alive.push_back((int)(*it2));
+			i++;
 		}
 	}
 	(*packet_stream) << osc::EndMessage;
-
+	return i;
 }
 
 void TuioServer::StartBundle()
@@ -90,7 +98,30 @@ void TuioServer::SendBundle()
 		AddAliveMessage();
 		(*packet_stream) << osc::EndBundle;
 		transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
-		packet_stream->Clear();
-		bundle_started = false;
 	}
+	else
+	{
+		int q = alive.size();
+		if ( q != AddAliveMessage() )
+		{
+			(*packet_stream) << osc::EndBundle;
+			transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
+		}
+	}
+	packet_stream->Clear();
+	bundle_started = false;
+}
+
+long TuioServer::getCurrentTime() {
+
+	#ifdef WIN32
+		long timestamp = GetTickCount();
+	#else
+		struct timeval tv;
+		struct timezone tz;
+		gettimeofday(&tv,&tz);
+		long timestamp = (tv.tv_sec*1000)+(tv.tv_usec/1000);
+	#endif
+	
+	return timestamp;
 }

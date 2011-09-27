@@ -18,6 +18,10 @@ float		Globals::Font::axis_vscale			= 0.8f;
 CvFont		Globals::Font::font_info;
 CvFont		Globals::Font::font_axis;
 
+int			Globals::width						= 0;
+int			Globals::height						= 0;
+char		Globals::dim[100];
+
 char*		Globals::address					= "127.0.0.1";//"10.80.7.19";//
 int			Globals::port						= 3333;
 

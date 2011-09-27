@@ -23,6 +23,7 @@ class TuioServer
 	static TuioServer*				pinstance;
 
 	Processors						processors;
+	std::vector<unsigned int>		alive;
 public:
 	static TuioServer &Instance();
 	~TuioServer(void);
@@ -34,6 +35,7 @@ public:
 private:
 	TuioServer(/*const char* address, int port*/);
 	void AddFrameMessage();
-	void AddAliveMessage();
+	int AddAliveMessage();
+	long getCurrentTime();
 };
 

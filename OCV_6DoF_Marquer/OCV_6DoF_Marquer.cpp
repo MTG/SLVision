@@ -29,13 +29,18 @@ int main(int argc, char* argv[])
 	//Camera initialization
 	Globals::cv_camera_capture = cvCaptureFromCAM(CAMERA_ID);								//allocates and initialized the CvCapture structure for reading a video stream from the camera
 	if(Globals::cv_camera_capture == NULL) return -1;
-	Globals::captured_image=cvQueryFrame(Globals::cv_camera_capture);									//grabs a frame from camera
+	Globals::captured_image=cvQueryFrame(Globals::cv_camera_capture);						//grabs a frame from camera
 	
 	//main frame allocation
 	Globals::main_image = cvCreateImage(cvGetSize(Globals::captured_image),IPL_DEPTH_8U,3);			//allocates 3-channel memory for the image
 	cvCopy(Globals::captured_image,Globals::main_image);												//copy data into captured image
 	Globals::screen = Globals::main_image;
 	markerfinder = new MarkerFinder();
+	TuioServer::Instance().RegisterProcessor(markerfinder);
+
+	Globals::width = cvGetSize(Globals::captured_image).width;
+	Globals::height = cvGetSize(Globals::captured_image).height;
+	sprintf(Globals::dim,"%ix%i",Globals::width,Globals::height);
 
 	Globals::Font::InitFont();
 	char text[255] = "";

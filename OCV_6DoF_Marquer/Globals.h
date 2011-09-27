@@ -1,3 +1,5 @@
+///fer servir el xml configurator que es va fer per al new reactivision.
+
 #pragma once
 #include <cv.h>
 #include <cxcore.h>
@@ -14,6 +16,7 @@
 #define VIEW_NONE			2
 #define MAIN_TITTLE			"6dof reacTIVision"
 #define FIDUCIAL_TITTLE		"Fiducial view"
+#define APP_NAME			"SLVision"
 
 #define MARKER_SIZE (90) //marker size in mm
 
@@ -32,6 +35,10 @@ public:
 	static bool				is_view_enabled;	//flag window image enabled or disabled
 
 	static int				screen_to_show; //0 normal, 1 threshold, 2 none
+
+	static int				width;
+	static int				height;
+	static char				dim[100];
 	/************************
 	*Tuio Globals
 	*************************/
