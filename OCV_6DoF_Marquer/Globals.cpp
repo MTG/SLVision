@@ -25,6 +25,9 @@ char		Globals::dim[100];
 char*		Globals::address					= "127.0.0.1";//"10.80.7.19";//
 int			Globals::port						= 3333;
 
+CvMat* 		Globals::intrinsic					= NULL;
+CvMat*		Globals::distortion					= NULL;
+
 
 int			Globals::screen_to_show				= 0;
 void Globals::SetView(int view)

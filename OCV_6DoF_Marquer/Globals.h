@@ -17,6 +17,8 @@
 #define MAIN_TITTLE			"6dof reacTIVision"
 #define FIDUCIAL_TITTLE		"Fiducial view"
 #define APP_NAME			"SLVision"
+#define M_PATH_DISTORTION	"distortion.xml"
+#define M_PATH_INTRINSIC	"instrinsic.xml"
 
 #define MARKER_SIZE (90) //marker size in mm
 
@@ -44,6 +46,11 @@ public:
 	*************************/
 	static char*			address;
 	static int				port;
+	/************************
+	*Globals::distortion Globals
+	*************************/
+	static CvMat *Globals::intrinsic;
+	static CvMat *Globals::distortion;
 
 	static void SetView(int view);
 	static void SwitchScreen();

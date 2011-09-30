@@ -112,6 +112,16 @@ void TuioServer::SendBundle()
 	bundle_started = false;
 }
 
+void TuioServer::SendEmptyBundle()
+{
+	if(!bundle_started)StartBundle();
+	(*packet_stream) << osc::BeginMessage( "/tuio2/alv" ) << osc::EndMessage;
+	(*packet_stream) << osc::EndBundle;
+	transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
+	packet_stream->Clear();
+	bundle_started = false;
+}
+
 long TuioServer::getCurrentTime() {
 
 	#ifdef WIN32

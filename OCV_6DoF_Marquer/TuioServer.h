@@ -32,6 +32,7 @@ public:
 	void Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, float x, float y, float z, float yaw, float pitch, float roll);
 	void AddPointerMessage(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press);
 	void SendBundle();
+	void SendEmptyBundle();
 private:
 	TuioServer(/*const char* address, int port*/);
 	void AddFrameMessage();

@@ -69,6 +69,9 @@
     <ClCompile Include="..\external\oscpack\osc\OscTypes.cpp">
       <Filter>oscpack\osc</Filter>
     </ClCompile>
+    <ClCompile Include="Calibrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Fiducial.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="..\external\oscpack\osc\OscTypes.h">
       <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="Calibrator.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

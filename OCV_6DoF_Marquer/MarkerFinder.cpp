@@ -27,9 +27,6 @@ MarkerFinder::~MarkerFinder(void)
 
 void MarkerFinder::InitGeometry()
 {
-	intrinsic = (CvMat*)cvLoad("intrinsic.xml"); //
-	distortion = (CvMat*)cvLoad("distortion.xml"); //
-
 	rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);
@@ -221,9 +218,9 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 					
 					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
 					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
-					cvFindExtrinsicCameraParams2(&object_points,&image_points,intrinsic,distortion,rotation,translation);
+					cvFindExtrinsicCameraParams2(&object_points,&image_points,Globals::intrinsic,Globals::distortion,rotation,translation);
 					//to get rotation matrix /http://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
-					cvProjectPoints2(srcPoints3D,rotation,translation,intrinsic,distortion,dstPoints2D);
+					cvProjectPoints2(srcPoints3D,rotation,translation,Globals::intrinsic,Globals::distortion,dstPoints2D);
 					//
 					cvRodrigues2(rotation,rotationMatrix);
 					fiducial_map[tmp_ssid]->yaw = atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]); //atan2([1,0], [0,0])

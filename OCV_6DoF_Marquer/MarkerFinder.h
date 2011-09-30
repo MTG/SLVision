@@ -37,8 +37,6 @@ class MarkerFinder :
 	CvMat *map_matrix;
 	CvPoint2D32f src_pnt[4], dst_pnt[4], tmp_pnt[4];
 
-	CvMat *intrinsic;
-	CvMat *distortion;
 	int i, j, k;
 	CvMat object_points;
 	CvMat image_points;

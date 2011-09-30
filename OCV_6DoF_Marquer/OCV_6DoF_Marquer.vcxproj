@@ -96,6 +96,7 @@
     <ClCompile Include="..\external\oscpack\osc\OscPrintReceivedElements.cpp" />
     <ClCompile Include="..\external\oscpack\osc\OscReceivedElements.cpp" />
     <ClCompile Include="..\external\oscpack\osc\OscTypes.cpp" />
+    <ClCompile Include="Calibrator.cpp" />
     <ClCompile Include="Fiducial.cpp" />
     <ClCompile Include="FiducialFinder.cpp" />
     <ClCompile Include="FrameProcessor.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="..\external\oscpack\osc\OscPrintReceivedElements.h" />
     <ClInclude Include="..\external\oscpack\osc\OscReceivedElements.h" />
     <ClInclude Include="..\external\oscpack\osc\OscTypes.h" />
+    <ClInclude Include="Calibrator.h" />
     <ClInclude Include="Fiducial.h" />
     <ClInclude Include="FiducialFinder.h" />
     <ClInclude Include="FrameProcessor.h" />
