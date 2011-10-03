@@ -48,6 +48,31 @@ void Globals::SetView(int view)
 	}
 }
 
+void Globals::LoadDefaultDistortionMatrix()
+{
+	if(intrinsic != NULL)
+	{
+		cvReleaseMat(&intrinsic);
+	}
+	intrinsic  = cvCreateMat(3,3,CV_32FC1);
+	CV_MAT_ELEM( *intrinsic, float, 0, 0) = 6.57591187e+002f;	CV_MAT_ELEM( *intrinsic, float, 0, 1) = 0.f;				CV_MAT_ELEM( *intrinsic, float, 0, 2) = 3.16504272e+002f;
+	CV_MAT_ELEM( *intrinsic, float, 1, 0) = 0.f;				CV_MAT_ELEM( *intrinsic, float, 1, 1) = 6.60952637e+002f;	CV_MAT_ELEM( *intrinsic, float, 1, 2) = 2.27605789e+002f;
+	CV_MAT_ELEM( *intrinsic, float, 2, 0) = 0.f;				CV_MAT_ELEM( *intrinsic, float, 2, 1) = 0.f;				CV_MAT_ELEM( *intrinsic, float, 2, 2) = 1.f;
+
+	if(distortion != NULL)
+	{
+		cvReleaseMat(&distortion);
+	}
+	distortion = cvCreateMat(4,1,CV_32FC1);
+	CV_MAT_ELEM( *distortion, float, 0, 0) = -1.49060376e-002f; 
+	CV_MAT_ELEM( *distortion, float, 1, 0) = 2.05916256e-001f; 
+	CV_MAT_ELEM( *distortion, float, 2, 0) = -5.76808210e-003f;
+	CV_MAT_ELEM( *distortion, float, 3, 0) = -8.43471102e-003f; 
+
+	cvSave(M_PATH_INTRINSIC,intrinsic);
+	cvSave(M_PATH_DISTORTION,distortion);
+}
+
 void Globals::SwitchScreen()
 {
 	screen_to_show ++;

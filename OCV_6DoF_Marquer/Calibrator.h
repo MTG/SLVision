@@ -31,6 +31,7 @@ class Calibrator
 	CvMat* point_counts2;
 	IplImage* mapx;
 	IplImage* mapy;
+	int x_box, y_box, w_box, h_box;
 public:
 	Calibrator(void);
 	~Calibrator(void);

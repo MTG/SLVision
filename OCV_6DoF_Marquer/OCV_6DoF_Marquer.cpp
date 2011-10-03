@@ -13,15 +13,11 @@
 #include "TuioServer.h"
 #include "Calibrator.h"
 
-#define KEY_SHOW_FID_PROCESSOR	'V'
-#define KEY_CHANGE_VIEW			'v'
-#define KEY_EXIT				27 //esc
-#define KEY_CALIBRATION			'c'
-#define KEY_CALIBRATION_GRID	'g'
-
 //Helping Functions
 void ToggleDisplayFIDProcessor();
 void ToggleCalibrationMode();
+void SwitchScreen();
+void SetView(int view);
 
 // markerfinder defined
 MarkerFinder*   markerfinder;
@@ -32,13 +28,33 @@ bool	show_fid_processor;
 double	process_time;
 bool	claibrateMode;
 bool	is_running;
+bool	bg_substraction;
+bool	process_bg;
+int		screen_to_show;
+bool	is_view_enabled;
 
+
+IplImage* bgs_image;
+IplImage* threshold_beyond_image;
+IplImage* threshold_surface_image;
+
+int threshold_beyond_value;
+int threshold_surface_value;
+
+int view_mode; //0 source, 1 thresholds, 2
 
 int main(int argc, char* argv[])
 {	
 	claibrateMode = false;
 	show_fid_processor = false;
 	is_running = true;
+	bg_substraction = false;
+	process_bg = false;
+	screen_to_show = 0;
+	is_view_enabled = true;
+
+	threshold_surface_value = 45;
+	threshold_beyond_value = 179;
 
 	Globals::cv_camera_capture = NULL;
 	char presskey;
@@ -55,35 +71,24 @@ int main(int argc, char* argv[])
 
 	IplImage* gray_image;
 	gray_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
-
+	bgs_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
+	threshold_beyond_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
+	threshold_surface_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
 
 	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
 	Globals::distortion = (CvMat*)cvLoad(M_PATH_DISTORTION);
-	if(Globals::intrinsic == NULL) //if not loaded load default values
-	{
-		Globals::intrinsic  = cvCreateMat(3,3,CV_32FC1);
-	
-		CV_MAT_ELEM( *Globals::intrinsic, float, 0, 0) = 6.57591187e+002;	CV_MAT_ELEM( *Globals::intrinsic, float, 0, 1) = 0. ;				CV_MAT_ELEM( *Globals::intrinsic, float, 0, 2) = 3.16504272e+002;
-		CV_MAT_ELEM( *Globals::intrinsic, float, 1, 0) = 0.;				CV_MAT_ELEM( *Globals::intrinsic, float, 1, 1) = 6.60952637e+002;	CV_MAT_ELEM( *Globals::intrinsic, float, 1, 2) = 2.27605789e+002;
-		CV_MAT_ELEM( *Globals::intrinsic, float, 2, 0) = 0.;				CV_MAT_ELEM( *Globals::intrinsic, float, 2, 1) = 0.;				CV_MAT_ELEM( *Globals::intrinsic, float, 2, 2) = 1.;
-	}
-	if(Globals::distortion == NULL) //if not loaded load default values
-	{
-		Globals::distortion = cvCreateMat(4,1,CV_32FC1);
-		CV_MAT_ELEM( *Globals::distortion, float, 0, 0) = -1.49060376e-002; 
-		CV_MAT_ELEM( *Globals::distortion, float, 1, 0) = 2.05916256e-001; 
-		CV_MAT_ELEM( *Globals::distortion, float, 2, 0) = -5.76808210e-003;
-		CV_MAT_ELEM( *Globals::distortion, float, 3, 0) = -8.43471102e-003; 
-	}
-
-	calibrator = new Calibrator();
-	markerfinder = new MarkerFinder();
-	TuioServer::Instance().RegisterProcessor(markerfinder);
+	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
 
 	// retreive width and height
 	Globals::width = cvGetSize(Globals::captured_image).width;
 	Globals::height = cvGetSize(Globals::captured_image).height;
 	sprintf(Globals::dim,"%ix%i",Globals::width,Globals::height);
+
+
+	///init objects
+	calibrator = new Calibrator();
+	markerfinder = new MarkerFinder();
+	TuioServer::Instance().RegisterProcessor(markerfinder);
 
 	// initializes font
 	Globals::Font::InitFont();
@@ -104,17 +109,38 @@ int main(int argc, char* argv[])
 
 		cvCvtColor(Globals::main_image, gray_image, CV_BGR2GRAY); 
 
+		
+
 		if(!claibrateMode)
 		{
+
 			/********TODO*****
 			* - Calculate the double thresholder (avobe(di) and on (ftir)
 			* - markerfinder->ProcessFrame(thresholder_above);
 			* - handfinder->ProcessFrame(thresholder_above);
 			* - fingerfeedback->Processframe(thresholdet_on);
 			******************/
+			//bg substraction:
+			if(process_bg)
+			{
+				cvCopy(gray_image,bgs_image);	
+				process_bg = false;
+			}
+			if(bg_substraction && bgs_image != NULL)
+			{
+				cvAbsDiff(gray_image,bgs_image,gray_image);
+			}
+
+			cvSmooth(gray_image,gray_image,CV_GAUSSIAN,3);
+
+			cvThreshold(gray_image,threshold_beyond_image,threshold_beyond_value,255, CV_THRESH_BINARY);
+			cvThreshold(gray_image,threshold_surface_image,threshold_surface_value,255, CV_THRESH_BINARY);
+
+			//find thresholders (surface and beyond)
+			//cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
 			/*******Temporally solution****/
-			markerfinder->ProcessFrame(Globals::main_image);
+			markerfinder->ProcessFrame(threshold_beyond_image);
 			/***********/
 		}
 		else
@@ -128,7 +154,13 @@ int main(int argc, char* argv[])
 		{
 			sprintf_s(text,"process_time %gms", process_time/(cvGetTickFrequency()*1000.)); 
 			Globals::Font::Write(Globals::screen,text,cvPoint(10, 40),FONT_HELP,0,255,0);
-			cvShowImage(MAIN_TITTLE,Globals::screen);
+			if(screen_to_show == VIEW_RAW)
+				cvShowImage(MAIN_TITTLE,Globals::screen);
+			else if(screen_to_show == VIEW_THRESHOLD)
+			{
+				cvShowImage(THRESHOLD_BEYOND_TITTLE,threshold_beyond_image);
+				cvShowImage(THRESHOLD_SURFACE_TITTLE,threshold_surface_image);
+			}
 			if(show_fid_processor)cvShowImage(FIDUCIAL_TITTLE,Globals::fiducial_image_marker);
 		}
 		
@@ -140,7 +172,7 @@ int main(int argc, char* argv[])
 				is_running = false;
 				break;
 			case KEY_CHANGE_VIEW:
-				Globals::SwitchScreen();
+				SwitchScreen();
 				break;
 			case KEY_SHOW_FID_PROCESSOR:
 				ToggleDisplayFIDProcessor();
@@ -149,7 +181,15 @@ int main(int argc, char* argv[])
 				ToggleCalibrationMode();
 				break;
 			case KEY_CALIBRATION_GRID:
+			case KEY_RESET:
 				if(claibrateMode) calibrator->ProcessKey(presskey);
+				break;
+			case KEY_ENABLE_BGS:
+				bg_substraction = true;
+				process_bg = true;
+				break;
+			case KEY_DISABLE_BGS:
+				bg_substraction = false;
 				break;
 		}
 
@@ -167,9 +207,51 @@ int main(int argc, char* argv[])
 
 	//Destroy windows
 	if(show_fid_processor)cvDestroyWindow(FIDUCIAL_TITTLE);
+	if(screen_to_show == VIEW_THRESHOLD)
+	{
+		cvNamedWindow (THRESHOLD_BEYOND_TITTLE, CV_WINDOW_AUTOSIZE);
+		cvNamedWindow (THRESHOLD_SURFACE_TITTLE, CV_WINDOW_AUTOSIZE);
+	}
 	cvDestroyWindow(MAIN_TITTLE);
     return 0;
 
+}
+
+void SwitchScreen()
+{
+	screen_to_show ++;
+	if(screen_to_show > VIEW_NONE) screen_to_show = 0;
+		SetView(screen_to_show);
+}
+
+void SetView(int view)
+{
+	if(view < 0 || view >= VIEW_NONE)
+	{
+		screen_to_show = VIEW_NONE;
+		is_view_enabled = false;
+		cvDestroyWindow(THRESHOLD_BEYOND_TITTLE);
+		cvDestroyWindow(THRESHOLD_SURFACE_TITTLE);
+		cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
+	}
+	else
+	{
+		screen_to_show = view;
+		is_view_enabled = true;
+		if(screen_to_show == VIEW_RAW)
+		{
+			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
+			cvDestroyWindow(THRESHOLD_BEYOND_TITTLE);
+			cvDestroyWindow(THRESHOLD_SURFACE_TITTLE);
+		}
+		else if(screen_to_show == VIEW_THRESHOLD)
+		{
+			//Globals::screen = thresholded_image_marker;
+			cvDestroyWindow(MAIN_TITTLE);
+			cvNamedWindow (THRESHOLD_BEYOND_TITTLE, CV_WINDOW_AUTOSIZE);
+			cvNamedWindow (THRESHOLD_SURFACE_TITTLE, CV_WINDOW_AUTOSIZE);
+		}
+	}
 }
 
 void ToggleDisplayFIDProcessor()

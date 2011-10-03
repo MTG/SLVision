@@ -6,19 +6,33 @@
 #include <highgui.h>
 
 //FONT defines
-#define FONT_AXIS 0
-#define FONT_HELP 1
+#define FONT_AXIS					0
+#define FONT_HELP					1
+
 //CAMERA constants
-#define CAMERA_ID			0
+#define CAMERA_ID					0
+
 //VIEW constants
-#define VIEW_RAW			0
-#define VIEW_THRESHOLD		1
-#define VIEW_NONE			2
-#define MAIN_TITTLE			"6dof reacTIVision"
-#define FIDUCIAL_TITTLE		"Fiducial view"
-#define APP_NAME			"SLVision"
-#define M_PATH_DISTORTION	"distortion.xml"
-#define M_PATH_INTRINSIC	"instrinsic.xml"
+#define VIEW_RAW					0
+#define VIEW_THRESHOLD				1
+#define VIEW_NONE					2
+#define MAIN_TITTLE					"6dof reacTIVision"
+#define FIDUCIAL_TITTLE				"Fiducial view"
+#define THRESHOLD_BEYOND_TITTLE		"Threshold beyond"
+#define THRESHOLD_SURFACE_TITTLE	"Threshold surface"
+
+#define APP_NAME					"SLVision"
+#define M_PATH_DISTORTION			"distortion.xml"
+#define M_PATH_INTRINSIC			"instrinsic.xml"
+
+#define KEY_SHOW_FID_PROCESSOR		'V'
+#define KEY_CHANGE_VIEW				'v'
+#define KEY_EXIT					27 //esc
+#define KEY_CALIBRATION				'c'
+#define KEY_CALIBRATION_GRID		'g'
+#define KEY_RESET					'r'
+#define KEY_ENABLE_BGS				'b'
+#define KEY_DISABLE_BGS				'B'
 
 #define MARKER_SIZE (90) //marker size in mm
 
@@ -54,6 +68,9 @@ public:
 
 	static void SetView(int view);
 	static void SwitchScreen();
+
+	static void LoadDefaultDistortionMatrix();
+
 
 	class Font
 	{

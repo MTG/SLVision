@@ -99,19 +99,21 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 {
 	cvClearMemStorage(main_storage);
 	cvClearMemStorage(main_storage_poligon);
+	
 	//source image to grayscale
-	cvCvtColor(main_image,main_processed_image,CV_BGR2GRAY); //converts input image from one color space to another
+//	cvCvtColor(main_image,main_processed_image,CV_BGR2GRAY); //converts input image from one color space to another
 
-	cvSmooth(main_processed_image,main_processed_image,CV_GAUSSIAN,3);//Smooths the image in one of several ways  // CV_GAUSSIAN (gaussian blur) - convolving image with param1×param2 Gaussian kernel.
+//	cvSmooth(main_processed_image,main_processed_image,CV_GAUSSIAN,3);//Smooths the image in one of several ways  // CV_GAUSSIAN (gaussian blur) - convolving image with param1×param2 Gaussian kernel.
 
 ///!!!! agafar el model de thershold d'openframeworks hand recognition....
-	cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU); //Applies fixed-level threshold to array elements
+//	cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU); //Applies fixed-level threshold to array elements
 	
-	cvNot(main_processed_image,main_processed_image); //invert colors
+	cvNot(main_image,main_processed_image); //invert colors
 
-	Globals::thresholded_image_marker = main_processed_image;
+//	Globals::thresholded_image_marker = main_processed_image;
 	//contour finder:
-	cvCopy(main_processed_image,main_processed_contour);		
+//	cvCopy(main_processed_image,main_processed_contour);		
+	cvCopy(main_processed_image,main_processed_contour);
 	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
 	//find squares
 	polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,3,1);

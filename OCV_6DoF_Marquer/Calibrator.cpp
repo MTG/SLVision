@@ -7,7 +7,10 @@ Calibrator::Calibrator(void)
 	board_sz = cvSize( BOARD_W, BOARD_H );
 	mapx = NULL;
 	mapy = NULL;
-
+	x_box = Globals::width/2;
+	y_box = Globals::height/2;
+	w_box = Globals::width/2;
+	h_box = Globals::height/2;
 }
 
 
@@ -142,6 +145,12 @@ void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 		}
 		IplImage *t = cvCloneImage(main_image);
 		cvRemap( main_image, t, mapx, mapy );  // Undistort image
+
+		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
+		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
+		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
+		cvLine(t, cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2
+			);
 		cvShowImage("Undistort", t);
 	}
 }
@@ -153,6 +162,15 @@ void Calibrator::EndCalibration()
 
 void Calibrator::ProcessKey(char key)
 {
-	if(key == 'g')
+	switch(key)
+	{
+	case KEY_CALIBRATION_GRID:
 		StartChessBoardFinder();
+		break;
+	case KEY_RESET:
+		Globals::LoadDefaultDistortionMatrix();
+		if(mapx != NULL) cvReleaseImage(&mapx);
+		if(mapy != NULL) cvReleaseImage(&mapy);
+		break;
+	}		
 }
