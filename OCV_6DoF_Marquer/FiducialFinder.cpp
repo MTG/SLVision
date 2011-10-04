@@ -170,6 +170,7 @@ void FiducialFinder::InitFID()
 {
 	idmap.clear();
 	char* id[] = { 
+		"10011\0",
 		"100000011111\0", 
 		"100000001111\0",
 		"100000101111\0",

@@ -135,9 +135,10 @@ int main(int argc, char* argv[])
 
 			cvSmooth(gray_image,gray_image,CV_GAUSSIAN,3);
 
-			cvThreshold(gray_image,threshold_surface_image,threshold_beyond_value,255, CV_THRESH_BINARY);
-			cvThreshold(gray_image,threshold_beyond_image,threshold_surface_value,255, CV_THRESH_BINARY);
-			cvAdaptiveThreshold(gray_image,threshold_adaptive_image,255,CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY,15);
+			//cvThreshold(gray_image,threshold_surface_image,threshold_beyond_value,255, CV_THRESH_BINARY);
+			//cvThreshold(gray_image,threshold_beyond_image,threshold_surface_value,255, CV_THRESH_BINARY);
+			cvAdaptiveThreshold(gray_image,threshold_adaptive_image,255,/*CV_ADAPTIVE_THRESH_MEAN_C*/CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);
+			//cvThreshold(gray_image,threshold_adaptive_image,100,255, CV_THRESH_BINARY);
 
 			//find thresholders (surface and beyond)
 			//cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
@@ -162,7 +163,8 @@ int main(int argc, char* argv[])
 			else if(screen_to_show == VIEW_THRESHOLD)
 			{
 				cvShowImage(THRESHOLD_BEYOND_TITTLE,threshold_adaptive_image);
-				cvShowImage(THRESHOLD_SURFACE_TITTLE,threshold_surface_image);
+				//cvShowImage(THRESHOLD_SURFACE_TITTLE,threshold_surface_image);
+				cvShowImage(THRESHOLD_SURFACE_TITTLE,Globals::screen);
 			}
 			if(show_fid_processor)cvShowImage(FIDUCIAL_TITTLE,Globals::fiducial_image_marker);
 		}
@@ -205,6 +207,10 @@ int main(int argc, char* argv[])
 
 	cvReleaseCapture(&Globals::cv_camera_capture);
 	cvReleaseImage(&Globals::main_image);
+	cvReleaseImage(&gray_image);
+	cvReleaseImage(&threshold_beyond_image);
+	cvReleaseImage(&threshold_surface_image);
+	cvReleaseImage(&threshold_adaptive_image);
 	delete (markerfinder);
 	delete (&TuioServer::Instance());
 
