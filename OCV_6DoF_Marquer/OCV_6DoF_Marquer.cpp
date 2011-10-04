@@ -37,6 +37,7 @@ bool	is_view_enabled;
 IplImage* bgs_image;
 IplImage* threshold_beyond_image;
 IplImage* threshold_surface_image;
+IplImage* threshold_adaptive_image;
 
 int threshold_beyond_value;
 int threshold_surface_value;
@@ -74,6 +75,7 @@ int main(int argc, char* argv[])
 	bgs_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
 	threshold_beyond_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
 	threshold_surface_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
+	threshold_adaptive_image = cvCreateImage(cvGetSize(Globals::main_image),IPL_DEPTH_8U,1);
 
 	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
 	Globals::distortion = (CvMat*)cvLoad(M_PATH_DISTORTION);
@@ -133,14 +135,15 @@ int main(int argc, char* argv[])
 
 			cvSmooth(gray_image,gray_image,CV_GAUSSIAN,3);
 
-			cvThreshold(gray_image,threshold_beyond_image,threshold_beyond_value,255, CV_THRESH_BINARY);
-			cvThreshold(gray_image,threshold_surface_image,threshold_surface_value,255, CV_THRESH_BINARY);
+			cvThreshold(gray_image,threshold_surface_image,threshold_beyond_value,255, CV_THRESH_BINARY);
+			cvThreshold(gray_image,threshold_beyond_image,threshold_surface_value,255, CV_THRESH_BINARY);
+			cvAdaptiveThreshold(gray_image,threshold_adaptive_image,255,CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY,15);
 
 			//find thresholders (surface and beyond)
 			//cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
 			/*******Temporally solution****/
-			markerfinder->ProcessFrame(threshold_beyond_image);
+			markerfinder->ProcessFrame(threshold_adaptive_image);
 			/***********/
 		}
 		else
@@ -158,7 +161,7 @@ int main(int argc, char* argv[])
 				cvShowImage(MAIN_TITTLE,Globals::screen);
 			else if(screen_to_show == VIEW_THRESHOLD)
 			{
-				cvShowImage(THRESHOLD_BEYOND_TITTLE,threshold_beyond_image);
+				cvShowImage(THRESHOLD_BEYOND_TITTLE,threshold_adaptive_image);
 				cvShowImage(THRESHOLD_SURFACE_TITTLE,threshold_surface_image);
 			}
 			if(show_fid_processor)cvShowImage(FIDUCIAL_TITTLE,Globals::fiducial_image_marker);
