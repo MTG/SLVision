@@ -81,7 +81,7 @@ public:
 		static float axis_hscale, axis_vscale;
 	public:
 		static void InitFont();
-		static void Write(IplImage* dest, char* text, const CvPoint &position, int font_type, short r, short g, short b);
+		static void Write(IplImage* dest,const char* text, const CvPoint &position, int font_type, short r, short g, short b);
 		//cvPutText(screen, "Y", endpoint, &axisfont,CV_RGB(0,255,0));
 	};
 };

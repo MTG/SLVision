@@ -54,10 +54,12 @@ class MarkerFinder :
 public:
 	MarkerFinder(void);
 	~MarkerFinder(void);
-	void ProcessFrame(IplImage*	main_image);
 	AliveList GetAlive();
+	void KeyInput(char key);
 protected:
 	void InitGeometry();
 	void InitFrames(IplImage*	main_image);
+	void UpdatedValuesFromGui();
+	void Process(IplImage*	main_image);
 };
 

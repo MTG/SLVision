@@ -3,7 +3,7 @@
 #include "TuioServer.h"
 #include <iostream>
 
-MarkerFinder::MarkerFinder()
+MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 {
 	ssidGenerator = 1;
 	fiducial_finder = new FiducialFinder(FIDUCIAL_IMAGE_SIZE);
@@ -11,8 +11,19 @@ MarkerFinder::MarkerFinder()
 	polycontour=NULL;
 	InitFrames(Globals::screen);
 	InitGeometry();
+	//populate gui
+	guiMenu->AddBar("Threshold",0,255,1);
+//	guiMenu->AddBar("FiducialSize[mm]", 10,200,5);
+	guiMenu->AddBar("Enable",0,1,1);
+	guiMenu->SetValue("Enable",1);
 }
 
+void MarkerFinder::UpdatedValuesFromGui()
+{
+	if(guiMenu->GetValue("Enable") == 0) enable = false;
+	else if(guiMenu->GetValue("Enable") == 1) enable = true;
+
+}
 
 MarkerFinder::~MarkerFinder(void)
 {
@@ -95,8 +106,9 @@ void MarkerFinder::InitFrames(IplImage*	main_image)
 }
 
 
-void MarkerFinder::ProcessFrame(IplImage*	main_image)
+void MarkerFinder::Process(IplImage*	main_image)
 {
+	
 	cvClearMemStorage(main_storage);
 	cvClearMemStorage(main_storage_poligon);
 	
@@ -226,7 +238,7 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 					//
 					//
 					CV_MAT_ELEM( *rotation, float, 0, 0) = -rotation->data.fl[0];
-					CV_MAT_ELEM( *rotation, float, 1, 0) = -rotation->data.fl[1];
+					CV_MAT_ELEM( *rotation, float, 0, 1) = -rotation->data.fl[1];
 					cvRodrigues2(rotation,rotationMatrix);
 					fiducial_map[tmp_ssid]->yaw = atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]); //atan2([1,0], [0,0])
 					fiducial_map[tmp_ssid]->pitch = atan2(-rotationMatrix->data.fl[6],sqrt( rotationMatrix->data.fl[7]*rotationMatrix->data.fl[7] + rotationMatrix->data.fl[8]*rotationMatrix->data.fl[8])); //atan2([2,0], sqrt([2,1]'2 + [2,2]'2))
@@ -275,12 +287,10 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 	{
 		if(it->second->IsUpdated())
 		{
-//Send Data
 			TuioServer::Instance().Add3DObjectMessage(it->first,0,it->second->GetFiducialID(),it->second->xpos,it->second->ypos,it->second->zpos,it->second->yaw,it->second->pitch,it->second->roll);
 		}
 		else
 		{
-			//it->second->RemoveStart(process_time);
 			to_remove.push_back(it->first);
 		}
 		if(Globals::is_view_enabled)
@@ -288,15 +298,10 @@ void MarkerFinder::ProcessFrame(IplImage*	main_image)
 			sprintf_s(text,"%i , %i",it->second->GetFiducialID(), it->first); 
 			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->GetX(), (int)it->second->GetY()),FONT_HELP,0,255,0);
 		}
-
-
-		/*if( it ->second->CanBeRemoved(process_time) )
-			to_remove.push_back(it->first);*/
 	}
 
 	for(std::vector<unsigned int>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
 	{
-//	std::cout << "removed " << *it << std::endl;
 		fiducial_map.erase(*it);
 	}
 }
@@ -310,4 +315,8 @@ AliveList MarkerFinder::GetAlive()
 	}
 	//std::vector<unsigned long>
 	return to_return;
+}
+
+void MarkerFinder::KeyInput(char key)
+{
 }

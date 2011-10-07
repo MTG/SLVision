@@ -13,14 +13,16 @@
 #include "TuioServer.h"
 #include "Calibrator.h"
 
+typedef std::vector<FrameProcessor*> Vector_processors;
+
 //Helping Functions
 void ToggleDisplayFIDProcessor();
 void ToggleCalibrationMode();
 void SwitchScreen();
 void SetView(int view);
+void Switchleft();
+void Switchright();
 
-// markerfinder defined
-MarkerFinder*   markerfinder;
 Calibrator*		calibrator;
 
 // main window properties
@@ -43,6 +45,11 @@ int threshold_beyond_value;
 int threshold_surface_value;
 
 int view_mode; //0 source, 1 thresholds, 2
+
+bool show_options;
+int selected_processor;
+Vector_processors processors;
+MarkerFinder*   markerfinder;
 
 int main(int argc, char* argv[])
 {	
@@ -89,7 +96,12 @@ int main(int argc, char* argv[])
 
 	///init objects
 	calibrator = new Calibrator();
+
+	show_options = false;
+	selected_processor = 0;
 	markerfinder = new MarkerFinder();
+	processors.push_back(markerfinder);
+
 	TuioServer::Instance().RegisterProcessor(markerfinder);
 
 	// initializes font
@@ -137,8 +149,8 @@ int main(int argc, char* argv[])
 
 			//cvThreshold(gray_image,threshold_surface_image,threshold_beyond_value,255, CV_THRESH_BINARY);
 			//cvThreshold(gray_image,threshold_beyond_image,threshold_surface_value,255, CV_THRESH_BINARY);
-			cvAdaptiveThreshold(gray_image,threshold_adaptive_image,255,/*CV_ADAPTIVE_THRESH_MEAN_C*/CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);
-			//cvThreshold(gray_image,threshold_adaptive_image,100,255, CV_THRESH_BINARY);
+			//cvAdaptiveThreshold(gray_image,threshold_adaptive_image,255,/*CV_ADAPTIVE_THRESH_MEAN_C*/CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);
+			cvThreshold(gray_image,threshold_adaptive_image,100,255, CV_THRESH_BINARY);
 
 			//find thresholders (surface and beyond)
 			//cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
@@ -150,23 +162,6 @@ int main(int argc, char* argv[])
 		else
 		{
 			calibrator->ProcessFrame(gray_image);
-		}
-
-		//calculates the processtime
-		process_time = (double)cvGetTickCount()-process_time;
-		if(Globals::is_view_enabled)
-		{
-			sprintf_s(text,"process_time %gms", process_time/(cvGetTickFrequency()*1000.)); 
-			Globals::Font::Write(Globals::screen,text,cvPoint(10, 40),FONT_HELP,0,255,0);
-			if(screen_to_show == VIEW_RAW)
-				cvShowImage(MAIN_TITTLE,Globals::screen);
-			else if(screen_to_show == VIEW_THRESHOLD)
-			{
-				cvShowImage(THRESHOLD_BEYOND_TITTLE,threshold_adaptive_image);
-				//cvShowImage(THRESHOLD_SURFACE_TITTLE,threshold_surface_image);
-				cvShowImage(THRESHOLD_SURFACE_TITTLE,Globals::screen);
-			}
-			if(show_fid_processor)cvShowImage(FIDUCIAL_TITTLE,Globals::fiducial_image_marker);
 		}
 		
 		//Key Check
@@ -196,6 +191,54 @@ int main(int argc, char* argv[])
 			case KEY_DISABLE_BGS:
 				bg_substraction = false;
 				break;
+			case 4:
+				Switchleft();
+				break;
+			case 6:
+				Switchright();
+				break;
+			case 'o':
+				if(processors.size() != 0)
+				{
+					show_options = !show_options;
+					processors[selected_processor]->EnableKeyProcessor(show_options);
+				}
+				break;
+			case '8':
+			case '2':
+			case '+':
+			case '-':
+				if(show_options)
+				{
+					for(Vector_processors::iterator it = processors.begin(); it != processors.end(); it++)
+						(*it)->ProcessKey(presskey);
+				}
+				break;
+
+				//test
+		}
+
+		//calculates the processtime
+		process_time = (double)cvGetTickCount()-process_time;
+		if(Globals::is_view_enabled)
+		{
+			if(show_options)
+			{
+				for(Vector_processors::iterator it = processors.begin(); it != processors.end(); it++)
+					(*it)->DrawMenu(Globals::screen);
+			}
+
+			sprintf_s(text,"process_time %gms", process_time/(cvGetTickFrequency()*1000.)); 
+			Globals::Font::Write(Globals::screen,text,cvPoint(10, 40),FONT_HELP,0,255,0);
+			if(screen_to_show == VIEW_RAW)
+				cvShowImage(MAIN_TITTLE,Globals::screen);
+			else if(screen_to_show == VIEW_THRESHOLD)
+			{
+				cvShowImage(THRESHOLD_BEYOND_TITTLE,threshold_adaptive_image);
+				//cvShowImage(THRESHOLD_SURFACE_TITTLE,threshold_surface_image);
+				cvShowImage(THRESHOLD_SURFACE_TITTLE,Globals::screen);
+			}
+			if(show_fid_processor)cvShowImage(FIDUCIAL_TITTLE,Globals::fiducial_image_marker);
 		}
 
 		//update bundle
@@ -288,5 +331,27 @@ void ToggleCalibrationMode()
 	else
 	{
 		calibrator->EndCalibration();
+	}
+}
+
+void Switchleft()
+{
+	if(processors.size() > 1)
+	{
+		processors[selected_processor]->EnableKeyProcessor(false);
+		selected_processor --;
+		if(selected_processor < 0) selected_processor = 0;
+		processors[selected_processor]->EnableKeyProcessor();
+	}
+}
+
+void Switchright()
+{
+	if(processors.size() > 1)
+	{
+		processors[selected_processor]->EnableKeyProcessor(false);
+		selected_processor ++;
+		if(selected_processor >= 0) processors.size();
+		processors[selected_processor]->EnableKeyProcessor();
 	}
 }

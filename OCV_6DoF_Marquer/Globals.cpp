@@ -92,7 +92,7 @@ void Globals::Font::InitFont()
 	cvInitFont (&font_axis, CV_FONT_HERSHEY_SIMPLEX , axis_hscale, axis_vscale, italicscale, thickness, CV_AA);
 }
 
-void Globals::Font::Write(IplImage* dest, char* text, const CvPoint &position, int font_type, short r, short g, short b)
+void Globals::Font::Write(IplImage* dest,const char* text, const CvPoint &position, int font_type, short r, short g, short b)
 {
 	if(dest != NULL && text != NULL)
 	{
