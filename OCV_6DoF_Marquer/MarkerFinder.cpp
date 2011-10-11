@@ -136,8 +136,8 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	cvClearMemStorage(main_storage);
 	cvClearMemStorage(main_storage_poligon);
 
-	//cvAdaptiveThreshold(main_image,main_processed_image,255,CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);//CV_ADAPTIVE_THRESH_MEAN_C
-	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
+	cvAdaptiveThreshold(main_image,main_processed_image,255,CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);//CV_ADAPTIVE_THRESH_MEAN_C
+	//cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
 
 	cvNot(main_processed_image,main_processed_image); //invert colors
 
