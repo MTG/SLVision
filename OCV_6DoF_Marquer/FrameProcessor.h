@@ -22,8 +22,8 @@ protected:
 public:
 	FrameProcessor(std::string name);
 	virtual ~FrameProcessor(void);
-	IplImage* ProcessFrame(IplImage*	main_image);
 	virtual AliveList GetAlive()=0;
+	IplImage* ProcessFrame(IplImage*	main_image);
 	void ProcessKey(char key);
 	void EnableKeyProcessor(bool en = true);
 	void DrawMenu(IplImage* img);

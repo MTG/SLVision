@@ -7,6 +7,7 @@
 #include "TuioServer.h"
 #include "Calibrator.h"
 #include "GlobalConfig.h"
+#include "TouchFinder.h"
 
 //VIEW constants
 #define VIEW_RAW					0
@@ -17,6 +18,7 @@
 #define MAIN_TITTLE					"6dof reacTIVision"
 #define FIDUCIAL_TITTLE				"Fiducial view"
 #define SIX_DOF_THRESHOLD			"Threshold 6 DoF"
+#define TOUCH_THRESHOLD				"Threshold Touch"
 //#define THRESHOLD_SURFACE_TITTLE	"Threshold surface"
 
 typedef std::vector<FrameProcessor*> Vector_processors;
@@ -32,6 +34,7 @@ void Switchright();
 Vector_processors	processors;
 Calibrator*			calibrator;
 MarkerFinder*		markerfinder;
+TouchFinder*		touchfinder;
 
 // main window properties
 int64	process_time;
@@ -50,6 +53,7 @@ int main(int argc, char* argv[])
 {	
 	IplImage*		bgs_image;
 	IplImage*		six_dof_output;
+	IplImage*		touch_finder_output;
 	CvCapture*		cv_camera_capture;
 	IplImage*		captured_image;
 	IplImage*		gray_image;
@@ -79,6 +83,9 @@ int main(int argc, char* argv[])
 	markerfinder = new MarkerFinder();
 	processors.push_back(markerfinder);
 	TuioServer::Instance().RegisterProcessor(markerfinder);
+	touchfinder = new TouchFinder();
+	processors.push_back(touchfinder);
+	TuioServer::Instance().RegisterProcessor(touchfinder);
 
 	//SetView
 	screen_to_show = datasaver::GlobalConfig::getRef("MAIN:VIEW",0);
@@ -137,6 +144,7 @@ int main(int argc, char* argv[])
 
 			//******Temporally solution****
 			six_dof_output = markerfinder->ProcessFrame(gray_image);
+			touch_finder_output = touchfinder->ProcessFrame(gray_image);
 			//***********
 			
 		}
@@ -162,6 +170,7 @@ int main(int argc, char* argv[])
 			if(screen_to_show == VIEW_THRESHOLD)
 			{
 				cvShowImage(SIX_DOF_THRESHOLD,six_dof_output);
+				cvShowImage(TOUCH_THRESHOLD,touch_finder_output);
 			}
 		}
 
@@ -194,10 +203,10 @@ int main(int argc, char* argv[])
 			case KEY_DISABLE_BGS:
 				bg_substraction = false;
 				break;
-			case 4:
+			case '4':
 				Switchleft();
 				break;
-			case 6:
+			case '6':
 				Switchright();
 				break;
 			case 'o':
@@ -250,6 +259,7 @@ void SetView(int view)
 		screen_to_show = VIEW_NONE;
 		Globals::is_view_enabled = false;
 		cvDestroyWindow(SIX_DOF_THRESHOLD);
+		cvDestroyWindow(TOUCH_THRESHOLD);
 		cvDestroyWindow(MAIN_TITTLE);
 		cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
 	}
@@ -259,17 +269,20 @@ void SetView(int view)
 		Globals::is_view_enabled = true;
 		if(screen_to_show == VIEW_RAW)
 		{
+			cvDestroyWindow(TOUCH_THRESHOLD);
 			cvDestroyWindow(SIX_DOF_THRESHOLD);
 			cvDestroyWindow(MAIN_TITTLE);
 			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
 		}
 		else if(screen_to_show == VIEW_THRESHOLD)
 		{
+			cvDestroyWindow(TOUCH_THRESHOLD);
 			cvDestroyWindow(SIX_DOF_THRESHOLD);
 			cvDestroyWindow(MAIN_TITTLE);
 			//frame processors windows
 			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
 			cvNamedWindow (SIX_DOF_THRESHOLD, CV_WINDOW_AUTOSIZE);
+			cvNamedWindow (TOUCH_THRESHOLD, CV_WINDOW_AUTOSIZE);
 		}
 	}
 	glob_view = screen_to_show;

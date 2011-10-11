@@ -106,6 +106,7 @@
     <ClCompile Include="MarkerFinder.cpp" />
     <ClCompile Include="MenuBar.cpp" />
     <ClCompile Include="OCV_6DoF_Marquer.cpp" />
+    <ClCompile Include="TouchFinder.cpp" />
     <ClCompile Include="TuioServer.cpp" />
     <ClCompile Include="XML_Configuration.cpp" />
   </ItemGroup>
@@ -134,10 +135,15 @@
     <ClInclude Include="LogFile.h" />
     <ClInclude Include="MarkerFinder.h" />
     <ClInclude Include="MenuBar.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TouchFinder.h" />
     <ClInclude Include="TuioServer.h" />
     <ClInclude Include="XML_Configuration.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OCV_6DoF_Marquer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
