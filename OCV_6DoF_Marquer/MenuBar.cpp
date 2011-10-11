@@ -23,7 +23,7 @@ void MenuBar::DrawMenu(IplImage* img, int x, int y)
 		cvRectangle(img, cvPoint(x,y), cvPoint(x+110,y+20), CV_RGB(0,255,0), CV_FILLED);
 	else
 		cvRectangle(img, cvPoint(x,y), cvPoint(x+110,y+20), CV_RGB(100,150,100), CV_FILLED);
-	int longitude = ((parameter - min_parameter)*100) / (max_parameter-min_parameter);
+	int longitude = (int)ceil(((parameter - min_parameter)*100) / (max_parameter-min_parameter));
 	cvRectangle(img, cvPoint(x+5,y+5), cvPoint(x+5+longitude,y+15), CV_RGB(0,0,0), CV_FILLED);
 	//Globals::Font::Write(img,
 	sprintf_s(text,"%f", parameter); 

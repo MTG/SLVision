@@ -14,10 +14,11 @@ FrameProcessor::~FrameProcessor(void)
 {
 }
 
-void FrameProcessor::ProcessFrame(IplImage*	main_image)
+IplImage* FrameProcessor::ProcessFrame(IplImage*	main_image)
 {
 	if(enable)
-		Process(main_image);
+		return Process(main_image);
+	return NULL;
 }
 
 void FrameProcessor::EnableKeyProcessor(bool en)
@@ -58,4 +59,14 @@ void FrameProcessor::ProcessKey(char key)
 void FrameProcessor::DrawMenu(IplImage* img)
 {
 	if(process_key)guiMenu->Draw(img);
+}
+
+bool FrameProcessor::IsEnabled()
+{
+	return enable;
+}
+
+void FrameProcessor::Enable(bool enable)
+{
+	this->enable = enable;
 }

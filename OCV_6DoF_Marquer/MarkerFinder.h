@@ -51,6 +51,8 @@ class MarkerFinder :
 
 	CvMat *rotationMatrix;
 
+	int threshold_value;
+
 public:
 	MarkerFinder(void);
 	~MarkerFinder(void);
@@ -60,6 +62,6 @@ protected:
 	void InitGeometry();
 	void InitFrames(IplImage*	main_image);
 	void UpdatedValuesFromGui();
-	void Process(IplImage*	main_image);
+	IplImage* Process(IplImage*	main_image);
 };
 

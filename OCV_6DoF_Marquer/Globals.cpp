@@ -1,12 +1,7 @@
-////#include "StdAfx.h"
 #include "Globals.h"
+#include "GlobalConfig.h"
 
 IplImage*	Globals::screen						= NULL;
-IplImage*	Globals::captured_image				= NULL;
-CvCapture*	Globals::cv_camera_capture			= NULL;
-IplImage*	Globals::main_image					= NULL;	
-IplImage*	Globals::thresholded_image_marker	= NULL;
-IplImage*	Globals::fiducial_image_marker		= NULL;
 bool		Globals::is_view_enabled			= false;
 
 float		Globals::Font::hscale				= 0.5f;
@@ -22,31 +17,8 @@ int			Globals::width						= 0;
 int			Globals::height						= 0;
 char		Globals::dim[100];
 
-char*		Globals::address					= "127.0.0.1";//"10.80.5.162";//"10.80.7.19";//
-int			Globals::port						= 3333;
-
 CvMat* 		Globals::intrinsic					= NULL;
 CvMat*		Globals::distortion					= NULL;
-
-
-int			Globals::screen_to_show				= 0;
-void Globals::SetView(int view)
-{
-	if(view < 0 || view >= VIEW_NONE)
-	{
-		screen_to_show = VIEW_NONE;
-		is_view_enabled = false;
-	}
-	else
-	{
-		screen_to_show = view;
-		is_view_enabled = true;
-		if(screen_to_show == VIEW_RAW)
-			screen = main_image;
-		else if(thresholded_image_marker != NULL && screen_to_show == VIEW_THRESHOLD)
-			Globals::screen = thresholded_image_marker;
-	}
-}
 
 void Globals::LoadDefaultDistortionMatrix()
 {
@@ -71,13 +43,6 @@ void Globals::LoadDefaultDistortionMatrix()
 
 	cvSave(M_PATH_INTRINSIC,intrinsic);
 	cvSave(M_PATH_DISTORTION,distortion);
-}
-
-void Globals::SwitchScreen()
-{
-	screen_to_show ++;
-	if(screen_to_show > VIEW_NONE) screen_to_show = 0;
-		SetView(screen_to_show);
 }
 
 void Globals::Font::InitFont()

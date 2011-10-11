@@ -69,7 +69,7 @@ float GuiMenu::GetValue(std::string name)
 
 void GuiMenu::MoveUp()
 {
-	if(map_menu.size() > 1 && selected_position < map_menu.size()-1)
+	if(map_menu.size() > 1 && selected_position < (int)map_menu.size()-1)
 	{
 		selected_position++;
 		int i = 0;

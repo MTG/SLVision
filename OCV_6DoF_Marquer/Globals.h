@@ -12,14 +12,8 @@
 //CAMERA constants
 #define CAMERA_ID					0
 
-//VIEW constants
-#define VIEW_RAW					0
-#define VIEW_THRESHOLD				1
-#define VIEW_NONE					2
-#define MAIN_TITTLE					"6dof reacTIVision"
-#define FIDUCIAL_TITTLE				"Fiducial view"
-#define THRESHOLD_BEYOND_TITTLE		"Threshold beyond"
-#define THRESHOLD_SURFACE_TITTLE	"Threshold surface"
+
+
 
 #define APP_NAME					"SLVision"
 #define M_PATH_DISTORTION			"distortion.xml"
@@ -43,14 +37,14 @@ public:
 	* Screen Globals
 	*************************/
 	static IplImage*		screen;				//image to show on the screen
-	static IplImage*		captured_image;		//camera captured image
-	static IplImage*		thresholded_image_marker;		//camera captured image
-	static IplImage*		fiducial_image_marker;		//camera captured image
-	static CvCapture*		cv_camera_capture;	//camera stream capture
-	static IplImage*		main_image;			//main image
+//	static IplImage*		captured_image;		//camera captured image
+//	static IplImage*		thresholded_image_marker;		//camera captured image
+//	static IplImage*		fiducial_image_marker;		//camera captured image
+//	static CvCapture*		cv_camera_capture;	//camera stream capture
+//	static IplImage*		main_image;			//main image
 	static bool				is_view_enabled;	//flag window image enabled or disabled
 
-	static int				screen_to_show; //0 normal, 1 threshold, 2 none
+//	static int				&screen_to_show; //0 normal, 1 threshold, 2 none
 
 	static int				width;
 	static int				height;
@@ -58,16 +52,16 @@ public:
 	/************************
 	*Tuio Globals
 	*************************/
-	static char*			address;
-	static int				port;
+//	static char*			address;
+//	static int				port;
 	/************************
 	*Globals::distortion Globals
 	*************************/
 	static CvMat *Globals::intrinsic;
 	static CvMat *Globals::distortion;
 
-	static void SetView(int view);
-	static void SwitchScreen();
+	//static void SetView(int view);
+	//static void SwitchScreen();
 
 	static void LoadDefaultDistortionMatrix();
 

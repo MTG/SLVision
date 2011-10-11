@@ -7,3 +7,5 @@ OCV_6DoF_Marquer.suo
 OCV_6DoF_Marquer.sdf
 OCV_6DoF_Marquer/intrinsic.xml
 OCV_6DoF_Marquer/distortion.xml
+OCV_6DoF_Marquer/GlobalConfig.xml
+OCV_6DoF_Marquer/log.txt

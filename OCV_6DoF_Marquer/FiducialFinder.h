@@ -27,6 +27,7 @@ class FiducialFinder
 	intList			fiducial_nodes;
 	int				nodecount;
 	IDMap			idmap;
+
 public:
 	FiducialFinder(int _fiducial_window_size);
 	~FiducialFinder();

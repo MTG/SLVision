@@ -1,6 +1,7 @@
 ////#include "StdAfx.h"
 #include "TuioServer.h"
 #include <time.h>
+#include "GlobalConfig.h"
 
 TuioServer*	TuioServer::pinstance = NULL;
 
@@ -13,8 +14,8 @@ TuioServer &TuioServer::Instance()
 TuioServer::TuioServer(/*const char* address, int port*/)
 {
 	//InitializeNetworking();
-	long unsigned int ip	= GetHostByName(Globals::address);
-	transmitSocket			= new UdpTransmitSocket(IpEndpointName(ip, Globals::port));
+	long unsigned int ip	= GetHostByName( (datasaver::GlobalConfig::getRef<std::string>("OSC:ADDRESS", "127.0.0.1")).c_str() );
+	transmitSocket			= new UdpTransmitSocket(IpEndpointName(ip, datasaver::GlobalConfig::getRef("OSC:PORT", 3333) ));
 	
 	buffer					= new char[IP_MTU_SIZE];
 	packet_stream			= new osc::OutboundPacketStream(buffer,IP_MTU_SIZE);

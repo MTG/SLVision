@@ -32,7 +32,7 @@ int FiducialFinder::DecodeFiducial(IplImage* src, Fiducial & candidate)
 	CvSeq *contour ;
 
 	cvCopy(src,fiducial_processed_image);
-	Globals::fiducial_image_marker = src;
+//	Globals::fiducial_image_marker = src;
 
 	cvFindContours (fiducial_processed_image, fiducial_storage, &contour, sizeof (CvContour), CV_RETR_CCOMP);
 	fiducial_nodes.clear();

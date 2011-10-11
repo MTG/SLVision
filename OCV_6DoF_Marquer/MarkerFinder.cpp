@@ -1,6 +1,7 @@
 ////#include "StdAfx.h"
 #include "MarkerFinder.h"
 #include "TuioServer.h"
+#include "GlobalConfig.h"
 #include <iostream>
 
 MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
@@ -11,18 +12,37 @@ MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 	polycontour=NULL;
 	InitFrames(Globals::screen);
 	InitGeometry();
+
+	int cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
+	if(cf_enabled == 1) Enable(true);
+	else Enable(false);
+	
+	threshold_value = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
+
 	//populate gui
 	guiMenu->AddBar("Threshold",0,255,1);
-//	guiMenu->AddBar("FiducialSize[mm]", 10,200,5);
 	guiMenu->AddBar("Enable",0,1,1);
-	guiMenu->SetValue("Enable",1);
+	guiMenu->SetValue("Enable",(float)cf_enabled);
+	guiMenu->SetValue("Threshold",(float)threshold_value);
+
 }
 
 void MarkerFinder::UpdatedValuesFromGui()
 {
-	if(guiMenu->GetValue("Enable") == 0) enable = false;
-	else if(guiMenu->GetValue("Enable") == 1) enable = true;
-
+	int &cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
+	int &cf_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
+	if(guiMenu->GetValue("Enable") == 0)
+	{
+		Enable(false);
+		cf_enabled = 0;
+	}
+	else if(guiMenu->GetValue("Enable") == 1) 
+	{
+		Enable(true);
+		cf_enabled = 1;
+	}	 
+	threshold_value = (int)ceil(guiMenu->GetValue("Threshold"));
+	cf_threshold = threshold_value;
 }
 
 MarkerFinder::~MarkerFinder(void)
@@ -38,6 +58,10 @@ MarkerFinder::~MarkerFinder(void)
 
 void MarkerFinder::InitGeometry()
 {
+	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
+	Globals::distortion = (CvMat*)cvLoad(M_PATH_DISTORTION);
+	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
+
 	rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);
@@ -106,26 +130,18 @@ void MarkerFinder::InitFrames(IplImage*	main_image)
 }
 
 
-void MarkerFinder::Process(IplImage*	main_image)
+IplImage* MarkerFinder::Process(IplImage*	main_image)
 {
 	
 	cvClearMemStorage(main_storage);
 	cvClearMemStorage(main_storage_poligon);
-	
-	//source image to grayscale
-//	cvCvtColor(main_image,main_processed_image,CV_BGR2GRAY); //converts input image from one color space to another
 
-//	cvSmooth(main_processed_image,main_processed_image,CV_GAUSSIAN,3);//Smooths the image in one of several ways  // CV_GAUSSIAN (gaussian blur) - convolving image with param1×param2 Gaussian kernel.
+	//cvAdaptiveThreshold(main_image,main_processed_image,255,CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);//CV_ADAPTIVE_THRESH_MEAN_C
+	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
 
-///!!!! agafar el model de thershold d'openframeworks hand recognition....
-//	cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU); //Applies fixed-level threshold to array elements
-	
-	cvNot(main_image,main_processed_image); //invert colors
+	cvNot(main_processed_image,main_processed_image); //invert colors
 
-//	Globals::thresholded_image_marker = main_processed_image;
-	//contour finder:
-//	cvCopy(main_processed_image,main_processed_contour);		
-	cvCopy(main_processed_image,main_processed_contour);
+	cvCopy(main_processed_image,main_processed_contour);	
 	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
 	//find squares
 	polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,3,1);
@@ -246,10 +262,11 @@ void MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->xpos = ((translation->data.fl[0] + Globals::width )/ 2)/Globals::width;
 					fiducial_map[tmp_ssid]->ypos = ((translation->data.fl[1] + Globals::height )/ 2)/Globals::height;
 					fiducial_map[tmp_ssid]->zpos = translation->data.fl[2];
-					std::cout << 
-						"yaw: " << fiducial_map[tmp_ssid]->yaw << std::endl<<
-						"pitch: " << fiducial_map[tmp_ssid]->pitch << std::endl<<
-						"roll: " << fiducial_map[tmp_ssid]->roll << std::endl;
+					
+					//std::cout << 
+					//	"yaw: " << fiducial_map[tmp_ssid]->yaw << std::endl<<
+					//	"pitch: " << fiducial_map[tmp_ssid]->pitch << std::endl<<
+					//	"roll: " << fiducial_map[tmp_ssid]->roll << std::endl;
 
 					//xpos, ypos, zpos
 					if(Globals::is_view_enabled)
@@ -304,14 +321,19 @@ void MarkerFinder::Process(IplImage*	main_image)
 	{
 		fiducial_map.erase(*it);
 	}
+
+	return main_processed_image;
 }
 
 AliveList MarkerFinder::GetAlive()
 {
 	AliveList to_return;
-	for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
+	if(IsEnabled())
 	{
-		to_return.push_back(it->first);
+		for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
+		{
+			to_return.push_back(it->first);
+		}
 	}
 	//std::vector<unsigned long>
 	return to_return;

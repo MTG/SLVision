@@ -149,8 +149,7 @@ void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
 		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
 		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
-		cvLine(t, cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2
-			);
+		cvLine(t, cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
 		cvShowImage("Undistort", t);
 	}
 }
