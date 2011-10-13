@@ -16,14 +16,26 @@ MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 	int cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
 	if(cf_enabled == 1) Enable(true);
 	else Enable(false);
+
+	int cf_adaptive_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1);
+	if(cf_adaptive_threshold == 1) use_adaptive_threshold = true;
+	else use_adaptive_threshold = false;
+
+	adaptive_block_size = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:block_size",55);
 	
 	threshold_value = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
 
 	//populate gui
-	guiMenu->AddBar("Threshold",0,255,1);
-	guiMenu->AddBar("Enable",0,1,1);
-	guiMenu->SetValue("Enable",(float)cf_enabled);
-	guiMenu->SetValue("Threshold",(float)threshold_value);
+	
+	guiMenu->AddBar("0-Enable",0,1,1);
+	guiMenu->AddBar("1-Threshold",0,255,1);
+	guiMenu->AddBar("2-Enable_adaptive_threshold",0,1,1);
+	guiMenu->AddBar("3-Adaptive_threshold_block_size",3,101,4);
+
+	guiMenu->SetValue("0-Enable",(float)cf_enabled);
+	guiMenu->SetValue("1-Threshold",(float)threshold_value);
+	guiMenu->SetValue("2-Enable_adaptive_threshold",(float)use_adaptive_threshold);
+	guiMenu->SetValue("3-Adaptive_threshold_block_size",(float)adaptive_block_size);
 
 }
 
@@ -31,18 +43,29 @@ void MarkerFinder::UpdatedValuesFromGui()
 {
 	int &cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
 	int &cf_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
-	if(guiMenu->GetValue("Enable") == 0)
+	int &cf_adaptive_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1);
+	int &cf_adaptive_block_size = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:block_size",55);
+
+	if(guiMenu->GetValue("0-Enable") == 0)
 	{
 		Enable(false);
 		cf_enabled = 0;
 	}
-	else if(guiMenu->GetValue("Enable") == 1) 
+	else if(guiMenu->GetValue("0-Enable") == 1) 
 	{
 		Enable(true);
 		cf_enabled = 1;
 	}	 
-	threshold_value = (int)ceil(guiMenu->GetValue("Threshold"));
+	threshold_value = (int)ceil(guiMenu->GetValue("1-Threshold"));
 	cf_threshold = threshold_value;
+
+	use_adaptive_threshold = (int)ceil(guiMenu->GetValue("2-Enable_adaptive_threshold"));
+	cf_adaptive_threshold = use_adaptive_threshold;
+
+	adaptive_block_size =  (int)ceil(guiMenu->GetValue("3-Adaptive_threshold_block_size"));
+	cf_adaptive_block_size = adaptive_block_size;
+
+	std::cout << adaptive_block_size << std::endl;
 }
 
 MarkerFinder::~MarkerFinder(void)
@@ -136,8 +159,10 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	cvClearMemStorage(main_storage);
 	cvClearMemStorage(main_storage_poligon);
 
-	cvAdaptiveThreshold(main_image,main_processed_image,255,CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);//CV_ADAPTIVE_THRESH_MEAN_C
-	//cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
+	if(use_adaptive_threshold)
+		cvAdaptiveThreshold(main_image,main_processed_image,255,CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,adaptive_block_size,2);//CV_ADAPTIVE_THRESH_MEAN_C
+	else 
+		cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
 
 	cvNot(main_processed_image,main_processed_image); //invert colors
 

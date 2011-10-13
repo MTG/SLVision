@@ -107,9 +107,7 @@ int main(int argc, char* argv[])
 		captured_image=cvQueryFrame(cv_camera_capture);
 		//cvCopy(Globals::captured_image,Globals::main_image);
 
-		cvCvtColor(captured_image, gray_image, CV_BGR2GRAY); 
-
-		
+		cvCvtColor(captured_image, gray_image, CV_BGR2GRAY); 		
 
 		if(!claibrateMode)
 		{

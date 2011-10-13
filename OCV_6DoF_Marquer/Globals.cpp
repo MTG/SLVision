@@ -47,12 +47,7 @@ void Globals::LoadDefaultDistortionMatrix()
 
 void Globals::Font::InitFont()
 {
-	hscale      = 0.5f;
-	vscale      = 0.5f;
-	italicscale = 0.0f;
-	thickness   = 1;
-	axis_hscale = 0.8f;
-	axis_vscale = 0.8f;
+
 	cvInitFont (&font_info, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
 	cvInitFont (&font_axis, CV_FONT_HERSHEY_SIMPLEX , axis_hscale, axis_vscale, italicscale, thickness, CV_AA);
 }

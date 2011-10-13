@@ -52,6 +52,8 @@ class MarkerFinder :
 	CvMat *rotationMatrix;
 
 	int threshold_value;
+	bool use_adaptive_threshold;
+	int adaptive_block_size;
 
 public:
 	MarkerFinder(void);
