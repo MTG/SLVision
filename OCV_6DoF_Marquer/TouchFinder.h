@@ -7,6 +7,9 @@ protected:
 	IplImage*		main_processed_image;
 	IplImage*		main_processed_contour;
 	int				threshold_value;
+	CvMemStorage*	main_storage;
+	CvSeq*			firstcontour;
+	int				max_blob_size;
 
 	void KeyInput(char key);
 	void UpdatedValuesFromGui(); 
