@@ -62,10 +62,11 @@ void TouchFinder::UpdatedValuesFromGui()
 IplImage* TouchFinder::Process(IplImage* main_image)
 {
 	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
-	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
+	cvFindContours (main_processed_image, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
+	//polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,3,1);
 	for(CvSeq* c=firstcontour;c!=NULL;c=c->h_next)
 	{
-		if( c -> v_next == NULL && (cvContourPerimeter(c)>max_blob_size) && (cvContourPerimeter(c)>max_blob_size)) //looking for single blobs
+		//if( c -> v_next == NULL && (cvContourPerimeter(c)>max_blob_size) && (cvContourPerimeter(c)>max_blob_size)) //looking for single blobs
 		{
 			if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0);
 		}

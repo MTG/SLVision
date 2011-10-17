@@ -320,7 +320,7 @@ void Switchleft()
 	{
 		processors[selected_processor]->EnableKeyProcessor(false);
 		selected_processor --;
-		if(selected_processor < 0) selected_processor = 0;
+		if(selected_processor < 0) selected_processor = processors.size() - 1;
 		processors[selected_processor]->EnableKeyProcessor();
 	}
 }
@@ -331,7 +331,8 @@ void Switchright()
 	{
 		processors[selected_processor]->EnableKeyProcessor(false);
 		selected_processor ++;
-		if(selected_processor >= 0) processors.size();
+		if(selected_processor >= processors.size()) 
+			selected_processor = 0;
 		processors[selected_processor]->EnableKeyProcessor();
 	}
 }
