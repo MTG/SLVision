@@ -10,6 +10,7 @@ protected:
 	CvMemStorage*	main_storage;
 	CvSeq*			firstcontour;
 	int				max_blob_size;
+	int				min_blob_size;
 
 	void KeyInput(char key);
 	void UpdatedValuesFromGui(); 
