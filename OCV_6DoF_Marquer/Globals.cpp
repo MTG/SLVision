@@ -1,24 +1,26 @@
 #include "Globals.h"
 #include "GlobalConfig.h"
 
-IplImage*	Globals::screen						= NULL;
-bool		Globals::is_view_enabled			= false;
+IplImage*		Globals::screen						= NULL;
+bool			Globals::is_view_enabled			= false;
 
-float		Globals::Font::hscale				= 0.5f;
-float		Globals::Font::vscale				= 0.5f;
-float		Globals::Font::italicscale			= 0.0f;
-int 		Globals::Font::thickness			= 1;
-float		Globals::Font::axis_hscale			= 0.8f;
-float		Globals::Font::axis_vscale			= 0.8f;
-CvFont		Globals::Font::font_info;
-CvFont		Globals::Font::font_axis;
+float			Globals::Font::hscale				= 0.5f;
+float			Globals::Font::vscale				= 0.5f;
+float			Globals::Font::italicscale			= 0.0f;
+int 			Globals::Font::thickness			= 1;
+float			Globals::Font::axis_hscale			= 0.8f;
+float			Globals::Font::axis_vscale			= 0.8f;
+CvFont			Globals::Font::font_info;
+CvFont			Globals::Font::font_axis;
 
-int			Globals::width						= 0;
-int			Globals::height						= 0;
-char		Globals::dim[100];
+int				Globals::width						= 0;
+int				Globals::height						= 0;
+char			Globals::dim[100];
 
-CvMat* 		Globals::intrinsic					= NULL;
-CvMat*		Globals::distortion					= NULL;
+CvMat* 			Globals::intrinsic					= NULL;
+CvMat*			Globals::distortion					= NULL;
+
+unsigned int	Globals::ssidGenerator				= 1;
 
 void Globals::LoadDefaultDistortionMatrix()
 {

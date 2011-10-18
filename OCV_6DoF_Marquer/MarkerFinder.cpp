@@ -6,7 +6,7 @@
 
 MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 {
-	ssidGenerator = 1;
+	//ssidGenerator = 1;
 	fiducial_finder = new FiducialFinder(FIDUCIAL_IMAGE_SIZE);
 	firstcontour=NULL;
 	polycontour=NULL;
@@ -59,7 +59,11 @@ void MarkerFinder::UpdatedValuesFromGui()
 	threshold_value = (int)ceil(guiMenu->GetValue("1-Threshold"));
 	cf_threshold = threshold_value;
 
-	use_adaptive_threshold = (int)ceil(guiMenu->GetValue("2-Enable_adaptive_threshold"));
+	if(guiMenu->GetValue("2-Enable_adaptive_threshold") == 1 ) 
+		use_adaptive_threshold = true;
+	else
+		use_adaptive_threshold = false;
+	//use_adaptive_threshold = (int)ceil();
 	cf_adaptive_threshold = use_adaptive_threshold;
 
 	adaptive_block_size =  (int)ceil(guiMenu->GetValue("3-Adaptive_threshold_block_size"));
@@ -238,8 +242,9 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					{
 						if(temporal.GetFiducialID() == -1) break;
 						//add fiducial
-						fiducial_map[ssidGenerator++] = new Fiducial(temporal);
-						tmp_ssid = ssidGenerator-1;
+						//fiducial_map[ssidGenerator++] = new Fiducial(temporal);
+						fiducial_map[Globals::ssidGenerator++] = new Fiducial(temporal);
+						tmp_ssid = Globals::ssidGenerator-1;
 //std::cout << "new" << std::endl;
 					}
 					else if( tmp_ssid > 0)

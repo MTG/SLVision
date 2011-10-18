@@ -331,7 +331,7 @@ void Switchright()
 	{
 		processors[selected_processor]->EnableKeyProcessor(false);
 		selected_processor ++;
-		if(selected_processor >= processors.size()) 
+		if(selected_processor >= (int)processors.size()) 
 			selected_processor = 0;
 		processors[selected_processor]->EnableKeyProcessor();
 	}

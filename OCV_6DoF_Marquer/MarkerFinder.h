@@ -24,7 +24,7 @@ class MarkerFinder :
 	//
 	FiducialFinder* fiducial_finder;
 
-	unsigned int ssidGenerator;
+	//unsigned int ssidGenerator;
 	FiducialMap fiducial_map;
 	
 	unsigned int tmp_ssid;

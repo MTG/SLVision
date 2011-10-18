@@ -1,6 +1,7 @@
 #include "TouchFinder.h"
 #include "GlobalConfig.h"
-
+#include "Fiducial.h"
+#include "TuioServer.h"
 
 TouchFinder::TouchFinder(void):FrameProcessor("TouchFinder")
 {
@@ -12,6 +13,8 @@ TouchFinder::TouchFinder(void):FrameProcessor("TouchFinder")
 	// If it is 0, the block size is set to default 
 	// value - currently it is 64K.
 	main_storage = cvCreateMemStorage (0);
+
+	blob_moments = (CvMoments*)malloc( sizeof(CvMoments) );
 
 	int cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:Touch_Finder:enable",1);
 	if(cf_enabled == 1) Enable(true);
@@ -59,16 +62,17 @@ void TouchFinder::UpdatedValuesFromGui()
 	}
 	
 	int &cf_max_blob_size = datasaver::GlobalConfig::getRef("FrameProcessor:Touch_Finder:maximum_blob_size",60);;
-	max_blob_size = guiMenu->GetValue("2-Max_blob_size");
+	max_blob_size = (int)guiMenu->GetValue("2-Max_blob_size");
 	cf_max_blob_size = max_blob_size;
 
 	int &cf_min_blob_size = datasaver::GlobalConfig::getRef("FrameProcessor:Touch_Finder:minimum_blob_size",10);;
-	min_blob_size = guiMenu->GetValue("3-Min_blob_size");
+	min_blob_size = (int)guiMenu->GetValue("3-Min_blob_size");
 	cf_min_blob_size = min_blob_size;
 }
 
 IplImage* TouchFinder::Process(IplImage* main_image)
 {
+	to_be_removed.clear();
 	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
 	cvFindContours (main_processed_image, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
 	//polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,3,1);
@@ -80,14 +84,129 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 		{
 			if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0,3);
 			
+			cvMoments( c, blob_moments );
+			//temp_area = fabs(cvContourArea( c, CV_WHOLE_SEQ ));
+			//temp_x = (float)(blob_moments->m10 / blob_moments->m00);
+			//temp_y = (float)(blob_moments->m01 / blob_moments->m00);
+
+			temp_touch.Update(	(float)(blob_moments->m10 / blob_moments->m00), 
+								(float)(blob_moments->m01 / blob_moments->m00), 
+								(float)fabs(cvContourArea( c, CV_WHOLE_SEQ ))
+							 );
+			temp_minimum_distance = 99999999.0f;
+			candidate_id = 0;
+			for(Pointmap::iterator it = pointmap.begin(); it != pointmap.end(); it++)
+			{
+				if( it->second->CanUpdate(temp_touch,test_distance) )
+				{
+					if(test_distance < temp_minimum_distance)
+					{
+						temp_minimum_distance = test_distance;
+						candidate_id = it->first;
+					}
+				}
+			}
+
+			if(candidate_id == 0) //new touch
+			{
+				pointmap[Globals::ssidGenerator++] = new Touch(temp_touch);
+				candidate_id = Globals::ssidGenerator-1;
+			}
+			else //update touch
+			{
+				pointmap[candidate_id]->Update(temp_touch);
+			}
 		}
 	}
+
+	for(Pointmap::iterator it = pointmap.begin(); it != pointmap.end(); it++)
+	{
+		if (it->second->IsUpdated())
+		{
+			//tuio message
+			//(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
+			TuioServer::Instance().AddPointerMessage(it->first, 0, 0, it->second->x, it->second->y, it->second->area, 0);
+		}
+		else
+		{
+			//tuiomessage_remove
+			to_be_removed.push_back(it->first);
+		}
+
+		if(Globals::is_view_enabled)
+		{
+			sprintf_s(text,"%i",it->first); 
+			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->x, (int)it->second->y),FONT_HELP,0,255,0);
+		}
+	}
+
+	for(std::vector<unsigned int>::iterator it = to_be_removed.begin(); it != to_be_removed.end(); it++)
+	{
+		pointmap.erase(*it);
+	}
+
 	return main_processed_image;
 }
 
 AliveList TouchFinder::GetAlive()
 {
-	AliveList temp;
+	AliveList to_return;
+	if(IsEnabled())
+	{
+		for(Pointmap::iterator it = pointmap.begin(); it!= pointmap.end(); it++)
+		{
+			to_return.push_back(it->first);
+		}
+	}
+	return to_return;
+}
 
-	return temp;
+/********************************
+* TOUCH METHODS
+*********************************/
+
+#define DISTANCE_OFFSET 30
+#define AREA_OFFSET 1000
+
+Touch::Touch():x(0),y(0),is_updated(false),area(0)
+{}
+
+Touch::Touch(const Touch &copy):x(copy.x),y(copy.y),is_updated(true),area(copy.area)
+{}
+
+void Touch::Update(float x, float y, float area)
+{
+	this->x = x;
+	this->y = y;
+	this->area = area;
+	is_updated = true;
+}
+
+bool Touch::CanUpdate( const Touch &tch, float & minimum_distance)
+{
+	if ( fabs((float)(tch.area-area)) <= AREA_OFFSET )
+	{
+		float tmp = fabs(nsqdist(tch.x,tch.y,x,y));
+		if(tmp <= DISTANCE_OFFSET && tmp < minimum_distance)
+		{
+			minimum_distance = tmp;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Touch::IsUpdated()
+{
+	if(is_updated)
+	{
+		is_updated = false;
+		return true;
+	}
+	return false;
+}
+
+void Touch::Update(const Touch &copy)
+{
+	this->Update(copy.x,copy.y,copy.area);
 }

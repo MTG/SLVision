@@ -59,6 +59,7 @@ public:
 	*************************/
 	static CvMat *Globals::intrinsic;
 	static CvMat *Globals::distortion;
+	static unsigned int ssidGenerator;
 
 	//static void SetView(int view);
 	//static void SwitchScreen();
