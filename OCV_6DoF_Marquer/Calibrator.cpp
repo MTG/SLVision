@@ -150,6 +150,12 @@ void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
 		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
 		cvLine(t, cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
+		
+		//show options:
+		cvRectangle(t, cvPoint(10,5), cvPoint(5+600,25), CV_RGB(100,150,100), CV_FILLED);
+		cvRectangle(t, cvPoint(10,25), cvPoint(5+200,45), CV_RGB(100,150,100), CV_FILLED);
+		Globals::Font::Write(t," 'g' chessboard calibration; 'z' reset z max and min; 'c' to exit calibration",cvPoint(10,20),FONT_HELP,0,0,0);
+		Globals::Font::Write(t," 'r' reset;",cvPoint(10,40),FONT_HELP,0,0,0);
 		cvShowImage("Undistort", t);
 	}
 }
@@ -165,6 +171,9 @@ void Calibrator::ProcessKey(char key)
 	{
 	case KEY_CALIBRATION_GRID:
 		StartChessBoardFinder();
+		break;
+	case KEY_RESET_Z:
+		Globals::ResetZValues();
 		break;
 	case KEY_RESET:
 		Globals::LoadDefaultDistortionMatrix();

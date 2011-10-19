@@ -27,46 +27,31 @@
 #define KEY_RESET					'r'
 #define KEY_ENABLE_BGS				'b'
 #define KEY_DISABLE_BGS				'B'
+#define KEY_RESET_Z					'z'
 
 #define MARKER_SIZE (54) //marker size in mm
 
 class Globals
 {
+protected:
+	static float			z_min, z_max;
 public:
 	/************************
 	* Screen Globals
 	*************************/
 	static IplImage*		screen;				//image to show on the screen
-//	static IplImage*		captured_image;		//camera captured image
-//	static IplImage*		thresholded_image_marker;		//camera captured image
-//	static IplImage*		fiducial_image_marker;		//camera captured image
-//	static CvCapture*		cv_camera_capture;	//camera stream capture
-//	static IplImage*		main_image;			//main image
 	static bool				is_view_enabled;	//flag window image enabled or disabled
-
-//	static int				&screen_to_show; //0 normal, 1 threshold, 2 none
-
 	static int				width;
 	static int				height;
 	static char				dim[100];
-	/************************
-	*Tuio Globals
-	*************************/
-//	static char*			address;
-//	static int				port;
-	/************************
-	*Globals::distortion Globals
-	*************************/
-	static CvMat *Globals::intrinsic;
-	static CvMat *Globals::distortion;
-
-	static unsigned int ssidGenerator;
-
-	//static void SetView(int view);
-	//static void SwitchScreen();
+	static CvMat*			intrinsic;
+	static CvMat*			distortion;
+	static unsigned int		ssidGenerator;
 
 	static void LoadDefaultDistortionMatrix();
-
+	static void UpdateZValues(float z);
+	static float GetZValue(float z);
+	static void ResetZValues();
 
 	class Font
 	{

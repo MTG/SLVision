@@ -192,6 +192,7 @@ int main(int argc, char* argv[])
 				break;
 			case KEY_CALIBRATION_GRID:
 			case KEY_RESET:
+			case KEY_RESET_Z:
 				if(claibrateMode) calibrator->ProcessKey(presskey);
 				break;
 			case KEY_ENABLE_BGS:

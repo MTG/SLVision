@@ -22,6 +22,9 @@ CvMat*			Globals::distortion					= NULL;
 
 unsigned int	Globals::ssidGenerator				= 1;
 
+float			Globals::z_min						= -1.0f;
+float			Globals::z_max						= -1.0f;
+
 void Globals::LoadDefaultDistortionMatrix()
 {
 	if(intrinsic != NULL)
@@ -47,9 +50,33 @@ void Globals::LoadDefaultDistortionMatrix()
 	cvSave(M_PATH_DISTORTION,distortion);
 }
 
+void Globals::UpdateZValues(float z)
+{
+	if(z_min == -1 || z_max == -1)
+	{
+		z_min = z;
+		z_max = z;
+	}
+	if(z_min > z) z_min = z;
+	if(z_max < z) z_max = z;
+	//guardar al xml
+}
+
+float Globals::GetZValue(float z)
+{
+	UpdateZValues(z);
+	if( z_max == z_min ) return 1.0f;
+	return (z-z_min) / (z_max-z_min);
+}
+
+void Globals::ResetZValues()
+{
+	z_min = -1;
+	z_max = -1;
+}
+
 void Globals::Font::InitFont()
 {
-
 	cvInitFont (&font_info, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
 	cvInitFont (&font_axis, CV_FONT_HERSHEY_SIMPLEX , axis_hscale, axis_vscale, italicscale, thickness, CV_AA);
 }

@@ -334,7 +334,17 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	{
 		if(it->second->IsUpdated())
 		{
-			TuioServer::Instance().Add3DObjectMessage(it->first,0,it->second->GetFiducialID(),it->second->xpos,it->second->ypos,it->second->zpos,it->second->yaw,it->second->pitch,it->second->roll);
+			TuioServer::Instance().Add3DObjectMessage(
+				it->first,
+				0,
+				it->second->GetFiducialID(),
+				it->second->xpos,
+				it->second->ypos,
+				Globals::GetZValue(it->second->zpos),
+				it->second->yaw,
+				it->second->pitch,
+				it->second->roll
+				);
 		}
 		else
 		{
