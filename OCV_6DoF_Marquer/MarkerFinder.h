@@ -17,24 +17,24 @@ class MarkerFinder :
 	IplImage*		main_processed_contour;
 	CvMemStorage*	main_storage;
 	CvMemStorage*	main_storage_poligon;
-	CvMoments*  blob_moments;
+	CvMoments*		blob_moments;
 
-	CvSeq *firstcontour;
-	CvSeq *polycontour;
+	CvSeq*			firstcontour;
+	CvSeq*			polycontour;
 	//
 	FiducialFinder* fiducial_finder;
 
 	//unsigned int ssidGenerator;
-	FiducialMap fiducial_map;
+	FiducialMap		fiducial_map;
 	
-	unsigned int tmp_ssid;
-	bool to_process;
-	float minimum_distance;
+	unsigned int	tmp_ssid;
+	bool			to_process;
+	float			minimum_distance;
 	std::vector<unsigned int> to_remove;
-	Fiducial temporal;
+	Fiducial		temporal;
 
 	//
-	CvMat *map_matrix;
+	CvMat*			map_matrix;
 	CvPoint2D32f src_pnt[4], dst_pnt[4], tmp_pnt[4];
 
 	int i, j, k;

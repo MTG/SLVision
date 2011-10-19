@@ -88,7 +88,7 @@ void MarkerFinder::InitGeometry()
 	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
 	Globals::distortion = (CvMat*)cvLoad(M_PATH_DISTORTION);
 	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
-
+	
 	rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);

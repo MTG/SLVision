@@ -28,7 +28,7 @@
 #define KEY_ENABLE_BGS				'b'
 #define KEY_DISABLE_BGS				'B'
 
-#define MARKER_SIZE (90) //marker size in mm
+#define MARKER_SIZE (54) //marker size in mm
 
 class Globals
 {
@@ -59,6 +59,7 @@ public:
 	*************************/
 	static CvMat *Globals::intrinsic;
 	static CvMat *Globals::distortion;
+
 	static unsigned int ssidGenerator;
 
 	//static void SetView(int view);

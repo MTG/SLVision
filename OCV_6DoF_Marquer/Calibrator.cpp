@@ -75,7 +75,7 @@ void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 				}
 				CV_MAT_ELEM(*point_counts, int,successes,0) = board_total;    
 				successes++;
-				//printf("\r%d successful Snapshots out of %d collected.",successes,n_boards);
+				printf("\r%d successful Snapshots out of %d collected.",successes,N_BOARDS);
 			}
 
 			if (successes >= N_BOARDS)
