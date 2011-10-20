@@ -30,6 +30,8 @@ public:
 	void RegisterProcessor(FrameProcessor * processor);
 	void StartBundle();
 	void Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, float x, float y, float z, float yaw, float pitch, float roll);
+	void Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, float x, float y, float z, float yaw, float pitch, float roll,
+		float r11, float r12, float r13, float r21, float r22, float r23, float r31, float r32, float r33);
 	void AddPointerMessage(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press);
 	void SendBundle();
 	void SendEmptyBundle();

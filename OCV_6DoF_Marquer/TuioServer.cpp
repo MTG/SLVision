@@ -85,6 +85,15 @@ void TuioServer::Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned
 	messages++;
 }
 
+void TuioServer::Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, float x, float y, float z, float yaw, float pitch, float roll,
+		float r11, float r12, float r13, float r21, float r22, float r23, float r31, float r32, float r33)
+{
+	if(!bundle_started)StartBundle();
+		(*packet_stream) << osc::BeginMessage( "/tuio2/t3d" ) << (int)sid << (int)uid << (int)fid << x << y << z << yaw << pitch << roll <<
+			r11 << r12 << r13 << r21 << r22 << r23 << r31 << r32 << r33 << osc::EndMessage;
+	messages++;
+}
+
 void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
 {
 	if(!bundle_started)StartBundle();

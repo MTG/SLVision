@@ -286,12 +286,43 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					CV_MAT_ELEM( *rotation, float, 0, 0) = -rotation->data.fl[0];
 					CV_MAT_ELEM( *rotation, float, 0, 1) = -rotation->data.fl[1];
 					cvRodrigues2(rotation,rotationMatrix);
+
+					/*std::cout << "M:" << std::endl;
+					std::cout 
+						<< " " << rotationMatrix->data.fl[0] 
+						<< "\t" << rotationMatrix->data.fl[1] 
+						<< "\t" << rotationMatrix->data.fl[2] 
+					<< std::endl;
+
+					std::cout 
+						<< " " << rotationMatrix->data.fl[3] 
+						<< "\t" << rotationMatrix->data.fl[4] 
+						<< "\t" << rotationMatrix->data.fl[5] 
+					<< std::endl;
+
+					std::cout 
+						<< " " << rotationMatrix->data.fl[6] 
+						<< "\t" << rotationMatrix->data.fl[7] 
+						<< "\t" << rotationMatrix->data.fl[8] 
+					<< std::endl;
+					*/
+
 					fiducial_map[tmp_ssid]->yaw = atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]); //atan2([1,0], [0,0])
 					fiducial_map[tmp_ssid]->pitch = atan2(-rotationMatrix->data.fl[6],sqrt( rotationMatrix->data.fl[7]*rotationMatrix->data.fl[7] + rotationMatrix->data.fl[8]*rotationMatrix->data.fl[8])); //atan2([2,0], sqrt([2,1]'2 + [2,2]'2))
 					fiducial_map[tmp_ssid]->roll = atan2(rotationMatrix->data.fl[7],rotationMatrix->data.fl[8]); //atan2([2,1], [2,2])
 					fiducial_map[tmp_ssid]->xpos = ((translation->data.fl[0] + Globals::width )/ 2)/Globals::width;
 					fiducial_map[tmp_ssid]->ypos = ((translation->data.fl[1] + Globals::height )/ 2)/Globals::height;
 					fiducial_map[tmp_ssid]->zpos = translation->data.fl[2];
+
+					fiducial_map[tmp_ssid]->r11 = rotationMatrix->data.fl[0];
+					fiducial_map[tmp_ssid]->r12 = rotationMatrix->data.fl[1];
+					fiducial_map[tmp_ssid]->r13 = rotationMatrix->data.fl[2];
+					fiducial_map[tmp_ssid]->r21 = rotationMatrix->data.fl[3];
+					fiducial_map[tmp_ssid]->r22 = rotationMatrix->data.fl[4];
+					fiducial_map[tmp_ssid]->r23 = rotationMatrix->data.fl[5];
+					fiducial_map[tmp_ssid]->r31 = rotationMatrix->data.fl[6];
+					fiducial_map[tmp_ssid]->r32 = rotationMatrix->data.fl[7];
+					fiducial_map[tmp_ssid]->r33 = rotationMatrix->data.fl[8];
 					
 					//std::cout << 
 					//	"yaw: " << fiducial_map[tmp_ssid]->yaw << std::endl<<
@@ -334,6 +365,8 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	{
 		if(it->second->IsUpdated())
 		{
+
+			//send tuio message!!!!
 			TuioServer::Instance().Add3DObjectMessage(
 				it->first,
 				0,
@@ -343,7 +376,16 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 				Globals::GetZValue(it->second->zpos),
 				it->second->yaw,
 				it->second->pitch,
-				it->second->roll
+				it->second->roll,
+				it->second->r11,
+				it->second->r12,
+				it->second->r13,
+				it->second->r21,
+				it->second->r22,
+				it->second->r23,
+				it->second->r31,
+				it->second->r32,
+				it->second->r33
 				);
 		}
 		else
