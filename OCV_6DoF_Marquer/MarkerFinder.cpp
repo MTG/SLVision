@@ -24,18 +24,24 @@ MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 	adaptive_block_size = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:block_size",55);
 	
 	threshold_value = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
-
+	
+	if((int)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1))
+		invert_rotation_matrix = true;
+	else
+		invert_rotation_matrix = false;
 	//populate gui
 	
 	guiMenu->AddBar("0-Enable",0,1,1);
 	guiMenu->AddBar("1-Threshold",0,255,1);
 	guiMenu->AddBar("2-Enable_adaptive_threshold",0,1,1);
 	guiMenu->AddBar("3-Adaptive_threshold_block_size",3,101,4);
+	guiMenu->AddBar("4-Invert_rotation_matrix",0,1,1);
 
 	guiMenu->SetValue("0-Enable",(float)cf_enabled);
 	guiMenu->SetValue("1-Threshold",(float)threshold_value);
 	guiMenu->SetValue("2-Enable_adaptive_threshold",(float)use_adaptive_threshold);
 	guiMenu->SetValue("3-Adaptive_threshold_block_size",(float)adaptive_block_size);
+	guiMenu->SetValue("4-Invert_rotation_matrix",(float)(int)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1));
 
 }
 
@@ -45,6 +51,7 @@ void MarkerFinder::UpdatedValuesFromGui()
 	int &cf_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
 	int &cf_adaptive_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1);
 	int &cf_adaptive_block_size = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:block_size",55);
+	int &cf_invert_rotation_matrix = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1);
 
 	if(guiMenu->GetValue("0-Enable") == 0)
 	{
@@ -69,7 +76,16 @@ void MarkerFinder::UpdatedValuesFromGui()
 	adaptive_block_size =  (int)ceil(guiMenu->GetValue("3-Adaptive_threshold_block_size"));
 	cf_adaptive_block_size = adaptive_block_size;
 
-	std::cout << adaptive_block_size << std::endl;
+	if(guiMenu->GetValue("4-Invert_rotation_matrix") == 1)
+	{
+		cf_invert_rotation_matrix = 1;
+		invert_rotation_matrix = true;
+	}
+	else
+	{
+		cf_invert_rotation_matrix = 0;
+		invert_rotation_matrix = false;
+	}
 }
 
 MarkerFinder::~MarkerFinder(void)
@@ -96,20 +112,20 @@ void MarkerFinder::InitGeometry()
 	srcPoints3D = cvCreateMat (4, 1, CV_32FC3);
 	dstPoints2D = cvCreateMat (4, 1, CV_32FC3);
 
-	baseMarkerPoints[0].x =(float) 0 * MARKER_SIZE;
-	baseMarkerPoints[0].y =(float) 0 * MARKER_SIZE;
+	baseMarkerPoints[0].x =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
+	baseMarkerPoints[0].y =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
 	baseMarkerPoints[0].z = 0.0;
 		
-	baseMarkerPoints[1].x =(float) 0 * MARKER_SIZE;
-	baseMarkerPoints[1].y =(float) 1 * MARKER_SIZE;
+	baseMarkerPoints[1].x =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
+	baseMarkerPoints[1].y =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
 	baseMarkerPoints[1].z = 0.0;
 
-	baseMarkerPoints[2].x =(float) 1 * MARKER_SIZE;
-	baseMarkerPoints[2].y =(float) 1 * MARKER_SIZE;
+	baseMarkerPoints[2].x =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
+	baseMarkerPoints[2].y =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
 	baseMarkerPoints[2].z = 0.0;
  
-	baseMarkerPoints[3].x =(float) 1 * MARKER_SIZE;
-	baseMarkerPoints[3].y =(float) 0 * MARKER_SIZE;
+	baseMarkerPoints[3].x =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
+	baseMarkerPoints[3].y =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
 	baseMarkerPoints[3].z = 0.0;
 
 	for ( i=0;i<4;i++)
@@ -120,17 +136,17 @@ void MarkerFinder::InitGeometry()
 				    srcPoints3D->data.fl[1]     =0;
 					srcPoints3D->data.fl[2]     =0;
 					break;
-			case 1:	srcPoints3D->data.fl[0+i*3] =(float)MARKER_SIZE;
+			case 1:	srcPoints3D->data.fl[0+i*3] =(float)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
 					srcPoints3D->data.fl[1+i*3] =0;
 					srcPoints3D->data.fl[2+i*3] =0;
 					break;
 			case 2:	srcPoints3D->data.fl[0+i*3] =0;
-					srcPoints3D->data.fl[1+i*3] =(float)MARKER_SIZE;
+					srcPoints3D->data.fl[1+i*3] =(float)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
 					srcPoints3D->data.fl[2+i*3] =0;
 					break;
 			case 3:	srcPoints3D->data.fl[0+i*3] =0;
 					srcPoints3D->data.fl[1+i*3] =0;
-					srcPoints3D->data.fl[2+i*3] =-(float)MARKER_SIZE;;
+					srcPoints3D->data.fl[2+i*3] =-(float)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);;
 					break;
 		
 		}
@@ -306,6 +322,12 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						<< "\t" << rotationMatrix->data.fl[8] 
 					<< std::endl;
 					*/
+
+					if(invert_rotation_matrix)
+					{
+						//invert the rotation matrix (not for AR)
+						cvInvert(rotationMatrix, rotationMatrix);
+					}
 
 					fiducial_map[tmp_ssid]->yaw = atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]); //atan2([1,0], [0,0])
 					fiducial_map[tmp_ssid]->pitch = atan2(-rotationMatrix->data.fl[6],sqrt( rotationMatrix->data.fl[7]*rotationMatrix->data.fl[7] + rotationMatrix->data.fl[8]*rotationMatrix->data.fl[8])); //atan2([2,0], sqrt([2,1]'2 + [2,2]'2))

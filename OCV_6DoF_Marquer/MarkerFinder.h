@@ -54,6 +54,7 @@ class MarkerFinder :
 	int threshold_value;
 	bool use_adaptive_threshold;
 	int adaptive_block_size;
+	bool invert_rotation_matrix;
 
 public:
 	MarkerFinder(void);

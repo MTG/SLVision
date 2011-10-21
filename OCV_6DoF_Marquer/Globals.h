@@ -29,7 +29,7 @@
 #define KEY_DISABLE_BGS				'B'
 #define KEY_RESET_Z					'z'
 
-#define MARKER_SIZE (54) //marker size in mm
+//#define MARKER_SIZE (54) //marker size in mm
 
 class Globals
 {
