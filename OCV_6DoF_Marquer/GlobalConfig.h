@@ -10,7 +10,7 @@ namespace datasaver
 		template<typename T>
 		static T & getRef(const std::string& k, const T & defaultvalue = T())
 		{
-			return GlobalConfigDetail::getRef<T>(k,defaultvalue);
+			return GlobalConfigDetail::getRef<T>("SLVision:"+k,defaultvalue);
 		}
 	};
 }

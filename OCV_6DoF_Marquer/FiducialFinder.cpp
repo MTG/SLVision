@@ -1,7 +1,9 @@
 ////#include "StdAfx.h"
 #include "FiducialFinder.h"
 #include "Globals.h"
+#include "GlobalConfig.h"
 #include <iostream>
+#include <sstream>
 
 FiducialFinder::FiducialFinder(int _fiducial_window_size)
 {
@@ -133,7 +135,7 @@ unsigned int FiducialFinder::BinaryListToInt(const intList &data)
 	return candidate;
 }
 
-unsigned int FiducialFinder::StringBinaryListToInt(char* data)
+unsigned int FiducialFinder::StringBinaryListToInt(const char* data)
 {
 	intList list;
 	int i = 0;
@@ -168,35 +170,63 @@ int FiducialFinder::GetId(unsigned int candidate)
 
 void FiducialFinder::InitFID()
 {
-	idmap.clear();
-	char* id[] = { 
-		"10011\0",
-		"100000011111\0", 
-		"100000001111\0",
-		"100000101111\0",
-		"100010011111\0",
-		"100010101111\0",
-		"100001011111\0",
-		"100100101111\0",
-		"100100111111\0",
-		"100101011111\0",
-		"100001001111\0",
-		"101010101111\0",
-		"100010001111\0",
-		"o"
-	};
+	LoadFiducialList();
 
-	int i = 0;
-	while( id[i][0] != 'o' )
-	{
-		idmap[StringBinaryListToInt(id[i])] = i;
-		i++;
-	}
-
-	std::cout << "fiducial id transcoded" << std::endl;
+	std::cout << "Fiducial id transcoded:" << std::endl;
 	for ( IDMap::iterator it = idmap.begin(); it != idmap.end();it++)
 	{
 		std::cout << it->first << "   " << it->second << std::endl;
 	}
 	
+}
+
+void FiducialFinder::LoadFiducialList ()
+{
+	idmap.clear();
+	
+	//<z_fiducialsID>
+	//		<count> n <count/>
+	//		<fid0> ... <fid0/>
+	//		<fidn> ... <fidn/>
+	//<z_fiducialsID>
+
+	int &num_fiducials = datasaver::GlobalConfig::getRef("Z_fiducialsID:count",0);
+	if(num_fiducials == 0)
+	{
+		char* id[] = { 
+					"10011\0",
+					"100000011111\0", 
+					"100000001111\0",
+					"100000101111\0",
+					"100010011111\0",
+					"100010101111\0",
+					"100001011111\0",
+					"100100101111\0",
+					"100100111111\0",
+					"100101011111\0",
+					"100001001111\0",
+					"101010101111\0",
+					"100010001111\0",
+					"o"};
+		int i = 0;
+		while( id[i][0] != 'o' )
+		{
+			idmap[StringBinaryListToInt(id[i])] = i;
+			std::stringstream s;
+			s << "Z_fiducialsID:fid_" << i;
+			std::string temporal = datasaver::GlobalConfig::getRef<std::string>(s.str().c_str(),std::string(id[i]));
+			i++;
+		}
+		num_fiducials = i;
+	}
+	else
+	{
+		for (int i = 0; i < num_fiducials; i++)
+		{
+			std::stringstream s;
+			s << "Z_fiducialsID:fid_" << i;
+			std::string temporal = datasaver::GlobalConfig::getRef<std::string>(s.str().c_str(),"0\0");
+			idmap[StringBinaryListToInt(temporal.c_str())] = i;
+		}
+	}
 }

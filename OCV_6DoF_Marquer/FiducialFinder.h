@@ -34,8 +34,9 @@ public:
 	int DecodeFiducial(IplImage* src, Fiducial & candidate);
 protected:
 	unsigned int BinaryListToInt(const intList &data);
-	unsigned int StringBinaryListToInt(char* data);
+	unsigned int StringBinaryListToInt(const char* data);
 	float GetMinDistToFiducialAxis(int &axis, float x, float y);
 	int GetId(unsigned int candidate);
 	void InitFID();
+	void LoadFiducialList ();
 };
