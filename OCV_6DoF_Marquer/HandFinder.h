@@ -10,6 +10,7 @@ class HandFinder :
 	CvMoments*		blob_moments;
 	CvSeq*			firstcontour;
 	CvSeq*			polycontour;
+	CvPoint			hand_centroid;
 
 	int				threshold_value;
 public:

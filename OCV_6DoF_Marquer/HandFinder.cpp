@@ -74,7 +74,20 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 	if(firstcontour != NULL)
 	{
 		polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,100,1);
-		std::cout << "oo" << std::endl;
+		for(CvSeq* c=polycontour;c!=NULL;c=c->h_next)
+		{
+			//if((cvContourPerimeter(c)<2000)&&(cvContourPerimeter(c)>60))
+			{
+				if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0,3);
+				CvSeq* hull;
+				hull = cvConvexHull2(c, 0, CV_CLOCKWISE, 0 );
+				cvMoments( c, blob_moments );
+				hand_centroid.x = (blob_moments->m10 / blob_moments->m00);
+				hand_centroid.y = (blob_moments->m01 / blob_moments->m00);
+
+				if(Globals::is_view_enabled)cvDrawContours(Globals::screen,hull,CV_RGB(0,255,0),CV_RGB(200,255,255),0,3);
+			}
+		}
 	}
 
 	return main_processed_image;

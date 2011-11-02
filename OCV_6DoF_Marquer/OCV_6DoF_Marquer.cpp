@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 			}
 			if(bg_substraction && bgs_image != NULL)
 			{
-				cvAbsDiff(gray_image,bgs_image,gray_image);
+				cvAbsDiff(bgs_image,gray_image,gray_image);
 			}
 
 			cvSmooth(gray_image,gray_image,CV_GAUSSIAN,3);
@@ -178,9 +178,9 @@ int main(int argc, char* argv[])
 			
 			if(screen_to_show == VIEW_THRESHOLD)
 			{
-				cvShowImage(SIX_DOF_THRESHOLD,six_dof_output);
-				cvShowImage(TOUCH_THRESHOLD,touch_finder_output);
-				cvShowImage(HAND_THRESHOLD,hand_finder_output);
+				if(markerfinder->IsEnabled()) cvShowImage(SIX_DOF_THRESHOLD,six_dof_output);
+				if(touchfinder->IsEnabled()) cvShowImage(TOUCH_THRESHOLD,touch_finder_output);
+				if(handfinder->IsEnabled()) cvShowImage(HAND_THRESHOLD,hand_finder_output);
 			}
 		}
 
@@ -297,10 +297,10 @@ void SetView(int view)
 			cvDestroyWindow(SIX_DOF_THRESHOLD);
 			cvDestroyWindow(MAIN_TITTLE);
 			//frame processors windows
+			if(markerfinder->IsEnabled()) cvNamedWindow (SIX_DOF_THRESHOLD, CV_WINDOW_AUTOSIZE);
+			if(touchfinder->IsEnabled()) cvNamedWindow (TOUCH_THRESHOLD, CV_WINDOW_AUTOSIZE);
+			if(handfinder->IsEnabled()) cvNamedWindow (HAND_THRESHOLD, CV_WINDOW_AUTOSIZE);
 			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
-			cvNamedWindow (SIX_DOF_THRESHOLD, CV_WINDOW_AUTOSIZE);
-			cvNamedWindow (TOUCH_THRESHOLD, CV_WINDOW_AUTOSIZE);
-			cvNamedWindow (HAND_THRESHOLD, CV_WINDOW_AUTOSIZE);
 		}
 	}
 	glob_view = screen_to_show;
