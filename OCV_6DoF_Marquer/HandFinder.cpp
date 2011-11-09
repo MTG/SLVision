@@ -1,8 +1,6 @@
 #include "HandFinder.h"
 #include "GlobalConfig.h"
 
-#define MIN_HAND_SIZE 20
-#define MAX_HAND_SIZE 500
 #define MINIMUM_CENTROID_DISTANCE 80
 
 HandFinder::HandFinder(void):FrameProcessor("HandFinder")
@@ -22,17 +20,26 @@ HandFinder::HandFinder(void):FrameProcessor("HandFinder")
 
 	threshold_value = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:threshold_value",100);
 
+	max_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:max_hand_area",800);
+	min_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:min_hand_area",200);
+
 	guiMenu->AddBar("0-Enable",0,1,1);
 	guiMenu->AddBar("1-Threshold",0,255,1);
+	guiMenu->AddBar("2-Min_Area",400,5000,10);
+	guiMenu->AddBar("3-Max_Area",500,50000,10);
 
 	guiMenu->SetValue("0-Enable",(float)cf_enabled);
 	guiMenu->SetValue("1-Threshold",(float)threshold_value);
+	guiMenu->SetValue("2-Min_Area",(float)min_area);
+	guiMenu->SetValue("3-Max_Area",(float)max_area);
 }
 
 void HandFinder::UpdatedValuesFromGui()
 {
 	int &cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:enable",1);
 	int &cf_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:threshold_value",100);
+	int &cf_min_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:min_hand_area",200);
+	int &cf_max_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:max_hand_area",800);
 
 	if(guiMenu->GetValue("0-Enable") == 0)
 	{
@@ -47,6 +54,11 @@ void HandFinder::UpdatedValuesFromGui()
 
 	threshold_value = (int)ceil(guiMenu->GetValue("1-Threshold"));
 	cf_threshold = threshold_value;
+
+	min_area = (int)guiMenu->GetValue("2-Min_Area");
+	max_area = (int)guiMenu->GetValue("2-Max_Area");
+	cf_min_area = min_area;
+	cf_max_area = max_area;
 }
 
 HandFinder::~HandFinder(void)
@@ -77,16 +89,19 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 	if(firstcontour != NULL)
 	{
 		polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,4,1);
-		for(CvSeq* c=firstcontour;c!=NULL;c=c->h_next)
+
+		for(CvSeq* c=polycontour;c!=NULL;c=c->h_next)
 		{
 			area = 0;
 			length = 0;
 			area = (float)fabs ( cvContourArea(c,CV_WHOLE_SEQ));
-			if(area >  MIN_HAND_SIZE && area < MAX_HAND_SIZE)
+			std::cout << area << std::endl;
+			
+			//if(area >  min_area && area < max_area)
 			//if((cvContourPerimeter(c)<2000)&&(cvContourPerimeter(c)>60))
 			{
 				//std::cout << area << std::endl;
-				if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0,3);
+				//if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0,3);
 				CvSeq* hull;
 				hull = cvConvexHull2(c, 0, CV_CLOCKWISE, 0 );
 				cvMoments( c, blob_moments );
@@ -96,9 +111,6 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 				//cont'e hulls
 				//int hullcount = hull->total;
 				//std::cout << hullcount << std::endl;
-				
-
-
 
 				
 				//Get target hand

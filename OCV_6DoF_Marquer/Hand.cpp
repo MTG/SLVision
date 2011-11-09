@@ -2,6 +2,7 @@
 #include "Globals.h"
 #define MIN_DIST_EDGES 10
 
+#define FINGER_THRESHOLD 20
 
 Hand::~Hand(void)
 {
@@ -286,7 +287,7 @@ bool Hand::FindHandFrom(int indexplus)
         centroid_hand.x += vertexs[indexplus].data.x;
         centroid_hand.y += vertexs[indexplus].data.y;
         k++;
-        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > 10) vertexs[indexplus].isFinger = true;
+        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD) vertexs[indexplus].isFinger = true;
         GetNextIndexVertex(indexplus);
         while(vertexs[indexplus].extreme == 0 )
         {
@@ -294,14 +295,14 @@ bool Hand::FindHandFrom(int indexplus)
             centroid_hand.x += vertexs[indexplus].data.x;
             centroid_hand.y += vertexs[indexplus].data.y;
             k++;
-            if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > 10) vertexs[indexplus].isFinger = true;
+            if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD) vertexs[indexplus].isFinger = true;
             GetNextIndexVertex(indexplus);
         }
         hand_vertexs.push_back(&vertexs[indexplus]);
         centroid_hand.x += vertexs[indexplus].data.x;
         centroid_hand.y += vertexs[indexplus].data.y;
         k++;
-        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > 10) vertexs[indexplus].isFinger = true;
+        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD) vertexs[indexplus].isFinger = true;
         centroid_hand.x /= k;
         centroid_hand.y /= k;
         return true;
@@ -351,8 +352,32 @@ void Hand::draw(float x, float y)
 					cvPoint( hand_vertexs[i]->data.x ,hand_vertexs[i]->data.y ),
 					CV_RGB(255,255,255));
 			}
+			if(hand_vertexs[i]->isValley)
+			{
+				cvCircle(Globals::screen,cvPoint(hand_vertexs[i]->data.x, hand_vertexs[i]->data.y),20,CV_RGB(0,0,255));
+				cvLine(Globals::screen,
+					cvPoint( centroid.x , centroid.y) ,
+					cvPoint( hand_vertexs[i]->data.x ,hand_vertexs[i]->data.y ),
+					CV_RGB(0,0,255));
+			}
 		}
-
+		for (int i = 0; i < (int)hull_vertexs.size(); i++)
+		{
+			if( i == 0)
+			{
+				cvLine(Globals::screen,
+					cvPoint( hull_vertexs[hull_vertexs.size()-1]->data.x ,hull_vertexs[hull_vertexs.size()-1]->data.y ) ,
+					cvPoint( hull_vertexs[i]->data.x ,hull_vertexs[i]->data.y ),
+					CV_RGB(255,0,0));
+			}
+			else
+			{
+				cvLine(Globals::screen,
+					cvPoint( hull_vertexs[i-1]->data.x ,hull_vertexs[i-1]->data.y ) ,
+					cvPoint( hull_vertexs[i]->data.x ,hull_vertexs[i]->data.y ),
+					CV_RGB(255,0,0));
+			}
+		}
 	}
     /*ofNoFill();
     ofBeginShape();

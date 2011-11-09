@@ -19,6 +19,8 @@ class HandFinder :
 	int				threshold_value;
 	float area;
 	float length;
+	int max_area;
+	int min_area;
 public:
 	HandFinder(void);
 	~HandFinder(void);
