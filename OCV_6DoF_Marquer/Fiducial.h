@@ -4,8 +4,9 @@
 #include <cxcore.h>
 
 float vect_point_dist(float ax, float ay, float bx, float by, float cx, float cy);
-float nsqdist(float x, float y, float a, float b);
-float nsqdist(int x, int y, int a, int b);
+float ivect_point_dist(int ax, int ay, int bx, int by, int cx, int cy);
+float fnsqdist(float x, float y, float a, float b);
+float insqdist(int x, int y, int a, int b);
 float nsqdist(const CvPoint &a, const CvPoint &b);
 double IsLeft(double ax, double ay, double bx, double by, float px, float py);
 

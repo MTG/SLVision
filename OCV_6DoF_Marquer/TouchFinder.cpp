@@ -186,7 +186,7 @@ bool Touch::CanUpdate( const Touch &tch, float & minimum_distance)
 {
 	if ( fabs((float)(tch.area-area)) <= AREA_OFFSET )
 	{
-		float tmp = fabs(nsqdist(tch.x,tch.y,x,y));
+		float tmp = fabs(fnsqdist(tch.x,tch.y,x,y));
 		if(tmp <= DISTANCE_OFFSET && tmp < minimum_distance)
 		{
 			minimum_distance = tmp;

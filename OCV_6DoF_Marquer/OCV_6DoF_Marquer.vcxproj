@@ -102,6 +102,7 @@
     <ClCompile Include="FrameProcessor.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="GuiMenu.cpp" />
+    <ClCompile Include="Hand.cpp" />
     <ClCompile Include="HandFinder.cpp" />
     <ClCompile Include="LogFile.cpp" />
     <ClCompile Include="MarkerFinder.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="GlobalConfigDetail.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="GuiMenu.h" />
+    <ClInclude Include="Hand.h" />
     <ClInclude Include="HandFinder.h" />
     <ClInclude Include="LogFile.h" />
     <ClInclude Include="MarkerFinder.h" />

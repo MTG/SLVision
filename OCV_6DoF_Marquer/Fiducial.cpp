@@ -94,7 +94,7 @@ bool Fiducial::CanUpdate(const Fiducial &f, float & minimum_distance)
 {
 	if ( fabs((float)(f.area-area)) <= AREA_OFFSET )
 	{
-		float tmp = fabs(nsqdist(f.x,f.y,x,y));
+		float tmp = fabs(fnsqdist(f.x,f.y,x,y));
 		if(tmp <= DISTANCE_OFFSET && tmp < minimum_distance)
 		{
 			minimum_distance = tmp;
@@ -167,17 +167,17 @@ unsigned int Fiducial::GetNewId()
 
 float nsqdist(const CvPoint &a, const CvPoint &b)
 {
-	return nsqdist(a.x,a.y,b.x,b.y);
+	return insqdist(a.x,a.y,b.x,b.y);
 }
 
-float nsqdist(float x, float y, float a, float b)
+float fnsqdist(float x, float y, float a, float b)
 {
 	float uu = (float)(a-x);
 	float vv = (float)(b-y);
 	return sqrt(uu*uu + vv*vv);
 }
 
-float nsqdist(int x, int y, int a, int b)
+float insqdist(int x, int y, int a, int b)
 {
 	float uu = (float)(a-x);
 	float vv = (float)(b-y);
@@ -191,6 +191,15 @@ float vect_point_dist(float ax, float ay, float bx, float by, float cx, float cy
 	float aby = by-ay;
 	float acx = cx-ax;
 	float acy = cy-ay;
+	return ( ( abx*acy - aby*acx) / sqrt(abx*abx +aby*aby));
+}
+
+float ivect_point_dist(int ax, int ay, int bx, int by, int cx, int cy)
+{
+	float abx = (float)(bx-ax);
+	float aby = (float)(by-ay);
+	float acx = (float)(cx-ax);
+	float acy = (float)(cy-ay);
 	return ( ( abx*acy - aby*acx) / sqrt(abx*abx +aby*aby));
 }
 

@@ -1,5 +1,8 @@
 #pragma once
 #include "frameprocessor.h"
+#include "Hand.h"
+#include <map>
+
 class HandFinder :
 	public FrameProcessor
 {
@@ -11,8 +14,11 @@ class HandFinder :
 	CvSeq*			firstcontour;
 	CvSeq*			polycontour;
 	CvPoint			hand_centroid;
+	std::map<unsigned long, Hand> hands;
 
 	int				threshold_value;
+	float area;
+	float length;
 public:
 	HandFinder(void);
 	~HandFinder(void);
