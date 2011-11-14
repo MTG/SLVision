@@ -16,6 +16,8 @@ Hand::Hand()
     length = 0.0f;
     first_update = true;
     edge = -1;
+	is_open = false;
+	confirmed_hand = false;
 }
 
 Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
@@ -26,6 +28,7 @@ Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
     centroid    = _centroid;
     first_update = true;
     edge = -1;
+	confirmed_hand = false;
 }
 
 float Hand::Distance(const CvPoint & _centroid)
@@ -117,6 +120,7 @@ void Hand::AddVertexConvex(int x, int y)
         }
     }
     hull_vertexs.push_back(V);
+	
 }
 
 Hand::Vertex* Hand::GetNearest(int x, int y)
@@ -281,13 +285,18 @@ bool Hand::FindHandFrom(int indexplus)
     centroid_hand.x = 0;
     centroid_hand.y = 0;
     int k = 0;
+	int finger_number=0;
     if(vertexs[indexplus].extreme != 0 && indexplus > 0 && indexplus < (int)vertexs.size())
     {
         hand_vertexs.push_back(&vertexs[indexplus]);
         centroid_hand.x += vertexs[indexplus].data.x;
         centroid_hand.y += vertexs[indexplus].data.y;
         k++;
-        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD) vertexs[indexplus].isFinger = true;
+        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD)
+		{
+			vertexs[indexplus].isFinger = true;
+			finger_number ++;
+		}
         GetNextIndexVertex(indexplus);
         while(vertexs[indexplus].extreme == 0 )
         {
@@ -295,18 +304,34 @@ bool Hand::FindHandFrom(int indexplus)
             centroid_hand.x += vertexs[indexplus].data.x;
             centroid_hand.y += vertexs[indexplus].data.y;
             k++;
-            if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD) vertexs[indexplus].isFinger = true;
+            if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD)
+			{
+				vertexs[indexplus].isFinger = true;
+				finger_number ++;
+			}
             GetNextIndexVertex(indexplus);
         }
         hand_vertexs.push_back(&vertexs[indexplus]);
         centroid_hand.x += vertexs[indexplus].data.x;
         centroid_hand.y += vertexs[indexplus].data.y;
         k++;
-        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD) vertexs[indexplus].isFinger = true;
+        if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD)
+		{
+			vertexs[indexplus].isFinger = true;
+			finger_number ++;
+		}
         centroid_hand.x /= k;
         centroid_hand.y /= k;
+		if(finger_number == 5)
+		{
+			is_open = true;
+			confirmed_hand = true;
+		}
+		else 
+			is_open = false;
         return true;
     }
+	is_open = false;
     return false;
 }
 
@@ -378,52 +403,16 @@ void Hand::draw(float x, float y)
 					CV_RGB(255,0,0));
 			}
 		}
+
+		if(is_open)
+		cvCircle(Globals::screen,cvPoint(centroid.x, centroid.y),20,CV_RGB(0,255,0),4);
+		else
+			cvCircle(Globals::screen,cvPoint(centroid.x, centroid.y),20,CV_RGB(0,255,0),1);
+
+		//sessionID
+		char buffer[100];
+		sprintf(buffer,"ID: %d",sessionID);
+		if(!confirmed_hand) Globals::Font::Write(Globals::screen,buffer,centroid,FONT_AXIS,255,0,0);
+		else Globals::Font::Write(Globals::screen,buffer,centroid,FONT_AXIS,0,255,0);
 	}
-    /*ofNoFill();
-    ofBeginShape();
-    for (int i = 0; i < (int)hand_vertexs.size(); i++)
-    {
-        ofVertex(x + hand_vertexs[i]->data.x, y + hand_vertexs[i]->data.y);
-        ofFill();
-        if(hand_vertexs[i]->isFinger)
-        {
-            ofSetColor(0xffffff);
-            ofCircle(x + hand_vertexs[i]->data.x, y + hand_vertexs[i]->data.y, 2);
-            ofLine(x + centroid.x, y + centroid.y,x + hand_vertexs[i]->data.x, y + hand_vertexs[i]->data.y );
-        }
-    }
-    ofSetColor(0xffff00);
-    ofNoFill();
-    ofEndShape(true);
-
-    ofSetColor(0xff0000);
-    ofNoFill();
-    ofBeginShape();
-    for (unsigned int i = 0; i < hull_vertexs.size(); i++)
-    {
-        ofVertex(x + hull_vertexs[i]->data.x, y + hull_vertexs[i]->data.y);
-    }
-    ofEndShape(true);
-
-    ofFill();
-    ofSetColor(0xff0000);
-    ofCircle(x + centroid_hand.x, y + centroid_hand.y, 5);
-
-    ofFill();
-    ofSetColor(0x00ff00);
-    ofCircle(x + from.x, y + from.y, 5);
-
-    ofFill();
-    ofSetColor(0x00ff00);
-    ofCircle(x + to.x, y + to.y, 5);
-
-    ofLine(x + from.x, y + from.y,x + centroid.x, y + centroid.y);
-
-    ofSetColor(0xff00ff);
-    ofCircle(x + centroid.x, y + centroid.y, 5);
-
-    ofSetColor(0x0000ff);
-    char reportStr[10];
-	sprintf(reportStr, "%i", (int)sessionID);
-    ofDrawBitmapString(reportStr, x + centroid.x, y + centroid.y);*/
 }

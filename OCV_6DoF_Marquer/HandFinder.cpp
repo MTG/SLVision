@@ -97,7 +97,7 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 			area = (float)fabs ( cvContourArea(c,CV_WHOLE_SEQ));
 			std::cout << area << std::endl;
 			
-			//if(area >  min_area && area < max_area)
+			if(area >  min_area/* && area < max_area*/)
 			//if((cvContourPerimeter(c)<2000)&&(cvContourPerimeter(c)>60))
 			{
 				//std::cout << area << std::endl;
@@ -116,22 +116,23 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 				//Get target hand
 				float dist = 999;
 				float tmp_dist;
-				for(unsigned int h = 0; h < hands.size(); h++)
+				unsigned long sessionID = 0;
+
+				for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
 				{
-					tmp_dist = hands[h].Distance(hand_centroid);
-				   // std::cout << "gg " << tmp_dist << std::endl;
+					tmp_dist = it->second->Distance(hand_centroid);
 					if(tmp_dist < dist)
 					{
 						dist = tmp_dist;
-						hand = &hands[h];
+						hand = it->second;
+						sessionID = it->first;
 					}
 				}
-				//if target doesnt mathc, creates a new one
 				if(dist > MINIMUM_CENTROID_DISTANCE || hand == 0)
 				{
-					unsigned long sid = Globals::ssidGenerator++;
-					hands.insert(std::pair<unsigned long, Hand>(sid,Hand(sid,hand_centroid) ));
-					hand = &hands[sid];
+					sessionID = Globals::ssidGenerator++;
+					hands[sessionID] = new Hand(sessionID,hand_centroid);
+					hand = hands[sessionID];
 				}
 
 				//alive.push_back(hand->GetSessionID());

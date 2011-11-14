@@ -44,6 +44,8 @@ protected:
     CvPoint             centroid_hand;
     CvPoint             from, to;
     bool                first_update;
+	bool				is_open;
+	bool				confirmed_hand;
 	int edge; //-1 none 0 down 1 up 2 left 3 right
     ///Methods
     Vertex* GetNearest(int x, int y);
