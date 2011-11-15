@@ -18,6 +18,7 @@ Hand::Hand()
     edge = -1;
 	is_open = false;
 	confirmed_hand = false;
+	updated = true;
 }
 
 Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
@@ -29,6 +30,7 @@ Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
     first_update = true;
     edge = -1;
 	confirmed_hand = false;
+	updated = true;
 }
 
 float Hand::Distance(const CvPoint & _centroid)
@@ -44,6 +46,7 @@ unsigned long Hand::GetSessionID()
 void Hand::Update(const CvPoint & _centroid)
 {
     centroid    = _centroid;
+	updated = true;
 }
 
 void Hand::Clear()
@@ -415,4 +418,14 @@ void Hand::draw(float x, float y)
 		if(!confirmed_hand) Globals::Font::Write(Globals::screen,buffer,centroid,FONT_AXIS,255,0,0);
 		else Globals::Font::Write(Globals::screen,buffer,centroid,FONT_AXIS,0,255,0);
 	}
+}
+
+bool Hand::IsUpdated()
+{
+	if(updated)
+	{
+		updated = false;
+		return true;
+	}
+	return false;
 }

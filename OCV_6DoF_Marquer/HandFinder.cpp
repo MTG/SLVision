@@ -68,7 +68,8 @@ HandFinder::~HandFinder(void)
 AliveList HandFinder::GetAlive()
 {
 	AliveList toreturn;
-
+	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
+		toreturn.push_back(it->first);
 	return toreturn;
 }
 
@@ -171,6 +172,24 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 				hand->draw();
 			}
 		}
+	}
+
+	to_remove.clear();
+	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
+	{
+		if(it->second->IsUpdated())
+		{
+			//send OSC MEssage
+		}
+		else
+		{
+			to_remove.push_back(it->first);
+		}
+	}
+
+	for( std::vector<unsigned long>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
+	{
+		hands.erase(*it);
 	}
 
 	return main_processed_image;

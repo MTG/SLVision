@@ -15,6 +15,7 @@ class HandFinder :
 	CvSeq*			polycontour;
 	CvPoint			hand_centroid;
 	std::map<unsigned long, Hand*> hands;
+	std::vector<unsigned long> to_remove;
 
 	int				threshold_value;
 	float area;

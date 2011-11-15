@@ -47,6 +47,7 @@ protected:
 	bool				is_open;
 	bool				confirmed_hand;
 	int edge; //-1 none 0 down 1 up 2 left 3 right
+	bool updated;
     ///Methods
     Vertex* GetNearest(int x, int y);
     Vertex* GetNext(Vertex* v);
@@ -69,5 +70,7 @@ public:
     float GetArea();
 
     void draw(float x = 0, float y = 0);
+
+	bool IsUpdated();
 };
 

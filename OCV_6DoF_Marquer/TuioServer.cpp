@@ -101,6 +101,25 @@ void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned 
 	messages++;
 }
 
+void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area)
+{
+	if(!bundle_started)StartBundle();
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand" ) << (int)sid << (int)confirmed << (int)open << x << y << area <<osc::EndMessage;
+	messages++;
+}
+
+void TuioServer::AddHandPath(unsigned int sid, std::vector<CvPoint> path)
+{
+	if(!bundle_started)StartBundle();
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/path" ) << (int)sid << (int) path.size();
+	for(std::vector<CvPoint>::iterator it = path.begin(); it != path.end(); it++)
+	{
+		(*packet_stream) << it->x << it->y ;
+	}
+	(*packet_stream) <<osc::EndMessage;
+	messages++;
+}
+
 void TuioServer::SendBundle()	
 {
 	if(messages > 0 && bundle_started)
