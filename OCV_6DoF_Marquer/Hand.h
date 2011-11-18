@@ -66,11 +66,12 @@ public:
     void AddVertex(int x, int y);
     void AddVertexConvex(int x, int y);
     void ComputeHand(float area, float length);
-
-    float GetArea();
-
     void draw(float x = 0, float y = 0);
 
 	bool IsUpdated();
+	int IsConfirmedAsHand();
+	int IsOpened();
+	CvPoint GetCentroid();
+	float GetArea();
 };
 

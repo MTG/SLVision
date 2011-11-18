@@ -429,3 +429,22 @@ bool Hand::IsUpdated()
 	}
 	return false;
 }
+
+int Hand::IsConfirmedAsHand()
+{
+	if(is_hand_detected)
+		return 1;
+	return 0;
+}
+
+int Hand::IsOpened()
+{
+	if(is_open)
+		return 1;
+	return 0;
+}
+
+CvPoint Hand::GetCentroid()
+{
+	return centroid; 
+}

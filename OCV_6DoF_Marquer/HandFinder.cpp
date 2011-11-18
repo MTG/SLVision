@@ -1,5 +1,6 @@
 #include "HandFinder.h"
 #include "GlobalConfig.h"
+#include "TuioServer.h"
 
 #define MINIMUM_CENTROID_DISTANCE 80
 
@@ -68,8 +69,11 @@ HandFinder::~HandFinder(void)
 AliveList HandFinder::GetAlive()
 {
 	AliveList toreturn;
-	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
-		toreturn.push_back(it->first);
+	if(this->IsEnabled())
+	{
+		for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
+			toreturn.push_back(it->first);
+	}
 	return toreturn;
 }
 
@@ -99,21 +103,14 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 			std::cout << area << std::endl;
 			
 			if(area >  min_area/* && area < max_area*/)
-			//if((cvContourPerimeter(c)<2000)&&(cvContourPerimeter(c)>60))
 			{
-				//std::cout << area << std::endl;
-				//if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0,3);
 				CvSeq* hull;
 				hull = cvConvexHull2(c, 0, CV_CLOCKWISE, 0 );
 				cvMoments( c, blob_moments );
 				hand_centroid.x = (int) ceil((blob_moments->m10 / blob_moments->m00));
 				hand_centroid.y = (int) ceil((blob_moments->m01 / blob_moments->m00));
 				Hand * hand = 0;
-				//cont'e hulls
-				//int hullcount = hull->total;
-				//std::cout << hullcount << std::endl;
 
-				
 				//Get target hand
 				float dist = 999;
 				float tmp_dist;
@@ -180,6 +177,7 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 		if(it->second->IsUpdated())
 		{
 			//send OSC MEssage
+			TuioServer::Instance().AddHand(it->first,it->second->IsConfirmedAsHand(),it->second->IsOpened(),it->second->GetCentroid().x, it->second->GetCentroid().y, it->second->GetArea());			
 		}
 		else
 		{
