@@ -1,5 +1,6 @@
 #include "Hand.h"
 #include "Globals.h"
+#include "Fiducial.h"
 #define MIN_DIST_EDGES 10
 
 #define FINGER_THRESHOLD 20
@@ -19,6 +20,8 @@ Hand::Hand()
 	is_open = false;
 	confirmed_hand = false;
 	updated = true;
+	is_pinching = false;
+	sendEndPinching = false;
 }
 
 Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
@@ -31,6 +34,8 @@ Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
     edge = -1;
 	confirmed_hand = false;
 	updated = true;
+	is_pinching = false;
+	sendEndPinching = false;
 }
 
 float Hand::Distance(const CvPoint & _centroid)
@@ -58,12 +63,12 @@ void Hand::Clear()
 
 void Hand::AddVertex(int x, int y)
 {
-    vertexs.push_back(Vertex(x,y,vertexs.size()));
+    vertexs.push_back(Hand_Vertex(x,y,vertexs.size()));
 }
 
 void Hand::AddVertexConvex(int x, int y)
 {
-    Vertex* V= GetNearest(x,y);
+    Hand_Vertex* V= GetNearest(x,y);
     V->isHull = true;
     if(first_update)
     {
@@ -126,11 +131,11 @@ void Hand::AddVertexConvex(int x, int y)
 	
 }
 
-Hand::Vertex* Hand::GetNearest(int x, int y)
+Hand_Vertex* Hand::GetNearest(int x, int y)
 {
     float tmpdist;
     float mindist = 99;
-    Vertex* candidate = NULL;
+    Hand_Vertex* candidate = NULL;
     for (unsigned int i = 0; i < vertexs.size(); i++)
     {
         tmpdist = vertexs[i].Distance(x,y);
@@ -143,7 +148,7 @@ Hand::Vertex* Hand::GetNearest(int x, int y)
     return candidate;
 }
 
-Hand::Vertex* Hand::GetNext(Hand::Vertex* v)
+Hand_Vertex* Hand::GetNext(Hand_Vertex* v)
 {
     if(v->position_path == vertexs.size()-1)
         return &vertexs[0];
@@ -157,16 +162,16 @@ void Hand::ComputeHand(float _area, float _length)
     ///find hull and valleys
     for (unsigned int i = 0; i < hull_vertexs.size(); i++)
     {
-        Vertex* from = hull_vertexs[i];
-        Vertex* to;
+        Hand_Vertex* from = hull_vertexs[i];
+        Hand_Vertex* to;
         if( i != hull_vertexs.size()-1)
             to = hull_vertexs[i+1];
         else
             to = hull_vertexs[0];
         if( from->compute || to->compute)
         {
-            Vertex* iterator = GetNext(from);
-            Vertex* candidate = iterator;
+            Hand_Vertex* iterator = GetNext(from);
+            Hand_Vertex* candidate = iterator;
             float max_dist = 0;
             float tmpdist;
             while(!iterator->isHull)
@@ -447,4 +452,49 @@ int Hand::IsOpened()
 CvPoint Hand::GetCentroid()
 {
 	return centroid; 
+}
+
+float Hand::TCentroidX()
+{
+	return (float)centroid.x/(float)Globals::width;
+}
+
+float Hand::TCentroidY()
+{
+	return (float)centroid.y/(float)Globals::height;
+}
+
+void Hand::SetPinch(CvSeq* seq)
+{
+	int q = hand_hole.size();
+	hand_hole.clear();
+	if (seq == NULL)
+	{
+		is_pinching = false;
+		if( q != 0) sendEndPinching = true;
+	}
+	else
+	{
+		is_pinching = true;
+		CvPoint           pt;
+		CvSeqReader       reader;
+		cvStartReadSeq( seq, &reader, 0 );
+    	for( int j=0; j < seq->total; j++ )
+    	{
+			CV_READ_SEQ_ELEM( pt, reader );
+			hand_hole.push_back(Hand_Vertex(pt.x,pt.y,0));
+		}
+	}
+}
+
+bool Hand::IsPinching()
+{
+	return is_pinching;
+}
+
+bool Hand::IsPinchingEnd()
+{
+	bool toreturn = sendEndPinching;
+	sendEndPinching = false;
+	return toreturn;
 }

@@ -83,6 +83,7 @@ void TuioServer::Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned
 	if(!bundle_started)StartBundle();
 	(*packet_stream) << osc::BeginMessage( "/tuio2/t3d" ) << (int)sid << (int)uid << (int)fid << x << y << z << yaw << pitch << roll << osc::EndMessage;
 	messages++;
+	if(messages > 5) SendBundle();
 }
 
 void TuioServer::Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, float x, float y, float z, float yaw, float pitch, float roll,
@@ -92,6 +93,7 @@ void TuioServer::Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned
 		(*packet_stream) << osc::BeginMessage( "/tuio2/t3d" ) << (int)sid << (int)uid << (int)fid << x << y << z << yaw << pitch << roll <<
 			r11 << r12 << r13 << r21 << r22 << r23 << r31 << r32 << r33 << osc::EndMessage;
 	messages++;
+	if(messages > 5) SendBundle();
 }
 
 void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
@@ -99,6 +101,7 @@ void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned 
 	if(!bundle_started)StartBundle();
 	(*packet_stream) << osc::BeginMessage( "/tuio2/ptr" ) << (int)sid << (int)uid << (int)cid << x << y << width << press << osc::EndMessage;
 	messages++;
+	if(messages > 5) SendBundle();
 }
 
 void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area)
@@ -106,18 +109,34 @@ void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, flo
 	if(!bundle_started)StartBundle();
 	(*packet_stream) << osc::BeginMessage( "/tuio2/hand" ) << (int)sid << (int)confirmed << (int)open << x << y << area <<osc::EndMessage;
 	messages++;
+	if(messages > 5) SendBundle();
 }
 
-void TuioServer::AddHandPath(unsigned int sid, std::vector<CvPoint> path)
+void TuioServer::AddHandPath(unsigned int sid,std::vector<Hand_Vertex> &path)
 {
 	if(!bundle_started)StartBundle();
-	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/path" ) << (int)sid << (int) path.size();
-	for(std::vector<CvPoint>::iterator it = path.begin(); it != path.end(); it++)
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/path" ) << (int)sid /*<< (int) path.size()*/;
+	for(std::vector<Hand_Vertex>::iterator it = path.begin(); it != path.end(); it++)
 	{
-		(*packet_stream) << it->x << it->y ;
+		(*packet_stream) << (float)it->GetDistortionatedX() << (float)it->GetDistortionatedY() << (int)it->GetDescription() ;
 	}
 	(*packet_stream) <<osc::EndMessage;
 	messages++;
+	if(messages > 5) SendBundle();
+}
+
+void TuioServer::AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path)
+{
+	if(!bundle_started)StartBundle();
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/pinch" ) << (int)sid /*<< (int) path.size()*/;
+	for(std::vector<Hand_Vertex>::iterator it = path.begin(); it != path.end(); it++)
+	{
+		(*packet_stream) << (float)it->GetDistortionatedX() << (float)it->GetDistortionatedY();
+	}
+	(*packet_stream) <<osc::EndMessage;
+	messages++;
+	if(messages > 5) SendBundle();
+	//if(packet_stream->Size
 }
 
 void TuioServer::SendBundle()	

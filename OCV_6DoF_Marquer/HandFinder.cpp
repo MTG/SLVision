@@ -100,7 +100,7 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 			area = 0;
 			length = 0;
 			area = (float)fabs ( cvContourArea(c,CV_WHOLE_SEQ));
-			std::cout << area << std::endl;
+			//std::cout << area << std::endl;
 			
 			if(area >  min_area/* && area < max_area*/)
 			{
@@ -167,8 +167,33 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 
 				hand->ComputeHand(area, length);
 				hand->draw();
+
+				//compute hand holes-->pinching gestures
+				CvSeq* c_vnext = c->v_next;
+				CvSeq* candidate = NULL;
+				double max_area=0;
+				if( c_vnext != NULL)
+				{
+					for(CvSeq* h=c;h!=NULL;h=h->h_next)
+					{
+						area = (float)fabs ( cvContourArea(h,CV_WHOLE_SEQ));
+						std::cout << "a " << area << std::endl;
+						if(max_area < area)
+						{
+							max_area = area;
+							candidate = c_vnext;
+						}
+					}
+				}
+
+				//if(candidate != NULL /*&& area > threshold_hole*/)
+				{
+					hand->SetPinch(candidate);
+				}
+
 			}
 		}
+
 	}
 
 	to_remove.clear();
@@ -177,7 +202,12 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 		if(it->second->IsUpdated())
 		{
 			//send OSC MEssage
-			TuioServer::Instance().AddHand(it->first,it->second->IsConfirmedAsHand(),it->second->IsOpened(),it->second->GetCentroid().x, it->second->GetCentroid().y, it->second->GetArea());			
+			TuioServer::Instance().AddHand(it->first,it->second->IsConfirmedAsHand(),it->second->IsOpened(),it->second->TCentroidX(), it->second->TCentroidY(), it->second->GetArea());			
+			TuioServer::Instance().AddHandPath(it->first,it->second->vertexs);
+			if(it->second->IsPinching() || it->second->IsPinchingEnd())
+			{
+				TuioServer::Instance().AddHandPinch(it->first,it->second->hand_hole);
+			}
 		}
 		else
 		{

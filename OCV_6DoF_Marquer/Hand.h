@@ -1,41 +1,20 @@
 #pragma once
 #include <cv.h>
-#include "Fiducial.h"
-
+#include "TuioServer.h"
+#include "Hand_Vertex.h"
 
 class Hand
 {
-	class Vertex
-    {
-        public:
-            CvPoint data;
-            unsigned int position_path;
-            bool isHull;
-            bool isValley;
-            bool compute;
-            float valley_distance;
-            int extreme;
-            bool isFinger;
-            Vertex(int x, int y, int position):
-              //  data(cvPoint(x,y)),
-                position_path(position),
-                isHull(false),
-                isValley(false),
-                compute(true),
-                valley_distance(0),
-                extreme(0),
-                isFinger(false)
-                {
-					data = cvPoint(x,y);
-				}
-            float Distance(const Vertex & vect){return insqdist(data.x,data.y,vect.data.x,vect.data.y);}
-            float Distance(int x, int y){return insqdist(data.x,data.y,x,y);}
-    };
+	
+public:
+	std::vector <Hand_Vertex>     vertexs;
+	std::vector <Hand_Vertex>    hand_hole;
 protected:
 	///vars
-    std::vector <Vertex>     vertexs;
-    std::vector <Vertex*>    hull_vertexs;
-    std::vector <Vertex*>    hand_vertexs;
+    
+    std::vector <Hand_Vertex*>    hull_vertexs;
+    std::vector <Hand_Vertex*>    hand_vertexs;
+	
     bool                is_hand_detected;
     unsigned long       sessionID;
     float               area;
@@ -46,11 +25,13 @@ protected:
     bool                first_update;
 	bool				is_open;
 	bool				confirmed_hand;
+	bool				is_pinching;
+	bool				sendEndPinching;
 	int edge; //-1 none 0 down 1 up 2 left 3 right
 	bool updated;
     ///Methods
-    Vertex* GetNearest(int x, int y);
-    Vertex* GetNext(Vertex* v);
+    Hand_Vertex* GetNearest(int x, int y);
+    Hand_Vertex* GetNext(Hand_Vertex* v);
     bool FindHandFrom(int indexplus);
     void GetNextIndexVertex(int & actual);
     void GetPreviousIndexVertex(int & actual);
@@ -73,5 +54,11 @@ public:
 	int IsOpened();
 	CvPoint GetCentroid();
 	float GetArea();
+	float TCentroidX();
+	float TCentroidY();
+
+	bool IsPinching();
+	bool IsPinchingEnd();
+	void SetPinch(CvSeq* seq);
 };
 

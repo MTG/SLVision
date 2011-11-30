@@ -104,6 +104,7 @@
     <ClCompile Include="GuiMenu.cpp" />
     <ClCompile Include="Hand.cpp" />
     <ClCompile Include="HandFinder.cpp" />
+    <ClCompile Include="Hand_Vertex.cpp" />
     <ClCompile Include="LogFile.cpp" />
     <ClCompile Include="MarkerFinder.cpp" />
     <ClCompile Include="MenuBar.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="GuiMenu.h" />
     <ClInclude Include="Hand.h" />
     <ClInclude Include="HandFinder.h" />
+    <ClInclude Include="Hand_Vertex.h" />
     <ClInclude Include="LogFile.h" />
     <ClInclude Include="MarkerFinder.h" />
     <ClInclude Include="MenuBar.h" />
