@@ -437,7 +437,7 @@ bool Hand::IsUpdated()
 
 int Hand::IsConfirmedAsHand()
 {
-	if(is_hand_detected)
+	if(confirmed_hand)
 		return 1;
 	return 0;
 }

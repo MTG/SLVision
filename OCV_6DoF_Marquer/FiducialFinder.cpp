@@ -2,8 +2,8 @@
 #include "FiducialFinder.h"
 #include "Globals.h"
 #include "GlobalConfig.h"
-#include <iostream>
 #include <sstream>
+#include <iostream>
 
 FiducialFinder::FiducialFinder(int _fiducial_window_size)
 {
@@ -99,22 +99,21 @@ float FiducialFinder::GetMinDistToFiducialAxis(int &axis, float x, float y)
 	if( l < r && l < u && l < d)
 	{
 		axis = AXIS_LEFT;
-		//std::cout << axis << std::endl;
 		return l;
 	}
 	else if (r < l && r < u && r < d)
 	{
-		axis = AXIS_RIGHT;//std::cout << axis << std::endl;
+		axis = AXIS_RIGHT;
 		return r;
 	}
 	else if (u < l && u < r && u < d)
 	{
-		axis = AXIS_UP;//std::cout << axis << std::endl;
+		axis = AXIS_UP;
 		return u;
 	}
 	else if (d < l && d < u && d < r)
 	{
-		axis = AXIS_DOWN;//std::cout << axis << std::endl;
+		axis = AXIS_DOWN;
 		return d;
 	}
 	

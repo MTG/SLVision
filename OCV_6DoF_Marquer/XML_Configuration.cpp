@@ -4,7 +4,6 @@
  */
 
 #include "XML_Configuration.h"
-#include <iostream>
 #include "LogFile.h"
 
 using namespace std;

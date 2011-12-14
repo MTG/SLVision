@@ -23,16 +23,19 @@ HandFinder::HandFinder(void):FrameProcessor("HandFinder")
 
 	max_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:max_hand_area",800);
 	min_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:min_hand_area",200);
+	min_pinch_blob_size = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:min_pinching_blobsize",1000);
 
 	guiMenu->AddBar("0-Enable",0,1,1);
 	guiMenu->AddBar("1-Threshold",0,255,1);
 	guiMenu->AddBar("2-Min_Area",400,5000,10);
 	guiMenu->AddBar("3-Max_Area",500,50000,10);
+	guiMenu->AddBar("4-Min_pinch_blob",500,50000,100);
 
 	guiMenu->SetValue("0-Enable",(float)cf_enabled);
 	guiMenu->SetValue("1-Threshold",(float)threshold_value);
 	guiMenu->SetValue("2-Min_Area",(float)min_area);
 	guiMenu->SetValue("3-Max_Area",(float)max_area);
+	guiMenu->SetValue("4-Min_pinch_blob",(float)min_pinch_blob_size);
 }
 
 void HandFinder::UpdatedValuesFromGui()
@@ -41,6 +44,7 @@ void HandFinder::UpdatedValuesFromGui()
 	int &cf_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:threshold_value",100);
 	int &cf_min_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:min_hand_area",200);
 	int &cf_max_area = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:max_hand_area",800);
+	int &cf_min_pinch_blob = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:min_pinching_blobsize",1000);
 
 	if(guiMenu->GetValue("0-Enable") == 0)
 	{
@@ -60,6 +64,9 @@ void HandFinder::UpdatedValuesFromGui()
 	max_area = (int)guiMenu->GetValue("2-Max_Area");
 	cf_min_area = min_area;
 	cf_max_area = max_area;
+
+	min_pinch_blob_size = (int) guiMenu->GetValue("4-Min_pinch_blob");
+	cf_min_pinch_blob = min_pinch_blob_size;
 }
 
 HandFinder::~HandFinder(void)
@@ -81,7 +88,6 @@ void HandFinder::KeyInput(char key)
 {
 }
 
-#include <iostream>
 IplImage* HandFinder::Process(IplImage*	main_image)
 {
 	cvClearMemStorage(main_storage);
@@ -100,8 +106,7 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 			area = 0;
 			length = 0;
 			area = (float)fabs ( cvContourArea(c,CV_WHOLE_SEQ));
-			//std::cout << area << std::endl;
-			
+
 			if(area >  min_area/* && area < max_area*/)
 			{
 				CvSeq* hull;
@@ -174,22 +179,23 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 				double max_area=0;
 				if( c_vnext != NULL)
 				{
-					for(CvSeq* h=c;h!=NULL;h=h->h_next)
+					for(CvSeq* h=c_vnext;h!=NULL;h=h->h_next)
 					{
 						area = (float)fabs ( cvContourArea(h,CV_WHOLE_SEQ));
-						std::cout << "a " << area << std::endl;
 						if(max_area < area)
 						{
 							max_area = area;
-							candidate = c_vnext;
+							candidate = h;
 						}
 					}
 				}
 
-				//if(candidate != NULL /*&& area > threshold_hole*/)
+				if ( max_area > min_pinch_blob_size)
 				{
 					hand->SetPinch(candidate);
 				}
+				else
+					hand->SetPinch(NULL);
 
 			}
 		}

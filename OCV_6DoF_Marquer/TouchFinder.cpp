@@ -2,6 +2,7 @@
 #include "GlobalConfig.h"
 #include "Fiducial.h"
 #include "TuioServer.h"
+#define DISTANCE_OFFSET 50
 
 TouchFinder::TouchFinder(void):FrameProcessor("TouchFinder")
 {
@@ -74,7 +75,8 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 {
 	to_be_removed.clear();
 	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
-	cvFindContours (main_processed_image, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
+	cvCopy(main_processed_image,main_processed_contour);
+	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
 	//polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,3,1);
 	for(CvSeq* c=firstcontour;c!=NULL;c=c->h_next)
 	{
@@ -93,24 +95,26 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 								(float)(blob_moments->m01 / blob_moments->m00), 
 								(float)fabs(cvContourArea( c, CV_WHOLE_SEQ ))
 							 );
+			
 			temp_minimum_distance = 99999999.0f;
 			candidate_id = 0;
+
 			for(Pointmap::iterator it = pointmap.begin(); it != pointmap.end(); it++)
 			{
-				if( it->second->CanUpdate(temp_touch,test_distance) )
+				float tmp_dist = fabs(fnsqdist(temp_touch.x,temp_touch.y,it->second->x,it->second->y));
+				if( temp_minimum_distance > tmp_dist)
 				{
-					if(test_distance < temp_minimum_distance)
-					{
-						temp_minimum_distance = test_distance;
-						candidate_id = it->first;
-					}
+					candidate_id = it->first;
+					temp_minimum_distance = tmp_dist;
 				}
 			}
 
+			if(temp_minimum_distance > DISTANCE_OFFSET)
+				candidate_id = 0;
 			if(candidate_id == 0) //new touch
 			{
-				pointmap[Globals::ssidGenerator++] = new Touch(temp_touch);
-				candidate_id = Globals::ssidGenerator-1;
+				unsigned int new_id = Globals::ssidGenerator++;
+				pointmap[new_id] = new Touch(temp_touch);
 			}
 			else //update touch
 			{
@@ -125,7 +129,7 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 		{
 			//tuio message
 			//(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
-			TuioServer::Instance().AddPointerMessage(it->first, 0, 0, it->second->x, it->second->y, it->second->area, 0);
+			TuioServer::Instance().AddPointerMessage(it->first, 0, 0, it->second->x/Globals::width, it->second->y/Globals::height, it->second->area, 0);
 		}
 		else
 		{
@@ -165,9 +169,6 @@ AliveList TouchFinder::GetAlive()
 * TOUCH METHODS
 *********************************/
 
-#define DISTANCE_OFFSET 30
-#define AREA_OFFSET 1000
-
 Touch::Touch():x(0),y(0),is_updated(false),area(0)
 {}
 
@@ -184,15 +185,15 @@ void Touch::Update(float x, float y, float area)
 
 bool Touch::CanUpdate( const Touch &tch, float & minimum_distance)
 {
-	if ( fabs((float)(tch.area-area)) <= AREA_OFFSET )
+	/*//if ( fabs((float)(tch.area-area)) <= AREA_OFFSET )
 	{
 		float tmp = fabs(fnsqdist(tch.x,tch.y,x,y));
-		if(tmp <= DISTANCE_OFFSET && tmp < minimum_distance)
+		if(tmp <= DISTANCE_OFFSET && tmp <= minimum_distance)
 		{
 			minimum_distance = tmp;
 			return true;
 		}
-	}
+	}*/
 	return false;
 }
 

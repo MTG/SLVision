@@ -1,5 +1,6 @@
 #include "Globals.h"
 #include "GlobalConfig.h"
+#include <iostream>
 
 IplImage*		Globals::screen						= NULL;
 bool			Globals::is_view_enabled			= false;
@@ -64,9 +65,12 @@ void Globals::UpdateZValues(float z)
 
 float Globals::GetZValue(float z)
 {
-	UpdateZValues(z);
+	/*UpdateZValues(z);
 	if( z_max == z_min ) return 1.0f;
-	return (z-z_min) / (z_max-z_min);
+	return (z-z_min) / (z_max-z_min);*/
+	float newz= z/(float)(Globals::width*Globals::height);
+	std::cout << newz << std::endl;
+	return newz;
 }
 
 void Globals::ResetZValues()

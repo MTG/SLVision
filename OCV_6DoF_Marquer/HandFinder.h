@@ -18,6 +18,7 @@ class HandFinder :
 	std::vector<unsigned long> to_remove;
 
 	int				threshold_value;
+	int				min_pinch_blob_size;
 	float area;
 	float length;
 	int max_area;

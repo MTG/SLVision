@@ -1,6 +1,5 @@
 //#include "StdAfx.h"
 #include "Fiducial.h"
-#include <iostream>
 
 #define DISTANCE_OFFSET 30
 #define AREA_OFFSET 1000

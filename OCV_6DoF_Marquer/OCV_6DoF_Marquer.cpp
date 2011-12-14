@@ -1,7 +1,6 @@
 #include <cv.h>
 #include <cxcore.h>
 #include <highgui.h>
-#include <iostream>
 #include "Globals.h"
 #include "MarkerFinder.h"
 #include "TuioServer.h"

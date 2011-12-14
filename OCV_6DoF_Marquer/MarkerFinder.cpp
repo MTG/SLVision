@@ -2,7 +2,6 @@
 #include "MarkerFinder.h"
 #include "TuioServer.h"
 #include "GlobalConfig.h"
-#include <iostream>
 
 MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 {
@@ -253,7 +252,6 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_finder->DecodeFiducial(fiducial_image, temporal);
 					//notzeroCount=cvCountNonZero(tempmask);
 
-					//std::cout << "temp_ssid " << tmp_ssid << "  ssidGenerator " << ssidGenerator << std::endl;
 					if(tmp_ssid == 0)
 					{
 						if(temporal.GetFiducialID() == -1) break;
@@ -261,12 +259,10 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						//fiducial_map[ssidGenerator++] = new Fiducial(temporal);
 						fiducial_map[Globals::ssidGenerator++] = new Fiducial(temporal);
 						tmp_ssid = Globals::ssidGenerator-1;
-//std::cout << "new" << std::endl;
 					}
 					else if( tmp_ssid > 0)
 					{
 						fiducial_map[tmp_ssid]->Update(temporal);
-//std::cout << "update" << std::endl;
 					}
 
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
@@ -303,26 +299,6 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					CV_MAT_ELEM( *rotation, float, 0, 1) = -rotation->data.fl[1];
 					cvRodrigues2(rotation,rotationMatrix);
 
-					/*std::cout << "M:" << std::endl;
-					std::cout 
-						<< " " << rotationMatrix->data.fl[0] 
-						<< "\t" << rotationMatrix->data.fl[1] 
-						<< "\t" << rotationMatrix->data.fl[2] 
-					<< std::endl;
-
-					std::cout 
-						<< " " << rotationMatrix->data.fl[3] 
-						<< "\t" << rotationMatrix->data.fl[4] 
-						<< "\t" << rotationMatrix->data.fl[5] 
-					<< std::endl;
-
-					std::cout 
-						<< " " << rotationMatrix->data.fl[6] 
-						<< "\t" << rotationMatrix->data.fl[7] 
-						<< "\t" << rotationMatrix->data.fl[8] 
-					<< std::endl;
-					*/
-
 					if(invert_rotation_matrix)
 					{
 						//invert the rotation matrix (not for AR)
@@ -346,12 +322,6 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->r32 = rotationMatrix->data.fl[7];
 					fiducial_map[tmp_ssid]->r33 = rotationMatrix->data.fl[8];
 					
-					//std::cout << 
-					//	"yaw: " << fiducial_map[tmp_ssid]->yaw << std::endl<<
-					//	"pitch: " << fiducial_map[tmp_ssid]->pitch << std::endl<<
-					//	"roll: " << fiducial_map[tmp_ssid]->roll << std::endl;
-
-					//xpos, ypos, zpos
 					if(Globals::is_view_enabled)
 					{
 						CvPoint startpoint;
