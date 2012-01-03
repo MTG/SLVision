@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OCV_6DoF_Marquer", "OCV_6DoF_Marquer\OCV_6DoF_Marquer.vcxproj", "{C0B76A32-32BA-4AF5-BA9A-101294C8B9D6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SLVision", "SLVision\SLVision.vcxproj", "{C0B76A32-32BA-4AF5-BA9A-101294C8B9D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

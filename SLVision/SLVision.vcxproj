@@ -13,7 +13,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0B76A32-32BA-4AF5-BA9A-101294C8B9D6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>OCV_6DoF_Marquer</RootNamespace>
+    <RootNamespace>SLVision</RootNamespace>
+    <ProjectName>SLVision</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -65,6 +66,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>cv210d.lib;cxcore210d.lib;highgui210d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);ws2_32.lib;winmm.lib</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <ResourceOutputFileName>
+      </ResourceOutputFileName>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -86,9 +91,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\external\oscpack\ip\IpEndpointName.cpp" />
     <ClCompile Include="..\external\oscpack\ip\NetworkingUtils.cpp" />
     <ClCompile Include="..\external\oscpack\ip\UdpSocket.cpp" />
@@ -108,7 +110,7 @@
     <ClCompile Include="LogFile.cpp" />
     <ClCompile Include="MarkerFinder.cpp" />
     <ClCompile Include="MenuBar.cpp" />
-    <ClCompile Include="OCV_6DoF_Marquer.cpp" />
+    <ClCompile Include="SLVision.cpp" />
     <ClCompile Include="TouchFinder.cpp" />
     <ClCompile Include="TuioServer.cpp" />
     <ClCompile Include="XML_Configuration.cpp" />
@@ -147,9 +149,6 @@
     <ClInclude Include="TouchFinder.h" />
     <ClInclude Include="TuioServer.h" />
     <ClInclude Include="XML_Configuration.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="OCV_6DoF_Marquer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
