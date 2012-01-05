@@ -1,0 +1,14 @@
+Debug
+Release
+SLVision/Debug
+SLVision/Release
+ipch
+SLVision.suo
+SLVision.sdf
+SLVision/intrinsic.xml
+SLVision/instrinsic.xml
+SLVision/distortion.xml
+SLVision/GlobalConfig.xml
+SLVision/log.txt
+SLVision/SLVision.vcxproj.user
+SLVision.opensdf
