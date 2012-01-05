@@ -31,6 +31,7 @@
 #include "GlobalConfig.h"
 #include "TouchFinder.h"
 #include "HandFinder.h"
+#include <iostream>
 
 //VIEW constants
 #define VIEW_RAW					0
@@ -76,6 +77,16 @@ int selected_processor;
 
 int main(int argc, char* argv[])
 {	
+	//Print keymapping:
+	std::cout	<< "KeyMapping:" << "\n"
+				<< "Esc" << ":\t " << "Exit SLVision." << "\n"
+				<< KEY_CHANGE_VIEW << ":\t " << "Change view (when anything is displayed, performance is enhanced)." << "\n"
+				<< KEY_CALIBRATION << ":\t " << "Opens Calibration window." << "\n"
+				<< "o" << ":\t " << "Shows option dialog:" << "\n"
+				<< "\t   " << "4 , 6" << ":\t " << "Changes processor." << "\n"
+				<< "\t   " << "8 , 2" << ":\t " << "Switchs processor options." << "\n"
+				<< "\t   " << "+ , -" << ":\t " << "Changes options values." << "\n" ;
+	//
 	IplImage*		bgs_image;
 	IplImage*		six_dof_output;
 	IplImage*		touch_finder_output;
@@ -143,14 +154,6 @@ int main(int argc, char* argv[])
 
 		if(!claibrateMode)
 		{
-
-			/********TODO*****
-			* - Calculate the double thresholder (avobe(di) and on (ftir)
-			* - markerfinder->ProcessFrame(thresholder_above);
-			* - handfinder->ProcessFrame(thresholder_above);
-			* - fingerfeedback->Processframe(thresholdet_on);
-			******************/
-			
 			//bg substraction:
 			if(process_bg)
 			{
@@ -164,15 +167,7 @@ int main(int argc, char* argv[])
 
 			cvSmooth(gray_image,gray_image,CV_GAUSSIAN,3);
 
-			//cvThreshold(gray_image,threshold_surface_image,threshold_beyond_value,255, CV_THRESH_BINARY);
-			//cvThreshold(gray_image,threshold_beyond_image,threshold_surface_value,255, CV_THRESH_BINARY);
-			//cvAdaptiveThreshold(gray_image,threshold_adaptive_image,255,CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,55,2);//CV_ADAPTIVE_THRESH_MEAN_C
-			//cvThreshold(gray_image,threshold_adaptive_image,100,255, CV_THRESH_BINARY);
-
-			//find thresholders (surface and beyond)
-			//cvThreshold (main_processed_image, main_processed_image, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
-
-			//******Temporally solution****
+			//******processors****
 			six_dof_output = markerfinder->ProcessFrame(gray_image);
 			touch_finder_output = touchfinder->ProcessFrame(gray_image);
 			hand_finder_output = handfinder->ProcessFrame(gray_image);
@@ -229,13 +224,14 @@ int main(int argc, char* argv[])
 			case KEY_RESET_Z:
 				if(claibrateMode) calibrator->ProcessKey(presskey);
 				break;
-			case KEY_ENABLE_BGS:
+/*			case KEY_ENABLE_BGS:
 				bg_substraction = true;
 				process_bg = true;
 				break;
 			case KEY_DISABLE_BGS:
 				bg_substraction = false;
 				break;
+*/
 			case '4':
 				Switchleft();
 				break;
