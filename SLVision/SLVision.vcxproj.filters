@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="oscpack">
+      <UniqueIdentifier>{c075ff39-8027-4d5f-be2f-da568c3113f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="oscpack\osc">
+      <UniqueIdentifier>{c12a1886-916f-4895-b55e-8880cb32fd23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="oscpack\ip">
+      <UniqueIdentifier>{bd2e396b-ad24-45e1-b7e0-cea6164cd8b8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SLVision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FiducialFinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Fiducial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MarkerFinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TuioServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\ip\IpEndpointName.cpp">
+      <Filter>oscpack\ip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\ip\NetworkingUtils.cpp">
+      <Filter>oscpack\ip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\ip\UdpSocket.cpp">
+      <Filter>oscpack\ip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscOutboundPacketStream.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscPrintReceivedElements.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscReceivedElements.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\oscpack\osc\OscTypes.cpp">
+      <Filter>oscpack\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="Calibrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GuiMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XML_Configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LogFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TouchFinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HandFinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hand_Vertex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Fiducial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FiducialFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameProcessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MarkerFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TuioServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\IpEndpointName.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\NetworkingUtils.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\PacketListener.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\TimerListener.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\ip\UdpSocket.h">
+      <Filter>oscpack\ip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\MessageMappingOscPacketListener.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscException.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscHostEndianness.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscOutboundPacketStream.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscPacketListener.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscPrintReceivedElements.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscReceivedElements.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\oscpack\osc\OscTypes.h">
+      <Filter>oscpack\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="Calibrator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XML_Configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LogFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalConfigDetail.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TouchFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HandFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Hand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Hand_Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
