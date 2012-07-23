@@ -46,8 +46,8 @@ CvMat*			Globals::distortion					= NULL;
 
 unsigned int	Globals::ssidGenerator				= 1;
 
-float			Globals::z_min						= -1.0f;
-float			Globals::z_max						= -1.0f;
+//float			Globals::z_min						= -1.0f;
+//float			Globals::z_max						= -1.0f;
 
 void Globals::LoadDefaultDistortionMatrix()
 {
@@ -74,6 +74,7 @@ void Globals::LoadDefaultDistortionMatrix()
 	cvSave(M_PATH_DISTORTION,distortion);
 }
 
+/*
 void Globals::UpdateZValues(float z)
 {
 	if(z_min == -1 || z_max == -1)
@@ -88,9 +89,6 @@ void Globals::UpdateZValues(float z)
 
 float Globals::GetZValue(float z)
 {
-	/*UpdateZValues(z);
-	if( z_max == z_min ) return 1.0f;
-	return (z-z_min) / (z_max-z_min);*/
 	float newz= z/(float)(Globals::width*Globals::height);
 //	std::cout << newz << std::endl;
 	return newz;
@@ -100,7 +98,7 @@ void Globals::ResetZValues()
 {
 	z_min = -1;
 	z_max = -1;
-}
+}*/
 
 void Globals::Font::InitFont()
 {

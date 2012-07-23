@@ -57,17 +57,25 @@ void FrameProcessor::ProcessKey(char key)
 	{
 		switch(key)
 		{
-			case '8':
+			case KEY_MENU_UP_1:
+			case KEY_MENU_UP_2:
+			case KEY_MENU_UP_3:
 				guiMenu->MoveDown();
 				break;
-			case '2':
+			case KEY_MENU_DOWN_1:
+			case KEY_MENU_DOWN_2:
+			case KEY_MENU_DOWN_3:
 				guiMenu->MoveUp();
 				break;
-			case '+':
+			case KEY_MENU_INCR_1:
+			case KEY_MENU_INCR_2:
+			case KEY_MENU_INCR_3:
 				guiMenu->SelectedUp();
 				UpdatedValuesFromGui();
 				break;
-			case '-':
+			case KEY_MENU_DECR_1:
+			case KEY_MENU_DECR_2:
+			case KEY_MENU_DECR_3:
 				guiMenu->SelectedDown();
 				UpdatedValuesFromGui();
 				break;

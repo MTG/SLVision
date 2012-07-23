@@ -26,7 +26,7 @@
 #include <cxcore.h>
 #include <highgui.h>
 
-#define N_BOARDS 1
+#define N_BOARDS 3
 #define FRAME_STEP 5
 #define BOARD_W 9
 #define BOARD_H 6

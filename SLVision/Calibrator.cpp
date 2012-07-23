@@ -1,3 +1,4 @@
+
 /*
 	Daniel Gallardo Grassot
 	daniel.gallardo@upf.edu
@@ -195,9 +196,9 @@ void Calibrator::ProcessKey(char key)
 	case KEY_CALIBRATION_GRID:
 		StartChessBoardFinder();
 		break;
-	case KEY_RESET_Z:
-		Globals::ResetZValues();
-		break;
+//	case KEY_RESET_Z:
+//		Globals::ResetZValues();
+//		break;
 	case KEY_RESET:
 		Globals::LoadDefaultDistortionMatrix();
 		if(mapx != NULL) cvReleaseImage(&mapx);

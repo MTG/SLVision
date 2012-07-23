@@ -40,22 +40,48 @@
 #define M_PATH_DISTORTION			"distortion.xml"
 #define M_PATH_INTRINSIC			"instrinsic.xml"
 
-#define KEY_SHOW_FID_PROCESSOR		'V'
+//#define KEY_SHOW_FID_PROCESSOR		'V'
 #define KEY_CHANGE_VIEW				'v'
 #define KEY_EXIT					27 //esc
 #define KEY_CALIBRATION				'c'
 #define KEY_CALIBRATION_GRID		'g'
 #define KEY_RESET					'r'
-#define KEY_ENABLE_BGS				'b'
-#define KEY_DISABLE_BGS				'B'
-#define KEY_RESET_Z					'z'
+//#define KEY_ENABLE_BGS				'b'
+//#define KEY_DISABLE_BGS				'B'
+//#define KEY_RESET_Z					'z'
+#define KEY_NEXT_OPTION_1			'6'
+#define KEY_NEXT_OPTION_2			'd'
+#define KEY_NEXT_OPTION_3			'D'
+
+#define KEY_PREVIOUS_OPTION_1		'4'
+#define KEY_PREVIOUS_OPTION_2		'a'
+#define KEY_PREVIOUS_OPTION_3		'A'
+
+#define KEY_SHOW_OPTIONS_1			'o'
+#define KEY_SHOW_OPTIONS_2			'O'
+
+#define KEY_MENU_UP_1				'8'
+#define KEY_MENU_UP_2				'w'
+#define KEY_MENU_UP_3				'W'
+
+#define KEY_MENU_DOWN_1				'2'
+#define KEY_MENU_DOWN_2				's'
+#define KEY_MENU_DOWN_3				'S'
+
+#define KEY_MENU_INCR_1				'+'
+#define KEY_MENU_INCR_2				'e'
+#define KEY_MENU_INCR_3				'E'
+
+#define KEY_MENU_DECR_1				'-'
+#define KEY_MENU_DECR_2				'q'
+#define KEY_MENU_DECR_3				'Q'
 
 //#define MARKER_SIZE (54) //marker size in mm
 
 class Globals
 {
 protected:
-	static float			z_min, z_max;
+//	static float			z_min, z_max;
 public:
 	/************************
 	* Screen Globals
@@ -71,8 +97,8 @@ public:
 
 	static void LoadDefaultDistortionMatrix();
 	static void UpdateZValues(float z);
-	static float GetZValue(float z);
-	static void ResetZValues();
+//	static float GetZValue(float z);
+//	static void ResetZValues();
 
 	class Font
 	{
