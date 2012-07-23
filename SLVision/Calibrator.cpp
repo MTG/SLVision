@@ -1,3 +1,4 @@
+
 /*
 	Daniel Gallardo Grassot
 	daniel.gallardo@upf.edu
@@ -30,10 +31,15 @@ Calibrator::Calibrator(void)
 	board_sz = cvSize( BOARD_W, BOARD_H );
 	mapx = NULL;
 	mapy = NULL;
-	x_box = Globals::width/2;
+	/*x_box = Globals::width/2;
 	y_box = Globals::height/2;
 	w_box = Globals::width/2;
-	h_box = Globals::height/2;
+	h_box = Globals::height/2;*/
+	x_min = 0;
+	x_max = Globals::width;
+	y_min = 0;
+	y_max = Globals::height/2;
+	selected_side = 0;
 }
 
 
@@ -169,11 +175,15 @@ void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 		IplImage *t = cvCloneImage(main_image);
 		cvRemap( main_image, t, mapx, mapy );  // Undistort image
 
-		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
-		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
-		cvLine(t, cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box - ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
-		cvLine(t, cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box - ceil(h_box/2.0)) ), cvPoint( int(x_box + ceil(w_box/2.0)) , int(y_box + ceil(h_box/2.0)) ), CV_RGB(0,255,0),2);
-		
+		if(selected_side == 0) cvLine(t, cvPoint( x_min , y_min ), cvPoint( x_min , y_max ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( x_min , y_min ), cvPoint( x_min , y_max ), CV_RGB(0,255,0),2);
+		if(selected_side == 1) cvLine(t, cvPoint( x_min , y_max ), cvPoint( x_max , y_max ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( x_min , y_max ), cvPoint( x_max , y_max ), CV_RGB(0,255,0),2);
+		if(selected_side == 2) cvLine(t, cvPoint( x_max , y_max ), cvPoint( x_max , y_min ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( x_max , y_max ), cvPoint( x_max , y_min ), CV_RGB(0,255,0),2);
+		if(selected_side == 3) cvLine(t, cvPoint( x_max , y_min ), cvPoint( x_min , y_min ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( x_max , y_min ), cvPoint( x_min , y_min ), CV_RGB(0,255,0),2);
+
 		//show options:
 		cvRectangle(t, cvPoint(10,5), cvPoint(5+600,25), CV_RGB(100,150,100), CV_FILLED);
 		cvRectangle(t, cvPoint(10,25), cvPoint(5+200,45), CV_RGB(100,150,100), CV_FILLED);
@@ -188,6 +198,7 @@ void Calibrator::EndCalibration()
 	cvDestroyWindow("Undistort");
 }
 
+#include <iostream>
 void Calibrator::ProcessKey(char key)
 {
 	switch(key)
@@ -195,13 +206,39 @@ void Calibrator::ProcessKey(char key)
 	case KEY_CALIBRATION_GRID:
 		StartChessBoardFinder();
 		break;
-	case KEY_RESET_Z:
-		Globals::ResetZValues();
-		break;
 	case KEY_RESET:
 		Globals::LoadDefaultDistortionMatrix();
 		if(mapx != NULL) cvReleaseImage(&mapx);
 		if(mapy != NULL) cvReleaseImage(&mapy);
+		break;
+	case KEY_NEXT_OPTION_1:
+	case KEY_NEXT_OPTION_2:
+	case KEY_NEXT_OPTION_3:
+		selected_side++;
+		if(selected_side >=4) selected_side = 0;
+		std::cout << selected_side << std::endl;
+		break;
+	case KEY_PREVIOUS_OPTION_1:
+	case KEY_PREVIOUS_OPTION_2:
+	case KEY_PREVIOUS_OPTION_3:
+		selected_side--;
+		if(selected_side < 0) selected_side = 3;
+		break;
+	case KEY_MENU_INCR_1:
+	case KEY_MENU_INCR_2:
+	case KEY_MENU_INCR_3:
+		if(selected_side == 0)x_min ++;
+		else if(selected_side == 3)y_min ++;
+		else if(selected_side == 2)x_max ++;
+		else if(selected_side == 1)y_max ++;
+		break;
+	case KEY_MENU_DECR_1:
+	case KEY_MENU_DECR_2:
+	case KEY_MENU_DECR_3:
+		if(selected_side == 0)x_min --;
+		else if(selected_side == 3)y_min --;
+		else if(selected_side == 2)x_max --;
+		else if(selected_side == 1)y_max --;
 		break;
 	}		
 }

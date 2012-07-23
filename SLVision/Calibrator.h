@@ -26,7 +26,7 @@
 #include <cxcore.h>
 #include <highgui.h>
 
-#define N_BOARDS 1
+#define N_BOARDS 3
 #define FRAME_STEP 5
 #define BOARD_W 9
 #define BOARD_H 6
@@ -54,7 +54,9 @@ class Calibrator
 	CvMat* point_counts2;
 	IplImage* mapx;
 	IplImage* mapy;
-	int x_box, y_box, w_box, h_box;
+	//int x_box, y_box, w_box, h_box;
+	int x_min, x_max, y_min, y_max;
+	int selected_side;
 public:
 	Calibrator(void);
 	~Calibrator(void);

@@ -213,17 +213,17 @@ int main(int argc, char* argv[])
 			case KEY_CHANGE_VIEW:
 				SwitchScreen();
 				break;
-			case KEY_SHOW_FID_PROCESSOR:
+//			case KEY_SHOW_FID_PROCESSOR:
 //				ToggleDisplayFIDProcessor();
-				break;
+//				break;
 			case KEY_CALIBRATION:
 				ToggleCalibrationMode();
 				break;
 			case KEY_CALIBRATION_GRID:
 			case KEY_RESET:
-			case KEY_RESET_Z:
-				if(claibrateMode) calibrator->ProcessKey(presskey);
-				break;
+//			case KEY_RESET_Z:
+//				if(claibrateMode) calibrator->ProcessKey(presskey);
+//				break;
 /*			case KEY_ENABLE_BGS:
 				bg_substraction = true;
 				process_bg = true;
@@ -232,27 +232,55 @@ int main(int argc, char* argv[])
 				bg_substraction = false;
 				break;
 */
-			case '4':
-				Switchleft();
+			case KEY_PREVIOUS_OPTION_1:
+			case KEY_PREVIOUS_OPTION_2:
+			case KEY_PREVIOUS_OPTION_3:
+				
+				if(claibrateMode)
+				{
+					calibrator->ProcessKey(presskey);
+				}
+				else if(show_options)
+					Switchleft();
 				break;
-			case '6':
-				Switchright();
+			case KEY_NEXT_OPTION_1:
+			case KEY_NEXT_OPTION_2:
+			case KEY_NEXT_OPTION_3:
+				if(claibrateMode)
+				{
+					calibrator->ProcessKey(presskey);
+				}
+				else if(show_options)
+					Switchright();
 				break;
-			case 'o':
+			case KEY_SHOW_OPTIONS_1:
+			case KEY_SHOW_OPTIONS_2:
 				if(processors.size() != 0)
 				{
 					show_options = !show_options;
 					processors[selected_processor]->EnableKeyProcessor(show_options);
 				}
 				break;
-			case '8':
-			case '2':
-			case '+':
-			case '-':
+			case KEY_MENU_UP_1:
+			case KEY_MENU_UP_2:
+			case KEY_MENU_UP_3:
+			case KEY_MENU_DOWN_1:
+			case KEY_MENU_DOWN_2:
+			case KEY_MENU_DOWN_3:
+			case KEY_MENU_INCR_1:
+			case KEY_MENU_INCR_2:
+			case KEY_MENU_INCR_3:
+			case KEY_MENU_DECR_1:
+			case KEY_MENU_DECR_2:
+			case KEY_MENU_DECR_3:
 				if(show_options)
 				{
 					for(Vector_processors::iterator it = processors.begin(); it != processors.end(); it++)
 						(*it)->ProcessKey(presskey);
+				}
+				else if(claibrateMode)
+				{
+					calibrator->ProcessKey(presskey);
 				}
 				break;
 				//test
@@ -345,6 +373,11 @@ void ToggleCalibrationMode()
 	if(claibrateMode)
 	{
 		calibrator->StartCalibration();
+		if(processors.size() != 0)
+				{
+					show_options = !show_options;
+					processors[selected_processor]->EnableKeyProcessor(show_options);
+				}
 	}
 	else
 	{
