@@ -205,7 +205,6 @@ int main(int argc, char* argv[])
 		TuioServer::Instance().SendBundle();
 		//Key Check
 		presskey=cvWaitKey (70);
-		std::cout << presskey << std::endl;
 		switch(presskey)
 		{
 			case KEY_EXIT:
@@ -236,12 +235,23 @@ int main(int argc, char* argv[])
 			case KEY_PREVIOUS_OPTION_1:
 			case KEY_PREVIOUS_OPTION_2:
 			case KEY_PREVIOUS_OPTION_3:
-				Switchleft();
+				
+				if(claibrateMode)
+				{
+					calibrator->ProcessKey(presskey);
+				}
+				else if(show_options)
+					Switchleft();
 				break;
 			case KEY_NEXT_OPTION_1:
 			case KEY_NEXT_OPTION_2:
 			case KEY_NEXT_OPTION_3:
-				Switchright();
+				if(claibrateMode)
+				{
+					calibrator->ProcessKey(presskey);
+				}
+				else if(show_options)
+					Switchright();
 				break;
 			case KEY_SHOW_OPTIONS_1:
 			case KEY_SHOW_OPTIONS_2:
@@ -267,6 +277,10 @@ int main(int argc, char* argv[])
 				{
 					for(Vector_processors::iterator it = processors.begin(); it != processors.end(); it++)
 						(*it)->ProcessKey(presskey);
+				}
+				else if(claibrateMode)
+				{
+					calibrator->ProcessKey(presskey);
 				}
 				break;
 				//test
@@ -359,6 +373,11 @@ void ToggleCalibrationMode()
 	if(claibrateMode)
 	{
 		calibrator->StartCalibration();
+		if(processors.size() != 0)
+				{
+					show_options = !show_options;
+					processors[selected_processor]->EnableKeyProcessor(show_options);
+				}
 	}
 	else
 	{
