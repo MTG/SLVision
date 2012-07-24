@@ -231,7 +231,13 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 		if(it->second->IsUpdated())
 		{
 			//send OSC MEssage
-			TuioServer::Instance().AddHand(it->first,it->second->IsConfirmedAsHand(),it->second->IsOpened(),it->second->TCentroidX(), it->second->TCentroidY(), it->second->GetArea());			
+			TuioServer::Instance().AddHand(
+				it->first,
+				it->second->IsConfirmedAsHand(),
+				it->second->IsOpened(),
+				Globals::GetX(it->second->TCentroidX()),//it->second->TCentroidX(), 
+				Globals::GetY(it->second->TCentroidY()),//it->second->TCentroidY(), 
+				it->second->GetArea());			
 			TuioServer::Instance().AddHandPath(it->first,it->second->vertexs);
 			if(it->second->IsPinching() || it->second->IsPinchingEnd())
 			{

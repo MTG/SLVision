@@ -332,8 +332,8 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->pitch = atan2(rotationMatrix->data.fl[7],rotationMatrix->data.fl[8]);
 					fiducial_map[tmp_ssid]->roll = (2.0f*3.141592654f)-atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]);
 
-					fiducial_map[tmp_ssid]->xpos = ((translation->data.fl[0] + Globals::width )/ 2)/Globals::width;
-					fiducial_map[tmp_ssid]->ypos = ((translation->data.fl[1] + Globals::height )/ 2)/Globals::height;
+					fiducial_map[tmp_ssid]->xpos = translation->data.fl[0];
+					fiducial_map[tmp_ssid]->ypos = translation->data.fl[1];
 					fiducial_map[tmp_ssid]->zpos = translation->data.fl[2];
 
 					std::cout << fiducial_map[tmp_ssid]->yaw << " \t" << fiducial_map[tmp_ssid]->pitch << " \t" <<fiducial_map[tmp_ssid]->roll << std::endl;
@@ -385,14 +385,13 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	{
 		if(it->second->IsUpdated())
 		{
-
 			//send tuio message!!!!
 			TuioServer::Instance().Add3DObjectMessage(
 				it->first,
 				0,
 				it->second->GetFiducialID(),
-				it->second->xpos,
-				it->second->ypos,
+				Globals::GetX(it->second->xpos),//it->second->xpos,
+				Globals::GetY(it->second->ypos),//it->second->ypos,
 				it->second->zpos,//Globals::GetZValue(it->second->zpos),
 				it->second->yaw,
 				it->second->pitch,

@@ -152,7 +152,14 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 		{
 			//tuio message
 			//(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
-			TuioServer::Instance().AddPointerMessage(it->first, 0, 0, it->second->x/Globals::width, it->second->y/Globals::height, it->second->area, 0);
+			TuioServer::Instance().AddPointerMessage(
+				it->first, 
+				0, 
+				0, 
+				Globals::GetX(it->second->x),//it->second->x/Globals::width, 
+				Globals::GetY(it->second->y),//it->second->y/Globals::height, 
+				it->second->area, 
+				0);
 		}
 		else
 		{
