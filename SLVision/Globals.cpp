@@ -48,6 +48,10 @@ unsigned int	Globals::ssidGenerator				= 1;
 
 //float			Globals::z_min						= -1.0f;
 //float			Globals::z_max						= -1.0f;
+int				&Globals::calib_x_max = datasaver::GlobalConfig::getRef("MAIN:CALIBRATOR:TABLE:XMAX",Globals::width);
+int				&Globals::calib_x_min = datasaver::GlobalConfig::getRef("MAIN:CALIBRATOR:TABLE:XMIN",0);
+int				&Globals::calib_y_max = datasaver::GlobalConfig::getRef("MAIN:CALIBRATOR:TABLE:YMAX",(int)(Globals::height));
+int				&Globals::calib_y_min = datasaver::GlobalConfig::getRef("MAIN:CALIBRATOR:TABLE:YMIN",0);
 
 void Globals::LoadDefaultDistortionMatrix()
 {
@@ -74,6 +78,15 @@ void Globals::LoadDefaultDistortionMatrix()
 	cvSave(M_PATH_DISTORTION,distortion);
 }
 
+float Globals::GetX(int coord)
+{
+	return (float)(coord - Globals::calib_x_min) / (float)(Globals::calib_x_max - Globals::calib_x_min);
+}
+
+float Globals::GetY(int coord)
+{
+	return (float)(coord - Globals::calib_y_min) / (float)(Globals::calib_y_max - Globals::calib_y_min);
+}
 /*
 void Globals::UpdateZValues(float z)
 {

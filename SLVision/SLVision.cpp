@@ -287,8 +287,6 @@ int main(int argc, char* argv[])
 		}
 	} ///end while bucle
 
-	
-	
 	//finishing and erasing data:
 	TuioServer::Instance().SendEmptyBundle(); //sends clear empty tuioMessage
 	cvReleaseCapture(&cv_camera_capture);
@@ -374,10 +372,11 @@ void ToggleCalibrationMode()
 	{
 		calibrator->StartCalibration();
 		if(processors.size() != 0)
-				{
-					show_options = !show_options;
-					processors[selected_processor]->EnableKeyProcessor(show_options);
-				}
+		{
+			show_options = false;
+			processors[selected_processor]->EnableKeyProcessor(show_options);
+		}
+
 	}
 	else
 	{

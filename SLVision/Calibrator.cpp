@@ -24,6 +24,7 @@
 
 #include "Calibrator.h"
 #include "Globals.h"
+#include "GlobalConfig.h"
 
 Calibrator::Calibrator(void)
 {
@@ -35,10 +36,11 @@ Calibrator::Calibrator(void)
 	y_box = Globals::height/2;
 	w_box = Globals::width/2;
 	h_box = Globals::height/2;*/
+	/*int &glob_view = datasaver::GlobalConfig::getRef("MAIN:VIEW",0);
 	x_min = 0;
 	x_max = Globals::width;
 	y_min = 0;
-	y_max = Globals::height/2;
+	y_max = Globals::height/2;*/
 	selected_side = 0;
 }
 
@@ -175,14 +177,14 @@ void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 		IplImage *t = cvCloneImage(main_image);
 		cvRemap( main_image, t, mapx, mapy );  // Undistort image
 
-		if(selected_side == 0) cvLine(t, cvPoint( x_min , y_min ), cvPoint( x_min , y_max ), CV_RGB(255,255,255),2);
-		else cvLine(t, cvPoint( x_min , y_min ), cvPoint( x_min , y_max ), CV_RGB(0,255,0),2);
-		if(selected_side == 1) cvLine(t, cvPoint( x_min , y_max ), cvPoint( x_max , y_max ), CV_RGB(255,255,255),2);
-		else cvLine(t, cvPoint( x_min , y_max ), cvPoint( x_max , y_max ), CV_RGB(0,255,0),2);
-		if(selected_side == 2) cvLine(t, cvPoint( x_max , y_max ), cvPoint( x_max , y_min ), CV_RGB(255,255,255),2);
-		else cvLine(t, cvPoint( x_max , y_max ), cvPoint( x_max , y_min ), CV_RGB(0,255,0),2);
-		if(selected_side == 3) cvLine(t, cvPoint( x_max , y_min ), cvPoint( x_min , y_min ), CV_RGB(255,255,255),2);
-		else cvLine(t, cvPoint( x_max , y_min ), cvPoint( x_min , y_min ), CV_RGB(0,255,0),2);
+		if(selected_side == 0) cvLine(t, cvPoint( Globals::calib_x_min , Globals::calib_y_min ), cvPoint( Globals::calib_x_min , Globals::calib_y_max ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( Globals::calib_x_min , Globals::calib_y_min ), cvPoint( Globals::calib_x_min , Globals::calib_y_max ), CV_RGB(0,255,0),2);
+		if(selected_side == 1) cvLine(t, cvPoint( Globals::calib_x_min , Globals::calib_y_max ), cvPoint( Globals::calib_x_max , Globals::calib_y_max ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( Globals::calib_x_min , Globals::calib_y_max ), cvPoint( Globals::calib_x_max , Globals::calib_y_max ), CV_RGB(0,255,0),2);
+		if(selected_side == 2) cvLine(t, cvPoint( Globals::calib_x_max , Globals::calib_y_max ), cvPoint( Globals::calib_x_max , Globals::calib_y_min ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( Globals::calib_x_max , Globals::calib_y_max ), cvPoint( Globals::calib_x_max , Globals::calib_y_min ), CV_RGB(0,255,0),2);
+		if(selected_side == 3) cvLine(t, cvPoint( Globals::calib_x_max , Globals::calib_y_min ), cvPoint( Globals::calib_x_min , Globals::calib_y_min ), CV_RGB(255,255,255),2);
+		else cvLine(t, cvPoint( Globals::calib_x_max , Globals::calib_y_min ), cvPoint( Globals::calib_x_min , Globals::calib_y_min ), CV_RGB(0,255,0),2);
 
 		//show options:
 		cvRectangle(t, cvPoint(10,5), cvPoint(5+600,25), CV_RGB(100,150,100), CV_FILLED);
@@ -227,18 +229,20 @@ void Calibrator::ProcessKey(char key)
 	case KEY_MENU_INCR_1:
 	case KEY_MENU_INCR_2:
 	case KEY_MENU_INCR_3:
-		if(selected_side == 0)x_min ++;
-		else if(selected_side == 3)y_min ++;
-		else if(selected_side == 2)x_max ++;
-		else if(selected_side == 1)y_max ++;
+		if(selected_side == 0)Globals::calib_x_min ++;
+		else if(selected_side == 3)Globals::calib_y_min ++;
+		else if(selected_side == 2)Globals::calib_x_max ++;
+		else if(selected_side == 1)Globals::calib_y_max ++;
+		//std::cout << "xM: " << Globals::calib_x_max << " xm: " << Globals::calib_x_min << " yM: " << Globals::calib_y_max << " ym: " << Globals::calib_y_min << std::endl; 
 		break;
 	case KEY_MENU_DECR_1:
 	case KEY_MENU_DECR_2:
 	case KEY_MENU_DECR_3:
-		if(selected_side == 0)x_min --;
-		else if(selected_side == 3)y_min --;
-		else if(selected_side == 2)x_max --;
-		else if(selected_side == 1)y_max --;
+		if(selected_side == 0)Globals::calib_x_min --;
+		else if(selected_side == 3)Globals::calib_y_min --;
+		else if(selected_side == 2)Globals::calib_x_max --;
+		else if(selected_side == 1)Globals::calib_y_max --;
+		//std::cout << "xM: " << Globals::calib_x_max << " xm: " << Globals::calib_x_min << " yM: " << Globals::calib_y_max << " ym: " << Globals::calib_y_min << std::endl;
 		break;
 	}		
 }

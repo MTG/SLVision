@@ -97,8 +97,16 @@ public:
 
 	static void LoadDefaultDistortionMatrix();
 	static void UpdateZValues(float z);
+
+	static int				&calib_x_max;
+	static int				&calib_x_min;
+	static int				&calib_y_max;
+	static int				&calib_y_min;
 //	static float GetZValue(float z);
 //	static void ResetZValues();
+
+	static float GetX(int coord);
+	static float GetY(int coord);
 
 	class Font
 	{

@@ -55,7 +55,6 @@ class Calibrator
 	IplImage* mapx;
 	IplImage* mapy;
 	//int x_box, y_box, w_box, h_box;
-	int x_min, x_max, y_min, y_max;
 	int selected_side;
 public:
 	Calibrator(void);
