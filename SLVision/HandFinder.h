@@ -46,11 +46,14 @@ class HandFinder :
 	float length;
 	int max_area;
 	int min_area;
+
 public:
+	static HandFinder* instance;
 	HandFinder(void);
 	~HandFinder(void);
 
 	AliveList GetAlive();
+	bool TouchInHand(float x, float y);
 protected:
 	void KeyInput(char key);
 	void UpdatedValuesFromGui(); 

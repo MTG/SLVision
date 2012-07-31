@@ -83,5 +83,7 @@ public:
 	bool IsPinching();
 	bool IsPinchingEnd();
 	void SetPinch(CvSeq* seq);
+
+	bool IsFinger(float x, float y);
 };
 

@@ -88,6 +88,7 @@ int TuioServer::AddAliveMessage()
 		}
 	}
 	(*packet_stream) << osc::EndMessage;
+
 	return i;
 }
 
@@ -172,13 +173,22 @@ void TuioServer::SendBundle()
 	}
 	else
 	{
+		//AddAliveMessage();
 		int q = alive.size();
 		if ( q != AddAliveMessage() )
 		{
 			(*packet_stream) << osc::EndBundle;
 			transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
 		}
+		AddAliveMessage();
+		(*packet_stream) << osc::EndBundle;
+		transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
 	}
+
+	int i = AddAliveMessage();
+	packet_stream->Clear();
+	bundle_started = false;
+	if( i == 0) SendEmptyBundle();
 	packet_stream->Clear();
 	bundle_started = false;
 }

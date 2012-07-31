@@ -434,7 +434,9 @@ AliveList MarkerFinder::GetAlive()
 		for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
 		{
 			to_return.push_back(it->first);
+			//std::cout << " " << it->first;
 		}
+		//std::cout << std::endl;
 	}
 	//std::vector<unsigned long>
 	return to_return;

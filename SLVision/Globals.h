@@ -33,9 +33,6 @@
 //CAMERA constants
 #define CAMERA_ID					0
 
-
-
-
 #define APP_NAME					"SLVision"
 #define M_PATH_DISTORTION			"distortion.xml"
 #define M_PATH_INTRINSIC			"instrinsic.xml"
@@ -104,6 +101,8 @@ public:
 	static int				&calib_y_min;
 //	static float GetZValue(float z);
 //	static void ResetZValues();
+
+	//static HandFinder*		hand_finder;
 
 	static float GetX(int coord);
 	static float GetY(int coord);

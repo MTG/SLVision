@@ -521,3 +521,15 @@ bool Hand::IsPinchingEnd()
 	sendEndPinching = false;
 	return toreturn;
 }
+
+bool Hand::IsFinger(float x, float y)
+{
+	for(std::vector <Hand_Vertex*>::iterator it = hull_vertexs.begin(); it!= hull_vertexs.end(); it++)
+	{
+		Hand_Vertex * vert = *it;
+		float dist = fabs(sqrt(vert->Distance(x,y)));
+		////!!!!!
+		if(dist < 25 ) return true;
+	}
+	return false;
+}

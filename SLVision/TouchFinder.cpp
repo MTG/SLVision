@@ -26,6 +26,7 @@
 #include "Fiducial.h"
 #include "TuioServer.h"
 #define DISTANCE_OFFSET 50
+#include "HandFinder.h"
 
 TouchFinder::TouchFinder(void):FrameProcessor("TouchFinder")
 {
@@ -136,8 +137,19 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 				candidate_id = 0;
 			if(candidate_id == 0) //new touch
 			{
-				unsigned int new_id = Globals::ssidGenerator++;
-				pointmap[new_id] = new Touch(temp_touch);
+				//check handfider activated
+				if(HandFinder::instance != NULL && HandFinder::instance->IsEnabled())
+				{
+					if( HandFinder::instance->TouchInHand(temp_touch.x, temp_touch.y))
+					{
+						unsigned int new_id = Globals::ssidGenerator++;
+						pointmap[new_id] = new Touch(temp_touch);
+					}
+				}else
+				{
+					unsigned int new_id = Globals::ssidGenerator++;
+					pointmap[new_id] = new Touch(temp_touch);
+				}
 			}
 			else //update touch
 			{

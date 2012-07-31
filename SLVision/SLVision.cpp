@@ -127,6 +127,8 @@ int main(int argc, char* argv[])
 	TuioServer::Instance().RegisterProcessor(touchfinder);
 
 	handfinder = new HandFinder();
+	HandFinder::instance = handfinder;
+	//Globals::hand_finder = handfinder;
 	processors.push_back(handfinder);
 	TuioServer::Instance().RegisterProcessor(handfinder);
 

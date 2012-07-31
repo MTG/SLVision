@@ -26,6 +26,7 @@
 #include "TuioServer.h"
 
 #define MINIMUM_CENTROID_DISTANCE 80
+HandFinder* HandFinder::instance = NULL;
 
 HandFinder::HandFinder(void):FrameProcessor("HandFinder")
 {
@@ -94,6 +95,19 @@ void HandFinder::UpdatedValuesFromGui()
 
 HandFinder::~HandFinder(void)
 {
+}
+
+bool HandFinder::TouchInHand(float x, float y)
+{
+	if(this->IsEnabled())
+	{
+		for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
+		{
+			if(it->second->IsFinger(x,y))
+				return true;
+		}
+	}
+	return false;
 }
 
 AliveList HandFinder::GetAlive()

@@ -53,6 +53,8 @@ int				&Globals::calib_x_min = datasaver::GlobalConfig::getRef("MAIN:CALIBRATOR:
 int				&Globals::calib_y_max = datasaver::GlobalConfig::getRef("MAIN:CALIBRATOR:TABLE:YMAX",(int)(Globals::height));
 int				&Globals::calib_y_min = datasaver::GlobalConfig::getRef("MAIN:CALIBRATOR:TABLE:YMIN",0);
 
+//HandFinder*		Globals::hand_finder				= NULL;
+
 void Globals::LoadDefaultDistortionMatrix()
 {
 	if(intrinsic != NULL)
