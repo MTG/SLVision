@@ -125,6 +125,7 @@ void HandFinder::KeyInput(char key)
 {
 }
 
+
 IplImage* HandFinder::Process(IplImage*	main_image)
 {
 	cvClearMemStorage(main_storage);
@@ -249,9 +250,10 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 				it->first,
 				it->second->IsConfirmedAsHand(),
 				it->second->IsOpened(),
-				Globals::GetX(it->second->TCentroidX()),//it->second->TCentroidX(), 
-				Globals::GetY(it->second->TCentroidY()),//it->second->TCentroidY(), 
-				it->second->GetArea());			
+				it->second->TCentroidX(), //Globals::GetX(it->second->TCentroidX()),//it->second->TCentroidX(), 
+				it->second->TCentroidY(), //Globals::GetY(it->second->TCentroidY()),//it->second->TCentroidY(), 
+				it->second->GetArea());		
+			
 			TuioServer::Instance().AddHandPath(it->first,it->second->vertexs);
 			if(it->second->IsPinching() || it->second->IsPinchingEnd())
 			{

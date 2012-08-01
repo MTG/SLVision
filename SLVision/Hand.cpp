@@ -522,6 +522,7 @@ bool Hand::IsPinchingEnd()
 	return toreturn;
 }
 
+#include <iostream>
 bool Hand::IsFinger(float x, float y)
 {
 	for(std::vector <Hand_Vertex*>::iterator it = hull_vertexs.begin(); it!= hull_vertexs.end(); it++)
@@ -529,7 +530,8 @@ bool Hand::IsFinger(float x, float y)
 		Hand_Vertex * vert = *it;
 		float dist = fabs(sqrt(vert->Distance(x,y)));
 		////!!!!!
-		if(dist < 25 ) return true;
+		std::cout << dist << std::endl;
+		if(dist < 5 ) return true;
 	}
 	return false;
 }

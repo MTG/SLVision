@@ -127,6 +127,7 @@ void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned 
 	if(messages > 5) SendBundle();
 }
 
+
 void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area)
 {
 	
@@ -134,25 +135,29 @@ void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, flo
 	(*packet_stream) << osc::BeginMessage( "/tuio2/hand" ) << (int)sid << (int)confirmed << (int)open << x << y << area <<osc::EndMessage;
 	messages++;
 	if(messages > 5) SendBundle();
+	
 }
 
 void TuioServer::AddHandPath(unsigned int sid,std::vector<Hand_Vertex> &path)
 {
+	
 	if(!bundle_started)StartBundle();
-	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/path" ) << (int)sid /*<< (int) path.size()*/;
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/path" ) << (int)sid ;
 	for(std::vector<Hand_Vertex>::iterator it = path.begin(); it != path.end(); it++)
 	{
 		(*packet_stream) << (float)it->GetDistortionatedX() << (float)it->GetDistortionatedY() << (int)it->GetDescription() ;
+
 	}
 	(*packet_stream) <<osc::EndMessage;
 	messages++;
 	if(messages > 5) SendBundle();
+	
 }
 
 void TuioServer::AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path)
 {
 	if(!bundle_started)StartBundle();
-	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/pinch" ) << (int)sid /*<< (int) path.size()*/;
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/pinch" ) << (int)sid ;
 	for(std::vector<Hand_Vertex>::iterator it = path.begin(); it != path.end(); it++)
 	{
 		(*packet_stream) << (float)it->GetDistortionatedX() << (float)it->GetDistortionatedY();
@@ -160,6 +165,7 @@ void TuioServer::AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path)
 	(*packet_stream) <<osc::EndMessage;
 	messages++;
 	if(messages > 5) SendBundle();
+	
 	//if(packet_stream->Size
 }
 
@@ -180,9 +186,10 @@ void TuioServer::SendBundle()
 			(*packet_stream) << osc::EndBundle;
 			transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
 		}
+		/*if(!bundle_started)StartBundle();
 		AddAliveMessage();
 		(*packet_stream) << osc::EndBundle;
-		transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
+		transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );*/
 	}
 
 	int i = AddAliveMessage();
