@@ -82,7 +82,7 @@ void Globals::LoadDefaultDistortionMatrix()
 
 float Globals::GetX(int coord)
 {
-	return (float)(coord - Globals::calib_x_min) / (float)(Globals::calib_x_max - Globals::calib_x_min);
+	return 1.0f-(float)(coord - Globals::calib_x_min) / (float)(Globals::calib_x_max - Globals::calib_x_min);
 }
 
 float Globals::GetY(int coord)
