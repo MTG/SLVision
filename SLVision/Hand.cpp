@@ -530,7 +530,7 @@ bool Hand::IsFinger(float x, float y)
 		Hand_Vertex * vert = *it;
 		float dist = fabs(sqrt(vert->Distance(x,y)));
 		////!!!!!
-		std::cout << dist << std::endl;
+		//std::cout << dist << std::endl;
 		if(dist < 5 ) return true;
 	}
 	return false;

@@ -336,7 +336,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->ypos = translation->data.fl[1];
 					fiducial_map[tmp_ssid]->zpos = translation->data.fl[2];
 
-					std::cout << fiducial_map[tmp_ssid]->yaw << " \t" << fiducial_map[tmp_ssid]->pitch << " \t" <<fiducial_map[tmp_ssid]->roll << std::endl;
+					//std::cout << fiducial_map[tmp_ssid]->yaw << " \t" << fiducial_map[tmp_ssid]->pitch << " \t" <<fiducial_map[tmp_ssid]->roll << std::endl;
 
 					//std::cout << translation->data.fl[2] << std::endl;
 					fiducial_map[tmp_ssid]->r11 = rotationMatrix->data.fl[0];

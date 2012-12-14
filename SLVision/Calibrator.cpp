@@ -218,7 +218,7 @@ void Calibrator::ProcessKey(char key)
 	case KEY_NEXT_OPTION_3:
 		selected_side++;
 		if(selected_side >=4) selected_side = 0;
-		std::cout << selected_side << std::endl;
+		//std::cout << selected_side << std::endl;
 		break;
 	case KEY_PREVIOUS_OPTION_1:
 	case KEY_PREVIOUS_OPTION_2:
