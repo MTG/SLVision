@@ -25,6 +25,7 @@
 #include <cv.h>
 #include "TuioServer.h"
 #include "Hand_Vertex.h"
+#include "LowPass.h"
 
 class Hand
 {
@@ -58,6 +59,9 @@ protected:
     bool FindHandFrom(int indexplus);
     void GetNextIndexVertex(int & actual);
     void GetPreviousIndexVertex(int & actual);
+
+	LowPass *lp_centerhandx;
+	LowPass *lp_centerhandy;
 public:
 	Hand(void);
 	Hand(unsigned long _sessionID, const CvPoint & _centroid);

@@ -132,6 +132,7 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 	cvClearMemStorage(main_storage_poligon);
 
 	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
+
 	cvCopy(main_processed_image,main_processed_contour);	
 	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_CHAIN_APPROX_SIMPLE/*CV_RETR_CCOMP*/);
 

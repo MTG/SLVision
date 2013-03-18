@@ -64,6 +64,8 @@ bool XML_Configuration::LoadXMLFile(std::string path)
 				{
 					temp = line.substr(tag_end+1, (tag_last-tag_end)-1);
 					//cout << PathToString() << " -> " << temp << endl;
+					//cout << PathToString() << " -> " << temp << endl;
+					//cout << PathToString() << " -> " << temp << endl;
 					values[PathToString()] = temp;
 					tag_end = line.find('>',tag_last);
 					path_list.remove(path_list.back());
