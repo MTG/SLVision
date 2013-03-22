@@ -33,6 +33,7 @@ class Hand
 public:
 	std::vector <Hand_Vertex>     vertexs;
 	std::vector <Hand_Vertex>    hand_hole;
+	std::vector <CvPoint>	fingers;
 protected:
 	///vars
     
@@ -44,7 +45,7 @@ protected:
     float               area;
     float               length;
     CvPoint             centroid;
-    CvPoint             centroid_hand;
+	CvPoint				centroidLwP;
     CvPoint             from, to;
     bool                first_update;
 	bool				is_open;
@@ -54,6 +55,7 @@ protected:
 	int edge; //-1 none 0 down 1 up 2 left 3 right
 	bool updated;
     ///Methods
+	void InitVars();
     Hand_Vertex* GetNearest(int x, int y);
     Hand_Vertex* GetNext(Hand_Vertex* v);
     bool FindHandFrom(int indexplus);
@@ -83,6 +85,8 @@ public:
 	float GetArea();
 	float TCentroidX();
 	float TCentroidY();
+	float GetLwPCentroidX();
+	float GetLwPCentroidY();
 
 	bool IsPinching();
 	bool IsPinchingEnd();

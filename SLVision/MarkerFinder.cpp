@@ -380,6 +380,75 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 		}
 	}
 
+	/*to_remove.clear();
+	for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
+	{
+		if(it->second->IsUpdated())
+		{
+			//send tuio message!!!!
+			TuioServer::Instance().Add3DObjectMessage(
+				it->first,
+				0,
+				it->second->GetFiducialID(),
+				Globals::GetX(it->second->xpos),//it->second->xpos,
+				Globals::GetY(it->second->ypos),//it->second->ypos,
+				it->second->zpos,//Globals::GetZValue(it->second->zpos),
+				it->second->yaw,
+				it->second->pitch,
+				it->second->roll,
+				it->second->r11,
+				it->second->r12,
+				it->second->r13,
+				it->second->r21,
+				it->second->r22,
+				it->second->r23,
+				it->second->r31,
+				it->second->r32,
+				it->second->r33
+				);
+		}
+		else
+		{
+			to_remove.push_back(it->first);
+		}
+		if(Globals::is_view_enabled)
+		{
+			sprintf_s(text,"%i , %i",it->second->GetFiducialID(), it->first); 
+			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->GetX(), (int)it->second->GetY()),FONT_HELP,0,255,0);
+		}
+	}
+
+	for(std::vector<unsigned int>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
+	{
+		fiducial_map.erase(*it);
+	}*/
+
+	return main_processed_image;
+}
+
+AliveList MarkerFinder::GetAlive()
+{
+	AliveList to_return;
+	if(IsEnabled())
+	{
+		for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
+		{
+			to_return.push_back(it->first);
+			//std::cout << " " << it->first;
+		}
+		//std::cout << std::endl;
+	}
+	//std::vector<unsigned long>
+	return to_return;
+}
+
+void MarkerFinder::KeyInput(char key)
+{
+}
+
+void MarkerFinder::RepportOSC()
+{
+	if(!this->IsEnabled())return;
 	to_remove.clear();
 	for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
 	{
@@ -422,26 +491,4 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	{
 		fiducial_map.erase(*it);
 	}
-
-	return main_processed_image;
-}
-
-AliveList MarkerFinder::GetAlive()
-{
-	AliveList to_return;
-	if(IsEnabled())
-	{
-		for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
-		{
-			to_return.push_back(it->first);
-			//std::cout << " " << it->first;
-		}
-		//std::cout << std::endl;
-	}
-	//std::vector<unsigned long>
-	return to_return;
-}
-
-void MarkerFinder::KeyInput(char key)
-{
 }

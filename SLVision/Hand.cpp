@@ -34,6 +34,19 @@ Hand::~Hand(void)
 
 Hand::Hand()
 {
+	InitVars();
+}
+
+Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
+{
+	InitVars();
+    sessionID   = _sessionID;
+    centroid    = _centroid;
+}
+
+void Hand::InitVars()
+{
+	centroidLwP = cvPoint(-1,-1);
     centroid = cvPoint(-1,-1);
     sessionID = 0;
     area = 0.0f;
@@ -47,22 +60,7 @@ Hand::Hand()
 	sendEndPinching = false;
 	lp_centerhandx = new LowPass(SMOOTH_LWP_CENTER);
 	lp_centerhandy = new LowPass(SMOOTH_LWP_CENTER);
-}
-
-Hand::Hand(unsigned long _sessionID, const CvPoint & _centroid)
-{
-    area 		= 0.0f;
-    length 		= 0.0f;
-    sessionID   = _sessionID;
-    centroid    = _centroid;
-    first_update = true;
-    edge = -1;
-	confirmed_hand = false;
-	updated = true;
-	is_pinching = false;
-	sendEndPinching = false;
-	lp_centerhandx = new LowPass(SMOOTH_LWP_CENTER);
-	lp_centerhandy = new LowPass(SMOOTH_LWP_CENTER);
+	fingers.clear();
 }
 
 float Hand::Distance(const CvPoint & _centroid)
@@ -286,7 +284,8 @@ void Hand::ComputeHand(float _area, float _length)
                 to.y = hull_vertexs[i]->data.y;
             }
         }
-        ///detect edge:
+		
+		///detect edge:
         edge = 2;
         distance = fabs(ivect_point_dist( 0        ,0         , 0        ,Globals::height  , from.x,from.y));
         tmp_dist = fabs(ivect_point_dist( 0        ,Globals::height, Globals::width,Globals::height  , from.x,from.y));
@@ -308,6 +307,35 @@ void Hand::ComputeHand(float _area, float _length)
             edge = 0;
         }
     }
+	
+	///////////////////////////////////////////////////////////
+	//calculate hand centroid lowpass
+	float cnt = 0;
+	centroidLwP.x = 0;
+	centroidLwP.y = 0;
+	for (int i = 0; i < (int)hand_vertexs.size(); i++)
+	{
+		if(hand_vertexs[i]->isValley)
+		{
+			float value = fabsf(insqdist(this->to.x, this->to.y, hand_vertexs[i]->data.x, hand_vertexs[i]->data.y));
+			//if(value < 300)
+			{
+				value = 1-((float)value/300.0f);
+				cnt += value;
+				centroidLwP.x += hand_vertexs[i]->data.x*value;
+				centroidLwP.y += hand_vertexs[i]->data.y*value;
+			}
+		}
+	}
+	if(cnt != 0)
+	{
+		centroidLwP.x /= cnt;
+		centroidLwP.y /= cnt;
+		centroidLwP.x = lp_centerhandx->addvalue(centroidLwP.x);
+		centroidLwP.y = lp_centerhandy->addvalue(centroidLwP.y);
+	}
+	//////////////////////////////////////////////////////////
+
 }
 
 float Hand::GetArea()
@@ -317,46 +345,41 @@ float Hand::GetArea()
 
 bool Hand::FindHandFrom(int indexplus)
 {
-    centroid_hand.x = 0;
-    centroid_hand.y = 0;
     int k = 0;
 	int finger_number=0;
+	fingers.clear();
+
     if(vertexs[indexplus].extreme != 0 && indexplus > 0 && indexplus < (int)vertexs.size())
     {
         hand_vertexs.push_back(&vertexs[indexplus]);
-        centroid_hand.x += vertexs[indexplus].data.x;
-        centroid_hand.y += vertexs[indexplus].data.y;
         k++;
         if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD)
 		{
 			vertexs[indexplus].isFinger = true;
+			fingers.push_back(CvPoint(vertexs[indexplus].data));
 			finger_number ++;
 		}
         GetNextIndexVertex(indexplus);
         while(vertexs[indexplus].extreme == 0 )
         {
             hand_vertexs.push_back(&vertexs[indexplus]);
-            centroid_hand.x += vertexs[indexplus].data.x;
-            centroid_hand.y += vertexs[indexplus].data.y;
             k++;
             if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD)
 			{
 				vertexs[indexplus].isFinger = true;
+				fingers.push_back(CvPoint(vertexs[indexplus].data));
 				finger_number ++;
 			}
             GetNextIndexVertex(indexplus);
         }
         hand_vertexs.push_back(&vertexs[indexplus]);
-        centroid_hand.x += vertexs[indexplus].data.x;
-        centroid_hand.y += vertexs[indexplus].data.y;
         k++;
         if(vertexs[indexplus].isHull && vertexs[indexplus].valley_distance > FINGER_THRESHOLD)
 		{
 			vertexs[indexplus].isFinger = true;
+			fingers.push_back(CvPoint(vertexs[indexplus].data));
 			finger_number ++;
 		}
-        centroid_hand.x /= k;
-        centroid_hand.y /= k;
 
 		///Check Open / Closed Hand
 		if(finger_number == 5)
@@ -387,18 +410,11 @@ void Hand::GetPreviousIndexVertex(int & actual)
         actual = vertexs.size()-1;
 }
 
-#include <iostream>
 void Hand::draw(float x, float y)
 {
 	if(Globals::is_view_enabled)
 	{
 		//Draw from - to points and lines
-		CvPoint tmp;
-		tmp.x = 0;
-		tmp.y = 0;
-		float cnt = 0;
-
-
 		cvLine(Globals::screen,
 			this->from ,
 			this->to,
@@ -428,6 +444,15 @@ void Hand::draw(float x, float y)
 					CV_RGB(255,255,0));
 			}
 
+			if(hand_vertexs[i]->isFinger)
+			{
+				cvCircle(Globals::screen,cvPoint(hand_vertexs[i]->data.x, hand_vertexs[i]->data.y),20,CV_RGB(255,255,255));
+				cvLine(Globals::screen,
+					cvPoint( centroid.x , centroid.y) ,
+					cvPoint( hand_vertexs[i]->data.x ,hand_vertexs[i]->data.y ),
+					CV_RGB(255,255,255));
+			}
+
 			if(hand_vertexs[i]->isValley)
 			{
 				cvCircle(Globals::screen,
@@ -438,60 +463,22 @@ void Hand::draw(float x, float y)
 					cvPoint( centroid.x , centroid.y) ,
 					cvPoint( hand_vertexs[i]->data.x ,hand_vertexs[i]->data.y ),
 					CV_RGB(0,0,255));
-				
-				float value = fabsf(insqdist(this->to.x, this->to.y, hand_vertexs[i]->data.x, hand_vertexs[i]->data.y));
-				value = 1-((float)value/300.0f);
-				cnt += value;
-/////////////////////////////////////////////////////////////////
-				tmp.x += hand_vertexs[i]->data.x*value;
-				tmp.y += hand_vertexs[i]->data.y*value;
 			}
 		}
+	
 
-		tmp.x /= cnt;
-		tmp.y /= cnt;
-		tmp.x = lp_centerhandx->addvalue(tmp.x);
-		tmp.y = lp_centerhandy->addvalue(tmp.y);
 
+		//LWP centroid
 		if(is_open)
-			cvCircle(Globals::screen,cvPoint(tmp.x, tmp.y),20,CV_RGB(255,0,0),4);
+			cvCircle(Globals::screen,cvPoint(centroidLwP.x, centroidLwP.y),20,CV_RGB(255,0,0),4);
 		else
-			cvCircle(Globals::screen,cvPoint(tmp.x, tmp.y),20,CV_RGB(255,0,0),1);
-
-		/*
-			if(hand_vertexs[i]->isFinger)
-			{
-				cvCircle(Globals::screen,cvPoint(hand_vertexs[i]->data.x, hand_vertexs[i]->data.y),20,CV_RGB(255,255,255));
-				cvLine(Globals::screen,
-					cvPoint( centroid.x , centroid.y) ,
-					cvPoint( hand_vertexs[i]->data.x ,hand_vertexs[i]->data.y ),
-					CV_RGB(255,255,255));
-			}
-		}
-		for (int i = 0; i < (int)hull_vertexs.size(); i++)
-		{
-			if( i == 0)
-			{
-				cvLine(Globals::screen,
-					cvPoint( hull_vertexs[hull_vertexs.size()-1]->data.x ,hull_vertexs[hull_vertexs.size()-1]->data.y ) ,
-					cvPoint( hull_vertexs[i]->data.x ,hull_vertexs[i]->data.y ),
-					CV_RGB(255,0,0));
-			}
-			else
-			{
-				cvLine(Globals::screen,
-					cvPoint( hull_vertexs[i-1]->data.x ,hull_vertexs[i-1]->data.y ) ,
-					cvPoint( hull_vertexs[i]->data.x ,hull_vertexs[i]->data.y ),
-					CV_RGB(255,0,0));
-			}
-		}
-		*/
+			cvCircle(Globals::screen,cvPoint(centroidLwP.x, centroidLwP.y),20,CV_RGB(255,0,0),1);
 
 		///bad centroid
 		if(is_open)
-			cvCircle(Globals::screen,cvPoint(centroid_hand.x, centroid_hand.y),20,CV_RGB(0,255,0),4);
+			cvCircle(Globals::screen,cvPoint(centroid.x, centroid.y),20,CV_RGB(0,255,0),4);
 		else
-			cvCircle(Globals::screen,cvPoint(centroid_hand.x, centroid_hand.y),20,CV_RGB(0,255,0),1);
+			cvCircle(Globals::screen,cvPoint(centroid.x, centroid.y),20,CV_RGB(0,255,0),1);
 
 		//sessionID
 		char buffer[100];

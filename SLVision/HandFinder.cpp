@@ -235,12 +235,15 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 				}
 				else
 					hand->SetPinch(NULL);
-
 			}
 		}
-
 	}
+	return main_processed_image;
+}
 
+void HandFinder::RepportOSC()
+{
+	if(!this->IsEnabled())return;
 	to_remove.clear();
 	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
 	{
@@ -271,6 +274,9 @@ IplImage* HandFinder::Process(IplImage*	main_image)
 	{
 		hands.erase(*it);
 	}
+}
 
-	return main_processed_image;
+std::map<unsigned long, Hand*>* HandFinder::GetHands()
+{
+	return &hands;
 }

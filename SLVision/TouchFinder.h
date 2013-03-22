@@ -1,7 +1,7 @@
 /*
 	Daniel Gallardo Grassot
 	daniel.gallardo@upf.edu
-	Barcelona 2011
+	Barcelona 2013
 
 	Licensed to the Apache Software Foundation (ASF) under one
 	or more contributor license agreements.  See the NOTICE file
@@ -23,33 +23,15 @@
 
 #pragma once
 #include "frameprocessor.h"
+#include "Finger.h"
 
-class Touch
-{
-protected:
-	
-	bool is_updated;
-	
-public:
-	float x, y;
-	float area;
-
-	Touch();
-	Touch(const Touch &copy);
-	void Update(float x, float y, float area);
-	void Update(const Touch &copy);
-	bool CanUpdate( const Touch &tch, float & minimum_distance);
-	bool IsUpdated();
-};
-
-typedef std::map<unsigned int, Touch*> Pointmap;
+typedef std::map<unsigned int, Finger*> Pointmap;
 
 class TouchFinder :
 	public FrameProcessor
 {
 private:
-	//float temp_x, temp_y, temp_area;
-	Touch temp_touch;
+	Finger temp_touch;
 	float temp_minimum_distance, test_distance;
 	unsigned int candidate_id;
 	std::vector<unsigned int> to_be_removed;
@@ -68,6 +50,7 @@ protected:
 	void KeyInput(char key);
 	void UpdatedValuesFromGui(); 
 	IplImage* Process(IplImage*	main_image);
+	void RepportOSC();
 public:
 	TouchFinder(void);
 	~TouchFinder(void);

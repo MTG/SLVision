@@ -21,47 +21,30 @@
 	under the License.
 */
 
+#pragma once
 #include "LowPass.h"
 
-
-LowPass::LowPass(int queue_size)
+class Finger
 {
-	value = 0;
-	queuesize = queue_size;
-}
+protected:
+	bool is_updated;
+	bool is_on_the_air;
+	int handID;
+	LowPass xcoord, ycoord;
+	float x, y;
+public:
+	
+	float area;
 
+	Finger();
+	Finger(const Finger &copy);
+	void Update(float x, float y, float area);
+	void Update(const Finger &copy);
+	//bool CanUpdate( const Finger &tch, float & minimum_distance);
+	bool IsUpdated();
+	bool IsOnTheAir();
+	void SetHandData(int handID, bool on_the_air);
+	float GetX();
+	float GetY();
+};
 
-LowPass::~LowPass(void)
-{
-}
-
-float LowPass::addvalue(float _value)
-{
-	data.push_back(_value);
-
-	while ( data.size() > queuesize)
-		data.pop_front();
-
-	value = 0;
-	for(std::list<float>::iterator it = data.begin();
-		it != data.end(); 
-		it++)
-	{
-		value += (*it);
-	}
-
-	value = value / data.size();
-
-	return value;
-}
-
-float LowPass::getvalue ()
-{
-	return value;
-}
-
-void LowPass::Reset()
-{
-	data.clear();
-	value = 0;
-}

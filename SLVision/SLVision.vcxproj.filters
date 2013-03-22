@@ -92,6 +92,9 @@
     <ClCompile Include="LowPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Finger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Fiducial.h">
@@ -194,6 +197,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LowPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Finger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

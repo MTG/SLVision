@@ -97,7 +97,6 @@ void TouchFinder::UpdatedValuesFromGui()
 
 IplImage* TouchFinder::Process(IplImage* main_image)
 {
-	to_be_removed.clear();
 	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
 	cvCopy(main_processed_image,main_processed_contour);
 	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
@@ -125,7 +124,7 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 
 			for(Pointmap::iterator it = pointmap.begin(); it != pointmap.end(); it++)
 			{
-				float tmp_dist = fabs(fnsqdist(temp_touch.x,temp_touch.y,it->second->x,it->second->y));
+				float tmp_dist = fabs(fnsqdist(temp_touch.GetX(),temp_touch.GetY(),it->second->GetX(),it->second->GetY()));
 				if( temp_minimum_distance > tmp_dist)
 				{
 					candidate_id = it->first;
@@ -138,18 +137,18 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 			if(candidate_id == 0) //new touch
 			{
 				//check handfider activated
-				if(HandFinder::instance != NULL && HandFinder::instance->IsEnabled())
+				/*if(HandFinder::instance != NULL && HandFinder::instance->IsEnabled())
 				{
 					if( HandFinder::instance->TouchInHand(temp_touch.x, temp_touch.y))
 					{
 						unsigned int new_id = Globals::ssidGenerator++;
-						pointmap[new_id] = new Touch(temp_touch);
+						pointmap[new_id] = new Finger(temp_touch);
 					}
 				}else
-				{
+				{*/
 					unsigned int new_id = Globals::ssidGenerator++;
-					pointmap[new_id] = new Touch(temp_touch);
-				}
+					pointmap[new_id] = new Finger(temp_touch);
+				//}
 			}
 			else //update touch
 			{
@@ -158,31 +157,86 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 		}
 	}
 
+	////check handfinder on the air fingers
+	
+	if(HandFinder::instance != NULL && HandFinder::instance->IsEnabled())
+	{
+		std::map<unsigned long, Hand*> hands = *HandFinder::instance->GetHands();
+		for(std::map<unsigned long, Hand*>::iterator it_hand = hands.begin(); it_hand != hands.end(); it_hand++)
+		{
+			for (std::vector <CvPoint>::iterator it_finger = it_hand->second->fingers.begin(); 
+				it_finger != it_hand->second->fingers.end(); 
+				it_finger++)
+			{
+				temp_minimum_distance = 99999999.0f;
+				candidate_id = 0;
+				temp_touch.Update((*it_finger).x,(*it_finger).y,-1);
+				for(Pointmap::iterator it_point = pointmap.begin(); it_point != pointmap.end(); it_point++)
+				{
+					float tmp_dist = fabs(fnsqdist(temp_touch.GetX(),temp_touch.GetY(),it_point->second->GetX(),it_point->second->GetY()));
+					if( temp_minimum_distance > tmp_dist)
+					{
+						candidate_id = it_point->first;
+						temp_minimum_distance = tmp_dist;
+					}
+				}
+				if(temp_minimum_distance > DISTANCE_OFFSET) candidate_id = 0;
+				if(candidate_id == 0) //new touch
+				{
+						unsigned int new_id = Globals::ssidGenerator++;
+						temp_touch.SetHandData(it_hand->first, true);
+						pointmap[new_id] = new Finger(temp_touch);
+				}
+				else //update touch
+				{
+					if(pointmap[candidate_id]->IsUpdated())
+					{
+						pointmap[candidate_id]->SetHandData(it_hand->first,false);
+						pointmap[candidate_id]->Update(temp_touch.GetX(),temp_touch.GetY(),pointmap[candidate_id]->area);
+					}
+					else
+					{
+						pointmap[candidate_id]->SetHandData(it_hand->first,true);
+						pointmap[candidate_id]->Update(temp_touch.GetX(),temp_touch.GetY(),-1);
+					}
+				}
+			}
+		}
+	}
+
+
+	return main_processed_image;
+}
+
+void TouchFinder::RepportOSC()
+{
+	if(!this->IsEnabled()) return;
+	to_be_removed.clear();
 	for(Pointmap::iterator it = pointmap.begin(); it != pointmap.end(); it++)
 	{
-		if (it->second->IsUpdated())
-		{
-			//tuio message
-			//(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
-			TuioServer::Instance().AddPointerMessage(
-				it->first, 
-				0, 
-				0, 
-				Globals::GetX(it->second->x),//it->second->x/Globals::width, 
-				Globals::GetY(it->second->y),//it->second->y/Globals::height, 
-				it->second->area, 
-				0);
-		}
-		else
-		{
-			//tuiomessage_remove
-			to_be_removed.push_back(it->first);
-		}
+			if (it->second->IsUpdated())
+			{
+				//tuio message
+				//(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
+				TuioServer::Instance().AddPointerMessage(
+					it->first, 
+					0, 
+					0,
+					Globals::GetX(it->second->GetX()),//it->second->x/Globals::width, 
+					Globals::GetY(it->second->GetY()),//it->second->y/Globals::height, 
+					it->second->area, 
+					0);
+			}
+			else
+			{
+				//tuiomessage_remove
+				to_be_removed.push_back(it->first);
+			}
 
 		if(Globals::is_view_enabled)
 		{
 			sprintf_s(text,"%i",it->first); 
-			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->x, (int)it->second->y),FONT_HELP,0,255,0);
+			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->GetX(), (int)it->second->GetY()),FONT_HELP,0,255,0);
 		}
 	}
 
@@ -190,8 +244,6 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 	{
 		pointmap.erase(*it);
 	}
-
-	return main_processed_image;
 }
 
 AliveList TouchFinder::GetAlive()
@@ -205,51 +257,4 @@ AliveList TouchFinder::GetAlive()
 		}
 	}
 	return to_return;
-}
-
-/********************************
-* TOUCH METHODS
-*********************************/
-
-Touch::Touch():x(0),y(0),is_updated(false),area(0)
-{}
-
-Touch::Touch(const Touch &copy):x(copy.x),y(copy.y),is_updated(true),area(copy.area)
-{}
-
-void Touch::Update(float x, float y, float area)
-{
-	this->x = x;
-	this->y = y;
-	this->area = area;
-	is_updated = true;
-}
-
-bool Touch::CanUpdate( const Touch &tch, float & minimum_distance)
-{
-	/*//if ( fabs((float)(tch.area-area)) <= AREA_OFFSET )
-	{
-		float tmp = fabs(fnsqdist(tch.x,tch.y,x,y));
-		if(tmp <= DISTANCE_OFFSET && tmp <= minimum_distance)
-		{
-			minimum_distance = tmp;
-			return true;
-		}
-	}*/
-	return false;
-}
-
-bool Touch::IsUpdated()
-{
-	if(is_updated)
-	{
-		is_updated = false;
-		return true;
-	}
-	return false;
-}
-
-void Touch::Update(const Touch &copy)
-{
-	this->Update(copy.x,copy.y,copy.area);
 }

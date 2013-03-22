@@ -174,6 +174,10 @@ int main(int argc, char* argv[])
 			touch_finder_output = touchfinder->ProcessFrame(gray_image);
 			hand_finder_output = handfinder->ProcessFrame(gray_image);
 			//***********
+			//******OSC SEND DATA****
+			markerfinder->SendOSCData();
+			touchfinder->SendOSCData();
+			handfinder->SendOSCData();
 			
 		}
 		else

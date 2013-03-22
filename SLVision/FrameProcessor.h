@@ -41,6 +41,7 @@ protected:
 	virtual void KeyInput(char key)=0;
 	virtual void UpdatedValuesFromGui()=0; 
 	virtual IplImage* Process(IplImage*	main_image)=0;
+	virtual void RepportOSC()=0;
 public:
 	FrameProcessor(std::string name);
 	virtual ~FrameProcessor(void);
@@ -51,5 +52,6 @@ public:
 	void DrawMenu(IplImage* img);
 	bool IsEnabled();
 	void Enable(bool enable = true);
+	void SendOSCData();
 };
 

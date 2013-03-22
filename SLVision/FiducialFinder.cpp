@@ -180,6 +180,12 @@ unsigned int FiducialFinder::StringBinaryListToInt(const char* data)
 	return candidate;
 }
 
+void FiducialFinder::RepportOSC()
+{
+
+}
+
+
 int FiducialFinder::GetId(unsigned int candidate)
 {
 	if(idmap.find(candidate) != idmap.end())
@@ -192,13 +198,6 @@ int FiducialFinder::GetId(unsigned int candidate)
 void FiducialFinder::InitFID()
 {
 	LoadFiducialList();
-
-/*	std::cout << "Fiducial id transcoded:" << std::endl;
-	for ( IDMap::iterator it = idmap.begin(); it != idmap.end();it++)
-	{
-		std::cout << it->first << "   " << it->second << std::endl;
-	}
-*/
 }
 
 void FiducialFinder::LoadFiducialList ()

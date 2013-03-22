@@ -98,3 +98,8 @@ void FrameProcessor::Enable(bool enable)
 {
 	this->enable = enable;
 }
+
+void FrameProcessor::SendOSCData()
+{
+	this->RepportOSC();
+}

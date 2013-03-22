@@ -54,9 +54,11 @@ public:
 
 	AliveList GetAlive();
 	bool TouchInHand(float x, float y);
+	std::map<unsigned long, Hand*>* GetHands();
 protected:
 	void KeyInput(char key);
 	void UpdatedValuesFromGui(); 
 	IplImage* Process(IplImage*	main_image);
+	void RepportOSC();
 };
 

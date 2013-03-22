@@ -103,6 +103,7 @@
     <ClCompile Include="Calibrator.cpp" />
     <ClCompile Include="Fiducial.cpp" />
     <ClCompile Include="FiducialFinder.cpp" />
+    <ClCompile Include="Finger.cpp" />
     <ClCompile Include="FrameProcessor.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="GuiMenu.cpp" />
@@ -135,6 +136,7 @@
     <ClInclude Include="Calibrator.h" />
     <ClInclude Include="Fiducial.h" />
     <ClInclude Include="FiducialFinder.h" />
+    <ClInclude Include="Finger.h" />
     <ClInclude Include="FrameProcessor.h" />
     <ClInclude Include="GlobalConfig.h" />
     <ClInclude Include="GlobalConfigDetail.h" />

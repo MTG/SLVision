@@ -61,4 +61,5 @@ protected:
 	int GetId(unsigned int candidate);
 	void InitFID();
 	void LoadFiducialList ();
+	void RepportOSC();
 };

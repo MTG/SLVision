@@ -89,5 +89,6 @@ protected:
 	void InitFrames(IplImage*	main_image);
 	void UpdatedValuesFromGui();
 	IplImage* Process(IplImage*	main_image);
+	void RepportOSC();
 };
 
