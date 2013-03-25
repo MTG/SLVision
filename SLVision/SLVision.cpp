@@ -25,7 +25,7 @@
 #include <cxcore.h>
 #include <highgui.h>
 #include "Globals.h"
-#include "MarkerFinder.h"
+#include "MarkerFinder2.h"
 #include "TuioServer.h"
 #include "Calibrator.h"
 #include "GlobalConfig.h"
@@ -58,7 +58,7 @@ void Switchright();
 
 Vector_processors	processors;
 Calibrator*			calibrator;
-MarkerFinder*		markerfinder;
+MarkerFinder2*		markerfinder;
 TouchFinder*		touchfinder;
 HandFinder*			handfinder;
 
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 	///init objects
 	calibrator = new Calibrator();
 	
-	markerfinder = new MarkerFinder();
+	markerfinder = new MarkerFinder2();
 	processors.push_back(markerfinder);
 	TuioServer::Instance().RegisterProcessor(markerfinder);
 	

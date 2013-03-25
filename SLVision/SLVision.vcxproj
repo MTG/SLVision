@@ -113,6 +113,7 @@
     <ClCompile Include="LogFile.cpp" />
     <ClCompile Include="LowPass.cpp" />
     <ClCompile Include="MarkerFinder.cpp" />
+    <ClCompile Include="MarkerFinder2.cpp" />
     <ClCompile Include="MenuBar.cpp" />
     <ClCompile Include="SLVision.cpp" />
     <ClCompile Include="TouchFinder.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="LogFile.h" />
     <ClInclude Include="LowPass.h" />
     <ClInclude Include="MarkerFinder.h" />
+    <ClInclude Include="MarkerFinder2.h" />
     <ClInclude Include="MenuBar.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Singleton.h" />

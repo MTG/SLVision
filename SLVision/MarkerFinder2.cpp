@@ -1,7 +1,7 @@
 /*
 	Daniel Gallardo Grassot
 	daniel.gallardo@upf.edu
-	Barcelona 2011
+	Barcelona 2013
 
 	Licensed to the Apache Software Foundation (ASF) under one
 	or more contributor license agreements.  See the NOTICE file
@@ -21,13 +21,13 @@
 	under the License.
 */
 
-#include "MarkerFinder.h"
+#include "MarkerFinder2.h"
 #include "TuioServer.h"
 #include "GlobalConfig.h"
 #include <iostream>
 
 
-MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
+MarkerFinder2::MarkerFinder2():FrameProcessor("6DoF MarkerFinder2")
 {
 	//ssidGenerator = 1;
 	fiducial_finder = new FiducialFinder(FIDUCIAL_IMAGE_SIZE);
@@ -68,7 +68,7 @@ MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 
 }
 
-void MarkerFinder::UpdatedValuesFromGui()
+void MarkerFinder2::UpdatedValuesFromGui()
 {
 	int &cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
 	int &cf_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
@@ -111,7 +111,7 @@ void MarkerFinder::UpdatedValuesFromGui()
 	}
 }
 
-MarkerFinder::~MarkerFinder(void)
+MarkerFinder2::~MarkerFinder2(void)
 {
 	cvReleaseImage(&main_processed_image);	
 	cvReleaseImage(&main_processed_contour);
@@ -122,16 +122,21 @@ MarkerFinder::~MarkerFinder(void)
 	delete(fiducial_finder);
 }
 
-void MarkerFinder::InitGeometry()
+void MarkerFinder2::InitGeometry()
 {
+	///ATENCIO!!!! Despres de calibrar fa coses rares!!!
+	/***********************************************************************/
 	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
 	Globals::distortion = (CvMat*)cvLoad(M_PATH_DISTORTION);
 	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
-	
+	/***********************************************************************/
+
 	rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);
 	
+	///ATENCIo!!!!!!!!!!!!!!!!!!!!!!!!! adaptar a fiducial normals
+	/*******************************************************************************************/
 	srcPoints3D = cvCreateMat (4, 1, CV_32FC3);
 	dstPoints2D = cvCreateMat (4, 1, CV_32FC3);
 
@@ -174,7 +179,7 @@ void MarkerFinder::InitGeometry()
 		
 		}
 	}
-
+	/***********************************************************************************/
 	dst_pnt[0] = cvPoint2D32f (0, 0);
 	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, 0);
 	dst_pnt[2] = cvPoint2D32f (fiducial_image->width, fiducial_image->height);
@@ -182,7 +187,7 @@ void MarkerFinder::InitGeometry()
 	map_matrix = cvCreateMat  (3, 3, CV_32FC1);
 }
 
-void MarkerFinder::InitFrames(IplImage*	main_image)
+void MarkerFinder2::InitFrames(IplImage*	main_image)
 {
 	blob_moments = (CvMoments*)malloc( sizeof(CvMoments) );
 	main_processed_image = cvCreateImage(cvGetSize(main_image),IPL_DEPTH_8U,1);		//allocates 1-channel memory frame for the image
@@ -196,7 +201,7 @@ void MarkerFinder::InitFrames(IplImage*	main_image)
 }
 
 
-IplImage* MarkerFinder::Process(IplImage*	main_image)
+IplImage* MarkerFinder2::Process(IplImage*	main_image)
 {
 	
 	cvClearMemStorage(main_storage);
@@ -382,7 +387,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	return main_processed_image;
 }
 
-AliveList MarkerFinder::GetAlive()
+AliveList MarkerFinder2::GetAlive()
 {
 	AliveList to_return;
 	if(IsEnabled())
@@ -398,11 +403,11 @@ AliveList MarkerFinder::GetAlive()
 	return to_return;
 }
 
-void MarkerFinder::KeyInput(char key)
+void MarkerFinder2::KeyInput(char key)
 {
 }
 
-void MarkerFinder::RepportOSC()
+void MarkerFinder2::RepportOSC()
 {
 	if(!this->IsEnabled())return;
 	to_remove.clear();
