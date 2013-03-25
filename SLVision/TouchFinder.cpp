@@ -132,23 +132,11 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 				}
 			}
 
-			if(temp_minimum_distance > DISTANCE_OFFSET)
-				candidate_id = 0;
+			if(temp_minimum_distance > DISTANCE_OFFSET) candidate_id = 0;
 			if(candidate_id == 0) //new touch
 			{
-				//check handfider activated
-				/*if(HandFinder::instance != NULL && HandFinder::instance->IsEnabled())
-				{
-					if( HandFinder::instance->TouchInHand(temp_touch.x, temp_touch.y))
-					{
-						unsigned int new_id = Globals::ssidGenerator++;
-						pointmap[new_id] = new Finger(temp_touch);
-					}
-				}else
-				{*/
 					unsigned int new_id = Globals::ssidGenerator++;
 					pointmap[new_id] = new Finger(temp_touch);
-				//}
 			}
 			else //update touch
 			{
@@ -189,10 +177,10 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 				}
 				else //update touch
 				{
-					if(pointmap[candidate_id]->IsUpdated())
+					if(pointmap[candidate_id]->IsUpdated(true))
 					{
 						pointmap[candidate_id]->SetHandData(it_hand->first,false);
-						pointmap[candidate_id]->Update(temp_touch.GetX(),temp_touch.GetY(),pointmap[candidate_id]->area);
+						//pointmap[candidate_id]->Update(temp_touch.GetX(),temp_touch.GetY(),pointmap[candidate_id]->area);
 					}
 					else
 					{
@@ -203,8 +191,6 @@ IplImage* TouchFinder::Process(IplImage* main_image)
 			}
 		}
 	}
-
-
 	return main_processed_image;
 }
 
@@ -236,7 +222,20 @@ void TouchFinder::RepportOSC()
 		if(Globals::is_view_enabled)
 		{
 			sprintf_s(text,"%i",it->first); 
-			Globals::Font::Write(Globals::screen,text,cvPoint((int)it->second->GetX(), (int)it->second->GetY()),FONT_HELP,0,255,0);
+			if(it->second->IsOnTheAir())
+				Globals::Font::Write(
+					Globals::screen,
+					text,
+					cvPoint((int)it->second->GetX(), (int)it->second->GetY()),
+					FONT_HELP,
+					0,0,255);
+			else
+				Globals::Font::Write(
+					Globals::screen,
+					text,
+					cvPoint((int)it->second->GetX(), (int)it->second->GetY()),
+					FONT_HELP,
+					0,255,0);
 		}
 	}
 

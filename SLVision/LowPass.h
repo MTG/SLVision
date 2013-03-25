@@ -40,6 +40,7 @@ public:
 
 	///LowPass(int queue_size)
 	LowPass(int queue_size);
+	LowPass(const LowPass &copy);
 	float addvalue(float value);
 	float getvalue ();
 	void Reset();

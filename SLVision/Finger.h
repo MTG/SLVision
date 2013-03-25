@@ -30,7 +30,7 @@ protected:
 	bool is_updated;
 	bool is_on_the_air;
 	int handID;
-	LowPass xcoord, ycoord;
+//	LowPass xcoord, ycoord;
 	float x, y;
 public:
 	
@@ -41,7 +41,7 @@ public:
 	void Update(float x, float y, float area);
 	void Update(const Finger &copy);
 	//bool CanUpdate( const Finger &tch, float & minimum_distance);
-	bool IsUpdated();
+	bool IsUpdated(bool keep_flag=false);
 	bool IsOnTheAir();
 	void SetHandData(int handID, bool on_the_air);
 	float GetX();

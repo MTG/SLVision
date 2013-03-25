@@ -22,7 +22,7 @@
 */
 
 #include "Finger.h"
-
+#include <iostream>
 
 Finger::Finger():
 	x(0),
@@ -30,13 +30,13 @@ Finger::Finger():
 	is_updated(false),
 	area(-1),
 	is_on_the_air(false),
-	handID(-1),
-	xcoord(LowPass(4)),
-	ycoord(LowPass(4))
+	handID(-1)//,
+//	xcoord(LowPass(4)),
+//	ycoord(LowPass(4))
 {
-	xcoord.Reset();
-	ycoord.Reset();
-	}
+//	xcoord.Reset();
+//	ycoord.Reset();
+}
 
 Finger::Finger(const Finger &copy):
 	x(copy.x),
@@ -44,13 +44,11 @@ Finger::Finger(const Finger &copy):
 	is_updated(true),
 	area(copy.area),
 	is_on_the_air(copy.is_on_the_air),
-	handID(copy.handID),
-	xcoord(LowPass(4)),
-	ycoord(LowPass(4))
+	handID(copy.handID)//,
+//	xcoord(LowPass(copy.xcoord)),
+//	ycoord(LowPass(copy.ycoord))
 {
-	xcoord.Reset();
-	ycoord.Reset();
-	}
+}
 
 void Finger::Update(float x, float y, float area)
 {
@@ -58,8 +56,8 @@ void Finger::Update(float x, float y, float area)
 	this->y = y;
 	this->area = area;
 	is_updated = true;
-	xcoord.addvalue(x);
-	ycoord.addvalue(y);
+//	xcoord.addvalue(x);
+//	ycoord.addvalue(y);
 }
 
 /*bool Finger::CanUpdate( const Finger &tch, float & minimum_distance)
@@ -76,11 +74,12 @@ void Finger::Update(float x, float y, float area)
 	return false;
 }*/
 
-bool Finger::IsUpdated()
+bool Finger::IsUpdated(bool keep_flag)
 {
 	if(is_updated)
 	{
-		is_updated = false;
+		if(!keep_flag) 
+			is_updated = false;
 		return true;
 	}
 	return false;
@@ -105,13 +104,19 @@ void Finger::SetHandData(int handID, bool on_the_air)
 float Finger::GetX()
 {
 	/*if(this->is_on_the_air)
-		return xcoord.getvalue();*/
+	{
+		std::cout << "X: " << xcoord.getvalue() << std::endl;
+		return xcoord.getvalue();
+	}*/
 	return x;
 }
 
 float Finger::GetY()
 {
 	/*if(this->is_on_the_air)
-		return ycoord.getvalue();*/
+	{
+		std::cout << "Y: " << ycoord.getvalue() << std::endl;
+		return ycoord.getvalue();
+	}*/
 	return y;
 }

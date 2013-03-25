@@ -30,6 +30,13 @@ LowPass::LowPass(int queue_size)
 	queuesize = queue_size;
 }
 
+LowPass::LowPass(const LowPass &copy):
+	queuesize(copy.queuesize),
+	value(copy.value),
+	data(std::list<float>(copy.data))
+{
+	
+}
 
 LowPass::~LowPass(void)
 {
