@@ -30,7 +30,7 @@
 MarkerFinder2::MarkerFinder2():FrameProcessor("6DoF MarkerFinder2")
 {
 	//ssidGenerator = 1;
-	fiducial_finder = new FiducialFinder(FIDUCIAL_IMAGE_SIZE);
+	fiducial_finder = new FiducialFinder2(FIDUCIAL_IMAGE_SIZE);
 	firstcontour=NULL;
 	polycontour=NULL;
 	InitFrames(Globals::screen);
@@ -212,12 +212,53 @@ IplImage* MarkerFinder2::Process(IplImage*	main_image)
 	else 
 		cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
 
-	cvNot(main_processed_image,main_processed_image); //invert colors
+	//cvNot(main_processed_image,main_processed_image); //invert colors
 
 	cvCopy(main_processed_image,main_processed_contour);	
-	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP);
+	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_RETR_CCOMP );
+	
+	for(CvSeq* c_same=firstcontour;c_same!=NULL;c_same=c_same->h_next)
+	{
+		int area = (float)fabs(cvContourArea( c_same, CV_WHOLE_SEQ ));
+		if(c_same->v_next != NULL && area > 100 && area < 8000)
+		{
+		
+		//for(CvSeq* c_nx=c_same;c_nx!=NULL;c_nx=c_nx->v_next)
+		//if(c->h_next == NULL)
+		if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c_same,CV_RGB(255,0,0),CV_RGB(200,255,255),0);
+		
+			for(CvSeq* node=c_same;node!=NULL;node=node->v_next)
+			{
+				if(Globals::is_view_enabled)cvDrawContours(Globals::screen,node,CV_RGB(255,255,0),CV_RGB(200,255,255),0);
+			}
+		}
+
+		/*if(c->v_next != NULL)
+		{
+			int area = (float)fabs(cvContourArea( c, CV_WHOLE_SEQ ));
+			
+			if(area > 7000 && area < 8000)
+			{
+				CvSeq* candidate = c->v_next;
+				int cnt=0;
+				if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,0,255),CV_RGB(200,255,255),0);
+
+				for(CvSeq* node=candidate;node!=NULL;node=node->h_next)
+				{
+					cnt ++;
+					int u = 0;
+					//for(CvSeq* node2=node;node2!=NULL;node2=node2->h_next)
+					//	u++;
+					//std::cout << "u " << cnt << std::endl;
+					//if(Globals::is_view_enabled)cvDrawContours(Globals::screen,node,CV_RGB(0,0,255),CV_RGB(200,255,255),0);
+				}
+				std::cout << cnt << std::endl;
+
+			}
+		}*/
+	}
 	//find squares
-	polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,3,1);
+	/*polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,3,1);
 	
 	for(CvSeq* c=polycontour;c!=NULL;c=c->h_next)
 	{
@@ -278,7 +319,8 @@ IplImage* MarkerFinder2::Process(IplImage*	main_image)
 					int maxCount=0;
 					int markerDirection=0;
 					cvResize(fiducial_image,fiducial_image_zoomed);
-					fiducial_finder->DecodeFiducial(fiducial_image, temporal);
+	//--------------->
+						fiducial_finder->DecodeFiducial(fiducial_image, temporal);
 					//notzeroCount=cvCountNonZero(tempmask);
 
 					if(tmp_ssid == 0)
@@ -383,7 +425,7 @@ IplImage* MarkerFinder2::Process(IplImage*	main_image)
 				}
 			}
 		}
-	}
+	}*/
 	return main_processed_image;
 }
 

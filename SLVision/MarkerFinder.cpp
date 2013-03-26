@@ -290,33 +290,62 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					}
 
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
-					
+					std::cout<<markerDirection << std::endl;
 					if(markerDirection==0)
 					{
-						src_pnt[0].x = tmp_pnt[0].x;	src_pnt[1].x = tmp_pnt[3].x;	src_pnt[2].x = tmp_pnt[2].x;	src_pnt[3].x = tmp_pnt[1].x;
-						src_pnt[0].y = tmp_pnt[0].y;	src_pnt[1].y = tmp_pnt[3].y;	src_pnt[2].y = tmp_pnt[2].y;	src_pnt[3].y = tmp_pnt[1].y;
+						src_pnt[0].x = fiducial_map[tmp_ssid]->a.x;		
+						src_pnt[1].x = fiducial_map[tmp_ssid]->d.x;
+						src_pnt[2].x = fiducial_map[tmp_ssid]->c.x;
+						src_pnt[3].x = fiducial_map[tmp_ssid]->b.x;
+
+						src_pnt[0].y = fiducial_map[tmp_ssid]->a.y;
+						src_pnt[1].y = fiducial_map[tmp_ssid]->d.y;
+						src_pnt[2].y = fiducial_map[tmp_ssid]->c.y;
+						src_pnt[3].y = fiducial_map[tmp_ssid]->b.y;
 					}
 					else if(markerDirection==1)//90
 					{
-						src_pnt[0].x = tmp_pnt[1].x;	src_pnt[1].x = tmp_pnt[0].x;	src_pnt[2].x = tmp_pnt[3].x;	src_pnt[3].x = tmp_pnt[2].x;
-						src_pnt[0].y = tmp_pnt[1].y;	src_pnt[1].y = tmp_pnt[0].y;	src_pnt[2].y = tmp_pnt[3].y;	src_pnt[3].y = tmp_pnt[2].y;
+						src_pnt[0].x = fiducial_map[tmp_ssid]->b.x;		
+						src_pnt[1].x = fiducial_map[tmp_ssid]->a.x;
+						src_pnt[2].x = fiducial_map[tmp_ssid]->d.x;
+						src_pnt[3].x = fiducial_map[tmp_ssid]->c.x;
+
+						src_pnt[0].y = fiducial_map[tmp_ssid]->b.y;
+						src_pnt[1].y = fiducial_map[tmp_ssid]->a.y;
+						src_pnt[2].y = fiducial_map[tmp_ssid]->d.y;
+						src_pnt[3].y = fiducial_map[tmp_ssid]->c.y;
 					}
 					else if(markerDirection==3)//180
 					{
-						src_pnt[0].x = tmp_pnt[2].x;	src_pnt[1].x = tmp_pnt[1].x;	src_pnt[2].x = tmp_pnt[0].x;	src_pnt[3].x = tmp_pnt[3].x;
-						src_pnt[0].y = tmp_pnt[2].y;	src_pnt[1].y = tmp_pnt[1].y;	src_pnt[2].y = tmp_pnt[0].y;	src_pnt[3].y = tmp_pnt[3].y;
+						src_pnt[0].x = fiducial_map[tmp_ssid]->c.x;		
+						src_pnt[1].x = fiducial_map[tmp_ssid]->b.x;
+						src_pnt[2].x = fiducial_map[tmp_ssid]->a.x;
+						src_pnt[3].x = fiducial_map[tmp_ssid]->d.x;
+
+						src_pnt[0].y = fiducial_map[tmp_ssid]->c.y;
+						src_pnt[1].y = fiducial_map[tmp_ssid]->b.y;
+						src_pnt[2].y = fiducial_map[tmp_ssid]->a.y;
+						src_pnt[3].y = fiducial_map[tmp_ssid]->d.y;
+
 					}
 					else if(markerDirection==2)//270
 					{
-						src_pnt[0].x = tmp_pnt[3].x;	src_pnt[1].x = tmp_pnt[2].x;	src_pnt[2].x = tmp_pnt[1].x;	src_pnt[3].x = tmp_pnt[0].x;
-						src_pnt[0].y = tmp_pnt[3].y;	src_pnt[1].y = tmp_pnt[2].y;	src_pnt[2].y = tmp_pnt[1].y;	src_pnt[3].y = tmp_pnt[0].y;
+						src_pnt[0].x = fiducial_map[tmp_ssid]->d.x;		
+						src_pnt[1].x = fiducial_map[tmp_ssid]->c.x;
+						src_pnt[2].x = fiducial_map[tmp_ssid]->b.x;
+						src_pnt[3].x = fiducial_map[tmp_ssid]->a.x;
+
+						src_pnt[0].y = fiducial_map[tmp_ssid]->d.y;
+						src_pnt[1].y = fiducial_map[tmp_ssid]->c.y;
+						src_pnt[2].y = fiducial_map[tmp_ssid]->b.y;
+						src_pnt[3].y = fiducial_map[tmp_ssid]->a.y;
 					}
 					
 					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
 					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
 					cvFindExtrinsicCameraParams2(&object_points,&image_points,Globals::intrinsic,Globals::distortion,rotation,translation);
 					
-
+					//std::cout << " r " << rotation->data.fl[0] << "\t"<< rotation->data.fl[1] << "\t"<< rotation->data.fl[2] << " " << std::endl;
 					//to get rotation matrix /http://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
 					//CV_MAT_ELEM( *rotation, float, 0, 0) = -rotation->data.fl[0];
 					//CV_MAT_ELEM( *rotation, float, 0, 1) = -rotation->data.fl[1];

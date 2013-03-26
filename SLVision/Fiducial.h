@@ -34,7 +34,7 @@ double IsLeft(double ax, double ay, double bx, double by, float px, float py);
 
 class Fiducial
 {
-	CvPoint a,b,c,d;
+	
 	float x, y;
 	float area;
 	unsigned int fiducial_id;
@@ -43,6 +43,7 @@ class Fiducial
 	bool is_updated;
 	double removed_time;
 public:
+	CvPoint a,b,c,d;
 	float yaw,pitch,roll;
 	float xpos, ypos, zpos;
 

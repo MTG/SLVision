@@ -23,7 +23,7 @@
 
 #pragma once
 #include "frameprocessor.h"
-#include "FiducialFinder.h"
+#include "FiducialFinder2.h"
 
 #define FIDUCIAL_IMAGE_SIZE 70
 
@@ -45,7 +45,7 @@ class MarkerFinder2 :
 	CvSeq*			firstcontour;
 	CvSeq*			polycontour;
 	//
-	FiducialFinder* fiducial_finder;
+	FiducialFinder2* fiducial_finder;
 
 	//unsigned int ssidGenerator;
 	FiducialMap		fiducial_map;
