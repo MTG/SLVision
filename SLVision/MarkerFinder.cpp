@@ -216,8 +216,10 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 	
 	for(CvSeq* c=polycontour;c!=NULL;c=c->h_next)
 	{
+		
 		if((cvContourPerimeter(c)<2000)&&(cvContourPerimeter(c)>60)&&(c->total==4))
 		{
+			//if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,0,0),CV_RGB(200,255,255),0);
 			if(c->v_next!=NULL && (c->v_next->total==4))
 			{
 				CvSeq* c_vnext=c->v_next;
@@ -260,7 +262,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						break;
 					}
 				}
-				
+				std::cout << to_process << std::endl;
 				if(to_process)
 				{
 					if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0);
@@ -290,7 +292,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					}
 
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
-					std::cout<<markerDirection << std::endl;
+					//std::cout<<markerDirection << std::endl;
 					if(markerDirection==0)
 					{
 						src_pnt[0].x = fiducial_map[tmp_ssid]->a.x;		
