@@ -104,12 +104,12 @@ int FiducialFinder::DecodeFiducial(IplImage* src, Fiducial & candidate)
 	candidate.SetOrientation(axis);
 	//Get the fiducial ID
 	fiducial_nodes.sort();	
-	std::cout << "nodes: " ;
+	/*std::cout << "nodes: " ;
 	for(intList::iterator it = fiducial_nodes.begin(); it != fiducial_nodes.end(); it++)
 	{
 		std::cout << (*it);
 	}
-	std::cout << std::endl;
+	std::cout << std::endl;*/
 	int tmpid = GetId(BinaryListToInt(fiducial_nodes));
 	if(tmpid != -1) candidate.SetId(tmpid);
 

@@ -175,6 +175,7 @@ void MarkerFinder::InitGeometry()
 		}
 	}
 
+	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
 	dst_pnt[0] = cvPoint2D32f (0, 0);
 	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, 0);
 	dst_pnt[2] = cvPoint2D32f (fiducial_image->width, fiducial_image->height);
@@ -262,7 +263,6 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						break;
 					}
 				}
-				std::cout << to_process << std::endl;
 				if(to_process)
 				{
 					if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0);
@@ -292,7 +292,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					}
 
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
-					//std::cout<<markerDirection << std::endl;
+					std::cout<<"direction: " <<markerDirection << std::endl;
 					if(markerDirection==0)
 					{
 						src_pnt[0].x = fiducial_map[tmp_ssid]->a.x;		
