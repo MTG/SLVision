@@ -21,9 +21,9 @@
 	under the License.
 */
 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+//#include <cv.h>
+//#include <cxcore.h>
+//#include <highgui.h>
 #include "Globals.h"
 #include "MarkerFinder.h"
 #include "TuioServer.h"
@@ -32,6 +32,10 @@
 #include "TouchFinder.h"
 #include "HandFinder.h"
 #include <iostream>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <cstdio>
+#include <conio.h>
 
 //VIEW constants
 #define VIEW_RAW					0
@@ -49,12 +53,12 @@
 typedef std::vector<FrameProcessor*> Vector_processors;
 
 //Helping Functions
-//void ToggleDisplayFIDProcessor();
 void ToggleCalibrationMode();
 void SwitchScreen();
 void SetView(int view);
 void Switchleft();
 void Switchright();
+
 
 Vector_processors	processors;
 Calibrator*			calibrator;
@@ -75,8 +79,74 @@ bool show_options;
 int selected_processor;
 
 
+//new_Method
+/*
+cv::VideoCapture TheVideoCapturer;
+cv::Mat TheInputImage;
+
+std::pair<double,double> AvrgTime(0,0) ;//determines the average time required for detection
+int waitTime=10;
+
+
+cv::Mat out;
+cv::Mat grey,thres,thres2,reduced;
+*/
+
 int main(int argc, char* argv[])
 {	
+	/*
+	//Globals::LoadDefaultDistortionMatrix();
+	
+	//open capture device or  TheVideoCapturer.open(std::string);
+	TheVideoCapturer.open(0);
+	
+	//capture a frame
+	TheVideoCapturer>>TheInputImage;
+
+	//SetWindows
+	cv::namedWindow("thres",1);
+    cv::namedWindow("in",1);
+
+	char key=0;
+    int index=0;
+	while ( key!=27 && TheVideoCapturer.grab())
+    {
+		TheVideoCapturer.retrieve( TheInputImage);
+		double tick = (double)cv::getTickCount();
+		//do something
+		if ( TheInputImage.type() ==CV_8UC3 )   cv::cvtColor ( TheInputImage,grey,CV_BGR2GRAY );
+		else     grey=TheInputImage;
+
+		cv::Mat imgToBeThresHolded=grey;
+
+		cv::adaptiveThreshold ( imgToBeThresHolded,thres,255,cv::ADAPTIVE_THRESH_MEAN_C,cv::THRESH_BINARY_INV,7,7 );
+
+		//int minSize=_minSize*std::max(thresImg.cols,thresImg.rows)*4;
+		//int maxSize=_maxSize*std::max(thresImg.cols,thresImg.rows)*4;
+		std::vector<std::vector<cv::Point> > contours2;
+		std::vector<cv::Vec4i> hierarchy2;
+		thres.copyTo ( thres2 );
+		cv::findContours ( thres2 , contours2, hierarchy2,CV_RETR_TREE, CV_CHAIN_APPROX_NONE );
+		cv::vector<cv::Point>  approxCurve;
+
+
+
+		///
+		AvrgTime.first+=((double)cv::getTickCount()-tick)/cv::getTickFrequency();
+        AvrgTime.second++;
+        std::cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<std::endl;
+
+		cv::imshow("in",TheInputImage);
+		cv::imshow("thres",thres);
+
+
+
+
+
+		key=cv::waitKey(waitTime);//wait for key to be pressed
+	}*/
+
+	
 	//Print keymapping:
 	std::cout	<< "KeyMapping:" << "\n"
 				<< "Esc" << ":\t " << "Exit SLVision." << "\n"
@@ -212,7 +282,7 @@ int main(int argc, char* argv[])
 		//sends OSC bundle or update it
 		TuioServer::Instance().SendBundle();
 		//Key Check
-		presskey=cvWaitKey (70);
+		presskey=cvWaitKey (10);
 		switch(presskey)
 		{
 			case KEY_EXIT:
@@ -232,14 +302,6 @@ int main(int argc, char* argv[])
 //			case KEY_RESET_Z:
 //				if(claibrateMode) calibrator->ProcessKey(presskey);
 //				break;
-/*			case KEY_ENABLE_BGS:
-				bg_substraction = true;
-				process_bg = true;
-				break;
-			case KEY_DISABLE_BGS:
-				bg_substraction = false;
-				break;
-*/
 			case KEY_PREVIOUS_OPTION_1:
 			case KEY_PREVIOUS_OPTION_2:
 			case KEY_PREVIOUS_OPTION_3:
@@ -307,8 +369,10 @@ int main(int argc, char* argv[])
 	//destroy windows
 	cvDestroyWindow(MAIN_TITTLE);
 	cvDestroyWindow(SIX_DOF_THRESHOLD);
+	
     return 0;
 }
+
 
 void SwitchScreen()
 {
@@ -358,19 +422,6 @@ void SetView(int view)
 	glob_view = screen_to_show;
 }
 
-/*void ToggleDisplayFIDProcessor()
-{
-	if(claibrateMode) return;
-	show_fid_processor = ! show_fid_processor;
-	if(show_fid_processor)
-	{
-		cvNamedWindow (FIDUCIAL_TITTLE, CV_WINDOW_AUTOSIZE);
-	}
-	else
-	{
-		cvDestroyWindow(FIDUCIAL_TITTLE);
-	}
-}*/
 
 void ToggleCalibrationMode()
 {
