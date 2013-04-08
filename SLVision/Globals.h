@@ -81,6 +81,13 @@ protected:
 //	static float			z_min, z_max;
 public:
 	/************************
+	* Camera parameters
+	*************************/
+	static cv::Mat CameraMatrix; // 3x3 matrix (fx 0 cx, 0 fy cy, 0 0 1)
+	static cv::Mat Distortion; //4x1 matrix (k1,k2,p1,p2)
+    static cv::Size CamSize; //size of the image
+
+	/************************
 	* Screen Globals
 	*************************/
 	static IplImage*		screen;				//image to show on the screen
@@ -88,8 +95,8 @@ public:
 	static int				width;
 	static int				height;
 	static char				dim[100];
-	static CvMat*			intrinsic;
-	static CvMat*			distortion;
+	//static CvMat*			intrinsic;
+	//static CvMat*			distortion;
 	static unsigned int		ssidGenerator;
 
 	static void LoadDefaultDistortionMatrix();
@@ -99,10 +106,7 @@ public:
 	static int				&calib_x_min;
 	static int				&calib_y_max;
 	static int				&calib_y_min;
-//	static float GetZValue(float z);
-//	static void ResetZValues();
 
-	//static HandFinder*		hand_finder;
 
 	static float GetX(int coord);
 	static float GetY(int coord);
@@ -117,7 +121,6 @@ public:
 	public:
 		static void InitFont();
 		static void Write(IplImage* dest,const char* text, const CvPoint &position, int font_type, short r, short g, short b);
-		//cvPutText(screen, "Y", endpoint, &axisfont,CV_RGB(0,255,0));
 	};
 };
 

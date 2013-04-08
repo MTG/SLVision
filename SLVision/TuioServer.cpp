@@ -24,6 +24,7 @@
 #include "TuioServer.h"
 #include <time.h>
 #include "GlobalConfig.h"
+#include <windows.h>
 
 TuioServer*	TuioServer::pinstance = NULL;
 

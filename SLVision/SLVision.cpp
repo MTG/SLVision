@@ -101,6 +101,8 @@ int main(int argc, char* argv[])
 	bg_substraction			= false;
 	process_bg				= false;
 
+	Globals::LoadDefaultDistortionMatrix();
+
 	//Camera initialization and initialize frame
 	cv_camera_capture = cvCaptureFromCAM(CAMERA_ID);		//allocates and initialized the CvCapture structure for reading a video stream from the camera
 	if(cv_camera_capture == NULL) 

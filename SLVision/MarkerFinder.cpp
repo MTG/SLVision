@@ -124,9 +124,10 @@ MarkerFinder::~MarkerFinder(void)
 
 void MarkerFinder::InitGeometry()
 {
-	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
+/*	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
 	Globals::distortion = (CvMat*)cvLoad(M_PATH_DISTORTION);
 	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
+*/
 	
 	rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
@@ -345,7 +346,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					
 					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
 					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
-					cvFindExtrinsicCameraParams2(&object_points,&image_points,Globals::intrinsic,Globals::distortion,rotation,translation);
+//					cvFindExtrinsicCameraParams2(&object_points,&image_points,Globals::intrinsic,Globals::distortion,rotation,translation);
 					
 					//std::cout << " r " << rotation->data.fl[0] << "\t"<< rotation->data.fl[1] << "\t"<< rotation->data.fl[2] << " " << std::endl;
 					//to get rotation matrix /http://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
@@ -382,7 +383,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					
 					if(Globals::is_view_enabled)
 					{
-						cvProjectPoints2(srcPoints3D,rotation,translation,Globals::intrinsic,Globals::distortion,dstPoints2D);
+//						cvProjectPoints2(srcPoints3D,rotation,translation,Globals::intrinsic,Globals::distortion,dstPoints2D);
 						CvPoint startpoint;
 						CvPoint endpoint;
 						startpoint=cvPoint((int)dstPoints2D->data.fl[0], (int)dstPoints2D->data.fl[1]);
