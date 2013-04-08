@@ -32,6 +32,8 @@ typedef std::map<unsigned int, Fiducial*> FiducialMap;
 class MarkerFinder :
 	public FrameProcessor
 {
+	cv::Mat Rvec,Tvec;
+
 	//FIDUCIAL IMAGE Data
 	IplImage*		fiducial_image;
 	IplImage*		fiducial_image_zoomed;

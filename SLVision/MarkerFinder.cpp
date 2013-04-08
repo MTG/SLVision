@@ -129,7 +129,7 @@ void MarkerFinder::InitGeometry()
 	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
 */
 	
-	rotation = cvCreateMat (1, 3, CV_32FC1);
+	/*rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);
 	
@@ -175,7 +175,7 @@ void MarkerFinder::InitGeometry()
 		
 		}
 	}
-
+*/
 	dst_pnt[0] = cvPoint2D32f (0, 0);
 	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, 0);
 	dst_pnt[2] = cvPoint2D32f (fiducial_image->width, fiducial_image->height);
@@ -263,7 +263,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						break;
 					}
 				}
-				std::cout << to_process << std::endl;
+
 				if(to_process)
 				{
 					if(Globals::is_view_enabled)cvDrawContours(Globals::screen,c,CV_RGB(255,255,0),CV_RGB(200,255,255),0);
@@ -346,12 +346,125 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					
 					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
 					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
-//					cvFindExtrinsicCameraParams2(&object_points,&image_points,Globals::intrinsic,Globals::distortion,rotation,translation);
+
+					CvPoint a;
+					a.x = src_pnt[0].x; a.y = src_pnt[0].y;
+					Globals::Font::Write(Globals::screen,"a",a,FONT_AXIS,255,0,0);
+					a.x = src_pnt[1].x; a.y = src_pnt[1].y;
+					Globals::Font::Write(Globals::screen,"b",a,FONT_AXIS,255,0,0);
+					a.x = src_pnt[2].x; a.y = src_pnt[2].y;
+					Globals::Font::Write(Globals::screen,"c",a,FONT_AXIS,255,0,0);
+					a.x = src_pnt[3].x; a.y = src_pnt[3].y;
+					Globals::Font::Write(Globals::screen,"d",a,FONT_AXIS,255,0,0);
+
+					/*************************************
+					* Find extrinsic fiducial params
+					**************************************/
+					int fidsize = 5;
+					double halfSize=fidsize/2.;
+					cv::Mat ObjPoints(4,3,CV_32FC1);
+					ObjPoints.at<float>(1,0)=-halfSize;
+					ObjPoints.at<float>(1,1)=halfSize;
+					ObjPoints.at<float>(1,2)=0;
+					ObjPoints.at<float>(2,0)=halfSize;
+					ObjPoints.at<float>(2,1)=halfSize;
+					ObjPoints.at<float>(2,2)=0;
+					ObjPoints.at<float>(3,0)=halfSize;
+					ObjPoints.at<float>(3,1)=-halfSize;
+					ObjPoints.at<float>(3,2)=0;
+					ObjPoints.at<float>(0,0)=-halfSize;
+					ObjPoints.at<float>(0,1)=-halfSize;
+					ObjPoints.at<float>(0,2)=0;
+
+					cv::Mat ImagePoints(4,2,CV_32FC1);
+					for (int c=0;c<4;c++)
+					{
+						ImagePoints.at<float>(c,0)=(src_pnt[c].x);
+						ImagePoints.at<float>(c,1)=(src_pnt[c].y);
+					}
+
+					cv::Mat raux,taux;
+					cv::solvePnP(ObjPoints, ImagePoints, Globals::CameraMatrix, Globals::Distortion,raux,taux);
+					raux.convertTo(Rvec,CV_32F);
+					taux.convertTo(Tvec ,CV_32F);
+
+					/*************************************
+					* Draw pose params  cube
+					**************************************/
+					cv::Mat objectPoints (8,3,CV_32FC1);
+					/*double*/halfSize=fidsize/2;
+					objectPoints.at<float>(0,0)=-halfSize;
+					objectPoints.at<float>(0,1)=0;
+					objectPoints.at<float>(0,2)=-halfSize;
+					objectPoints.at<float>(1,0)=halfSize;
+					objectPoints.at<float>(1,1)=0;
+					objectPoints.at<float>(1,2)=-halfSize;
+					objectPoints.at<float>(2,0)=halfSize;
+					objectPoints.at<float>(2,1)=0;
+					objectPoints.at<float>(2,2)=halfSize;
+					objectPoints.at<float>(3,0)=-halfSize;
+					objectPoints.at<float>(3,1)=0;
+					objectPoints.at<float>(3,2)=halfSize;
+
+					objectPoints.at<float>(4,0)=-halfSize;
+					objectPoints.at<float>(4,1)=fidsize;
+					objectPoints.at<float>(4,2)=-halfSize;
+					objectPoints.at<float>(5,0)=halfSize;
+					objectPoints.at<float>(5,1)=fidsize;
+					objectPoints.at<float>(5,2)=-halfSize;
+					objectPoints.at<float>(6,0)=halfSize;
+					objectPoints.at<float>(6,1)=fidsize;
+					objectPoints.at<float>(6,2)=halfSize;
+					objectPoints.at<float>(7,0)=-halfSize;
+					objectPoints.at<float>(7,1)=fidsize;
+					objectPoints.at<float>(7,2)=halfSize;
+					cv::vector<cv::Point2f> imagePoints;
+
+					projectPoints( objectPoints, Rvec, Tvec,  Globals::CameraMatrix,Globals::Distortion,   imagePoints);
 					
+					//draw lines of different colours
+					for (int i=0;i<4;i++)
+						cvLine(Globals::screen,imagePoints[i],imagePoints[(i+1)%4],CV_RGB(255,255,0),2,8,0);
+
+					for (int i=0;i<4;i++)
+						cvLine(Globals::screen,imagePoints[i+4],imagePoints[4+(i+1)%4],CV_RGB(255,0,255),2,8,0);
+
+					for (int i=0;i<4;i++)
+						cvLine(Globals::screen,imagePoints[i],imagePoints[i+4],CV_RGB(0,255,255),2,8,0);
+
+					/*************************************
+					* Draw pose params  axis
+					**************************************/
+					{
+					float size=fidsize*3;
+					cv::Mat objectPoints (4,3,CV_32FC1);
+					objectPoints.at<float>(0,0)=0;
+					objectPoints.at<float>(0,1)=0;
+					objectPoints.at<float>(0,2)=0;
+					objectPoints.at<float>(1,0)=size;
+					objectPoints.at<float>(1,1)=0;
+					objectPoints.at<float>(1,2)=0;
+					objectPoints.at<float>(2,0)=0;
+					objectPoints.at<float>(2,1)=size;
+					objectPoints.at<float>(2,2)=0;
+					objectPoints.at<float>(3,0)=0;
+					objectPoints.at<float>(3,1)=0;
+					objectPoints.at<float>(3,2)=size;
+
+					cv::vector<cv::Point2f> imagePoints;
+					cv::projectPoints( objectPoints, Rvec,Tvec, Globals::CameraMatrix,Globals::Distortion,   imagePoints);
+					//draw lines of different colours
+					cvLine(Globals::screen,imagePoints[0],imagePoints[1],CV_RGB(0,0,255),2,8,0);
+					Globals::Font::Write(Globals::screen,"X",imagePoints[1],FONT_AXIS,0,0,255);
+					cvLine(Globals::screen,imagePoints[0],imagePoints[2],CV_RGB(0,255,0),2,8,0);
+					Globals::Font::Write(Globals::screen,"Y",imagePoints[2],FONT_AXIS,0,255,0);
+					cvLine(Globals::screen,imagePoints[0],imagePoints[3],CV_RGB(255,0,0),2,8,0);
+					Globals::Font::Write(Globals::screen,"Z",imagePoints[3],FONT_AXIS,255,0,0);
+					}
+/*
+					cvFindExtrinsicCameraParams2(&object_points,&image_points,Globals::intrinsic,Globals::distortion,rotation,translation);					
 					//std::cout << " r " << rotation->data.fl[0] << "\t"<< rotation->data.fl[1] << "\t"<< rotation->data.fl[2] << " " << std::endl;
 					//to get rotation matrix /http://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
-					//CV_MAT_ELEM( *rotation, float, 0, 0) = -rotation->data.fl[0];
-					//CV_MAT_ELEM( *rotation, float, 0, 1) = -rotation->data.fl[1];
 					cvRodrigues2(rotation,rotationMatrix);
 
 					if(invert_rotation_matrix)
@@ -383,7 +496,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					
 					if(Globals::is_view_enabled)
 					{
-//						cvProjectPoints2(srcPoints3D,rotation,translation,Globals::intrinsic,Globals::distortion,dstPoints2D);
+						cvProjectPoints2(srcPoints3D,rotation,translation,Globals::intrinsic,Globals::distortion,dstPoints2D);
 						CvPoint startpoint;
 						CvPoint endpoint;
 						startpoint=cvPoint((int)dstPoints2D->data.fl[0], (int)dstPoints2D->data.fl[1]);
@@ -407,6 +520,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 							}
 						}
 					}
+*/
 				}
 			}
 		}
