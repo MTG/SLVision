@@ -176,6 +176,7 @@ void MarkerFinder::InitGeometry()
 		}
 	}
 */
+	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
 	dst_pnt[0] = cvPoint2D32f (0, 0);
 	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, 0);
 	dst_pnt[2] = cvPoint2D32f (fiducial_image->width, fiducial_image->height);
@@ -293,6 +294,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					}
 
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
+					std::cout<<"direction: " <<markerDirection << std::endl;
 					//std::cout<<markerDirection << std::endl;
 					if(markerDirection==0)
 					{
