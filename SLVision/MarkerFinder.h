@@ -29,6 +29,10 @@
 
 typedef std::map<unsigned int, Fiducial*> FiducialMap;
 
+#define ENABLEPOSE 1
+#define DRAWPOSE 1
+#define USEEIGHTPOINTS 1
+
 class MarkerFinder :
 	public FrameProcessor
 {
@@ -60,7 +64,12 @@ class MarkerFinder :
 
 	//
 	CvMat*			map_matrix;
-	CvPoint2D32f src_pnt[4], dst_pnt[4], tmp_pnt[4];
+	CvPoint2D32f dst_pnt[4], tmp_pnt[4];
+#ifdef USEEIGHTPOINTS
+	CvPoint2D32f src_pnt[8];
+#else
+	CvPoint2D32f src_pnt[4];
+#endif
 
 	int i, j, k;
 	CvMat object_points;

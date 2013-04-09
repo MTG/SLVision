@@ -44,6 +44,7 @@ class Fiducial
 	double removed_time;
 public:
 	CvPoint a,b,c,d;
+	CvPoint ea,eb,ec,ed;
 	float yaw,pitch,roll;
 	float xpos, ypos, zpos;
 
