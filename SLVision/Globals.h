@@ -95,8 +95,8 @@ public:
 	static int				width;
 	static int				height;
 	static char				dim[100];
-	//static CvMat*			intrinsic;
-	//static CvMat*			distortion;
+	static CvMat*			intrinsic;
+	static CvMat*			distortion;
 	static unsigned int		ssidGenerator;
 
 	static void LoadDefaultDistortionMatrix();

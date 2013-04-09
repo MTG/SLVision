@@ -42,8 +42,8 @@ int				Globals::width						= 0;
 int				Globals::height						= 0;
 char			Globals::dim[100];
 
-//CvMat* 			Globals::intrinsic					= NULL;
-//CvMat*			Globals::distortion					= NULL;
+CvMat* 			Globals::intrinsic					= NULL;
+CvMat*			Globals::distortion					= NULL;
 
 unsigned int	Globals::ssidGenerator				= 1;
 
@@ -61,6 +61,9 @@ cv::Size Globals::CamSize; //size of the image
 
 void Globals::LoadDefaultDistortionMatrix()
 {
+	intrinsic = cvCreateMat (3, 3, CV_32FC1);
+	distortion = cvCreateMat (4, 1, CV_32FC1);
+
 	std::string filePath("camera_params.yml");
 	cv::FileStorage fs(filePath, cv::FileStorage::READ);
 	std::cout << "Reading " << filePath << std::endl;
@@ -118,6 +121,16 @@ void Globals::LoadDefaultDistortionMatrix()
 		CamSize.width = 640;
 		CamSize.height = 480;
 	}
+
+
+	CV_MAT_ELEM( *intrinsic, float, 0, 0) = CameraMatrix.ptr<float>(0)[0];		CV_MAT_ELEM( *intrinsic, float, 0, 1) = CameraMatrix.ptr<float>(0)[1];		CV_MAT_ELEM( *intrinsic, float, 0, 2) = CameraMatrix.ptr<float>(0)[2];
+	CV_MAT_ELEM( *intrinsic, float, 1, 0) = CameraMatrix.ptr<float>(1)[0];		CV_MAT_ELEM( *intrinsic, float, 1, 1) = CameraMatrix.ptr<float>(1)[1]; 		CV_MAT_ELEM( *intrinsic, float, 1, 2) = CameraMatrix.ptr<float>(1)[2];
+	CV_MAT_ELEM( *intrinsic, float, 2, 0) = CameraMatrix.ptr<float>(2)[0];		CV_MAT_ELEM( *intrinsic, float, 2, 1) = CameraMatrix.ptr<float>(2)[1];		CV_MAT_ELEM( *intrinsic, float, 2, 2) = CameraMatrix.ptr<float>(2)[2];
+
+	CV_MAT_ELEM( *distortion, float, 0, 0) = Distortion.ptr<float>(0)[0];
+	CV_MAT_ELEM( *distortion, float, 1, 0) = Distortion.ptr<float>(0)[1];
+	CV_MAT_ELEM( *distortion, float, 2, 0) = Distortion.ptr<float>(0)[2];
+	CV_MAT_ELEM( *distortion, float, 3, 0) = Distortion.ptr<float>(0)[3];
 }
 
 float Globals::GetX(int coord)

@@ -129,7 +129,7 @@ void MarkerFinder::InitGeometry()
 	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
 */
 	
-	/*rotation = cvCreateMat (1, 3, CV_32FC1);
+	rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);
 	
@@ -175,7 +175,7 @@ void MarkerFinder::InitGeometry()
 		
 		}
 	}
-*/
+
 	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
 	dst_pnt[0] = cvPoint2D32f (0, 0);
 	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, 0);
@@ -437,7 +437,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					/*************************************
 					* Draw pose params  axis
 					**************************************/
-					{
+					/*{
 					float size=fidsize*3;
 					cv::Mat objectPoints (4,3,CV_32FC1);
 					objectPoints.at<float>(0,0)=0;
@@ -462,11 +462,40 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					Globals::Font::Write(Globals::screen,"Y",imagePoints[2],FONT_AXIS,0,255,0);
 					cvLine(Globals::screen,imagePoints[0],imagePoints[3],CV_RGB(255,0,0),2,8,0);
 					Globals::Font::Write(Globals::screen,"Z",imagePoints[3],FONT_AXIS,255,0,0);
-					}
-/*
-					cvFindExtrinsicCameraParams2(&object_points,&image_points,Globals::intrinsic,Globals::distortion,rotation,translation);					
-					//std::cout << " r " << rotation->data.fl[0] << "\t"<< rotation->data.fl[1] << "\t"<< rotation->data.fl[2] << " " << std::endl;
-					//to get rotation matrix /http://www.emgu.com/wiki/files/2.0.0.0/html/9c6a2a7e-e973-20d3-9638-954a4a0a80a6.htm
+					}*/
+
+					/*************************************
+					* Prepare parameters
+					**************************************/
+					cv::Mat R(3,3,CV_32F);
+					Rodrigues(Rvec, R);
+					fiducial_map[tmp_ssid]->yaw = atan2(-R.ptr<float>(2)[0],sqrt( R.ptr<float>(2)[1]*R.ptr<float>(2)[1] + R.ptr<float>(2)[2]*R.ptr<float>(2)[2]));
+					fiducial_map[tmp_ssid]->pitch = atan2(R.ptr<float>(2)[1],R.ptr<float>(2)[2]);
+					fiducial_map[tmp_ssid]->roll = (2.0f*3.141592654f)-atan2(R.ptr<float>(1)[0],R.ptr<float>(0)[0]);
+
+					fiducial_map[tmp_ssid]->xpos = Tvec.ptr<float>(0)[0];
+					fiducial_map[tmp_ssid]->ypos = Tvec.ptr<float>(0)[1];
+					fiducial_map[tmp_ssid]->zpos = Tvec.ptr<float>(0)[2];
+
+					fiducial_map[tmp_ssid]->r11 = R.ptr<float>(0)[0];
+					fiducial_map[tmp_ssid]->r12 = R.ptr<float>(0)[1];
+					fiducial_map[tmp_ssid]->r13 = R.ptr<float>(0)[2];
+					fiducial_map[tmp_ssid]->r21 = R.ptr<float>(1)[0];
+					fiducial_map[tmp_ssid]->r22 = R.ptr<float>(1)[1];
+					fiducial_map[tmp_ssid]->r23 = R.ptr<float>(1)[2];
+					fiducial_map[tmp_ssid]->r31 = R.ptr<float>(2)[0];
+					fiducial_map[tmp_ssid]->r32 = R.ptr<float>(2)[1];
+					fiducial_map[tmp_ssid]->r33 = R.ptr<float>(2)[2];
+
+					//rotation =  cvCreateMat (1, 3, CV_32SC2);
+/*					CV_MAT_ELEM( *rotation, float, 0, 0) = Rvec.ptr<float>(0)[0];
+					CV_MAT_ELEM( *rotation, float, 0, 1) = Rvec.ptr<float>(0)[1];
+					CV_MAT_ELEM( *rotation, float, 0, 2) = Rvec.ptr<float>(0)[2];
+
+					CV_MAT_ELEM( *translation, float, 0, 0)  = Tvec.ptr<float>(0)[0];
+					CV_MAT_ELEM( *translation, float, 0, 1)  = Tvec.ptr<float>(0)[1];
+					CV_MAT_ELEM( *translation, float, 0, 2)  = Tvec.ptr<float>(0)[2];
+
 					cvRodrigues2(rotation,rotationMatrix);
 
 					if(invert_rotation_matrix)
@@ -474,7 +503,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						//invert the rotation matrix (not for AR)
 						cvInvert(rotationMatrix, rotationMatrix);
 					}
-
+					
 					fiducial_map[tmp_ssid]->yaw = atan2(-rotationMatrix->data.fl[6],sqrt( rotationMatrix->data.fl[7]*rotationMatrix->data.fl[7] + rotationMatrix->data.fl[8]*rotationMatrix->data.fl[8]));
 					fiducial_map[tmp_ssid]->pitch = atan2(rotationMatrix->data.fl[7],rotationMatrix->data.fl[8]);
 					fiducial_map[tmp_ssid]->roll = (2.0f*3.141592654f)-atan2(rotationMatrix->data.fl[3],rotationMatrix->data.fl[0]);
@@ -494,12 +523,12 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->r23 = rotationMatrix->data.fl[5];
 					fiducial_map[tmp_ssid]->r31 = rotationMatrix->data.fl[6];
 					fiducial_map[tmp_ssid]->r32 = rotationMatrix->data.fl[7];
-					fiducial_map[tmp_ssid]->r33 = rotationMatrix->data.fl[8];
+					fiducial_map[tmp_ssid]->r33 = rotationMatrix->data.fl[8];*/
 					
 					if(Globals::is_view_enabled)
 					{
-						cvProjectPoints2(srcPoints3D,rotation,translation,Globals::intrinsic,Globals::distortion,dstPoints2D);
-						CvPoint startpoint;
+						//cvProjectPoints2(srcPoints3D,rotation,translation,Globals::intrinsic,Globals::distortion,dstPoints2D);
+						/*CvPoint startpoint;
 						CvPoint endpoint;
 						startpoint=cvPoint((int)dstPoints2D->data.fl[0], (int)dstPoints2D->data.fl[1]);
 						for(j=1;j<4;j++)
@@ -520,9 +549,9 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 								cvLine(Globals::screen,startpoint,endpoint,CV_RGB(0,0,255),2,8,0);
 								Globals::Font::Write(Globals::screen,"Z",endpoint,FONT_AXIS,0,0,255);
 							}
-						}
+						}*/
 					}
-*/
+					
 				}
 			}
 		}
