@@ -129,7 +129,7 @@ void MarkerFinder::InitGeometry()
 	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
 */
 	
-	rotation = cvCreateMat (1, 3, CV_32FC1);
+	/*rotation = cvCreateMat (1, 3, CV_32FC1);
 	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
 	translation = cvCreateMat (1 , 3, CV_32FC1);
 	
@@ -174,7 +174,7 @@ void MarkerFinder::InitGeometry()
 					break;
 		
 		}
-	}
+	}*/
 
 	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
 	dst_pnt[0] = cvPoint2D32f (0, 0);
@@ -294,8 +294,6 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					}
 
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
-					std::cout<<"direction: " <<markerDirection << std::endl;
-					//std::cout<<markerDirection << std::endl;
 					if(markerDirection==0)
 					{
 						src_pnt[0].x = fiducial_map[tmp_ssid]->a.x;		
@@ -437,7 +435,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					/*************************************
 					* Draw pose params  axis
 					**************************************/
-					/*{
+					{
 					float size=fidsize*3;
 					cv::Mat objectPoints (4,3,CV_32FC1);
 					objectPoints.at<float>(0,0)=0;
@@ -462,7 +460,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					Globals::Font::Write(Globals::screen,"Y",imagePoints[2],FONT_AXIS,0,255,0);
 					cvLine(Globals::screen,imagePoints[0],imagePoints[3],CV_RGB(255,0,0),2,8,0);
 					Globals::Font::Write(Globals::screen,"Z",imagePoints[3],FONT_AXIS,255,0,0);
-					}*/
+					}
 
 					/*************************************
 					* Prepare parameters
