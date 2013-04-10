@@ -21,6 +21,9 @@
 	under the License.
 */
 
+//#define NEWMETHOD 2
+
+#ifndef NEWMETHOD
 //#include <cv.h>
 //#include <cxcore.h>
 //#include <highgui.h>
@@ -78,9 +81,13 @@ int screen_to_show; //0 source, 1 thresholds, 2 Nothing
 bool show_options;
 int selected_processor;
 
-
+#else
 //new_Method
-/*
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <string>
+#include <sstream>
+
 cv::VideoCapture TheVideoCapturer;
 cv::Mat TheInputImage;
 
@@ -90,11 +97,21 @@ int waitTime=10;
 
 cv::Mat out;
 cv::Mat grey,thres,thres2,reduced;
-*/
+
+double _minSize=0.04;
+double _maxSize=0.5;
+
+int perimeter ( std::vector<cv::Point2f> &a );
+
+int a,b;
+void cvTackBarEvents(int pos,void*);
+//int thresholda=7, thresholdb=7;
+#endif
 
 int main(int argc, char* argv[])
 {	
-	/*
+#ifdef NEWMETHOD
+	
 	//Globals::LoadDefaultDistortionMatrix();
 	
 	//open capture device or  TheVideoCapturer.open(std::string);
@@ -106,6 +123,11 @@ int main(int argc, char* argv[])
 	//SetWindows
 	cv::namedWindow("thres",1);
     cv::namedWindow("in",1);
+	a = 8;
+	b = 12;
+
+	cv::createTrackbar("ThresParam1", "in",&a, 13, cvTackBarEvents);
+    cv::createTrackbar("ThresParam2", "in",&b, 13, cvTackBarEvents);
 
 	char key=0;
     int index=0;
@@ -113,27 +135,152 @@ int main(int argc, char* argv[])
     {
 		TheVideoCapturer.retrieve( TheInputImage);
 		double tick = (double)cv::getTickCount();
-		//do something
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		//do something
 		if ( TheInputImage.type() ==CV_8UC3 )   cv::cvtColor ( TheInputImage,grey,CV_BGR2GRAY );
 		else     grey=TheInputImage;
 
 		cv::Mat imgToBeThresHolded=grey;
 
-		cv::adaptiveThreshold ( imgToBeThresHolded,thres,255,cv::ADAPTIVE_THRESH_MEAN_C,cv::THRESH_BINARY_INV,7,7 );
+		//adaptive threshold
+		if ( a<3 ) a=3;
+        else if ( ( ( int ) a ) %2 !=1 ) a= ( int ) ( a+1 );
+		cv::adaptiveThreshold ( imgToBeThresHolded,thres,255,cv::ADAPTIVE_THRESH_MEAN_C,cv::THRESH_BINARY_INV,a,b );
+		
 
-		//int minSize=_minSize*std::max(thresImg.cols,thresImg.rows)*4;
-		//int maxSize=_maxSize*std::max(thresImg.cols,thresImg.rows)*4;
+		///detect rectangles
+		std::vector<std::vector<cv::Point2f>> MarkerCanditates;
+
+		int minSize=_minSize*std::max(thres.cols,thres.rows)*4;
+		int maxSize=_maxSize*std::max(thres.cols,thres.rows)*4;
 		std::vector<std::vector<cv::Point> > contours2;
 		std::vector<cv::Vec4i> hierarchy2;
 		thres.copyTo ( thres2 );
 		cv::findContours ( thres2 , contours2, hierarchy2,CV_RETR_TREE, CV_CHAIN_APPROX_NONE );
 		cv::vector<cv::Point>  approxCurve;
+		///for each contour, analyze if it is a paralelepiped likely to be the marker
+	    for ( unsigned int i=0;i<contours2.size();i++ )
+		{
+			//check it is a possible element by first checking is has enough points
+			if ( minSize< contours2[i].size() &&contours2[i].size()<maxSize  )
+			{
+				approxPolyDP (  contours2[i]  ,approxCurve , double ( contours2[i].size() ) *0.05 , true );
+				//check that the poligon has 4 points
+				if ( approxCurve.size() ==4 )
+				{
+					if ( cv::isContourConvex ( cv::Mat ( approxCurve ) ) )
+					{
+						//ensure that the   distace between consecutive points is large enough
+						float minDist=1e10;
+						for ( int j=0;j<4;j++ )
+						{
+							float d= std::sqrt ( ( float ) ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) * ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) +
+												 ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) * ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) );
+							// 		norm(Mat(approxCurve[i]),Mat(approxCurve[(i+1)%4]));
+							if ( d<minDist ) minDist=d;
+						}
+						//check that distance is not very small
+						if ( minDist>10 )
+						{
+							//add the points
+							// 	      cout<<"ADDED"<<endl;
+							MarkerCanditates.push_back ( std::vector<cv::Point2f>() );
+							//MarkerCanditates.back().idx=i;
+							for ( int j=0;j<4;j++ )
+							{
+								MarkerCanditates.back().push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+							}
+						}
+					}
+				}
+			}
+		}
+		///sort the points in anti-clockwise order
+		std::valarray<bool> swapped(false,MarkerCanditates.size());//used later
+		for ( unsigned int i=0;i<MarkerCanditates.size();i++ )
+		{
 
+			//trace a line between the first and second point.
+			//if the thrid point is at the right side, then the points are anti-clockwise
+			double dx1 = MarkerCanditates[i][1].x - MarkerCanditates[i][0].x;
+			double dy1 =  MarkerCanditates[i][1].y - MarkerCanditates[i][0].y;
+			double dx2 = MarkerCanditates[i][2].x - MarkerCanditates[i][0].x;
+			double dy2 = MarkerCanditates[i][2].y - MarkerCanditates[i][0].y;
+			double o = ( dx1*dy2 )- ( dy1*dx2 );
 
+			if ( o  < 0.0 )		 //if the third point is in the left side, then sort in anti-clockwise order
+			{
+				std::swap ( MarkerCanditates[i][1],MarkerCanditates[i][3] );
+				swapped[i]=true;
+				//sort the contour points
+	//  	    reverse(MarkerCanditates[i].contour.begin(),MarkerCanditates[i].contour.end());//????
 
-		///
+			}
+		}
+		/// remove these elements whise corners are too close to each other
+		//first detect candidates
+		std::vector<std::pair<int,int>  > TooNearCandidates;
+		for ( unsigned int i=0;i<MarkerCanditates.size();i++ )
+		{
+			// 	cout<<"Marker i="<<i<<MarkerCanditates[i]<<endl;
+			//calculate the average distance of each corner to the nearest corner of the other marker candidate
+			for ( unsigned int j=i+1;j<MarkerCanditates.size();j++ )
+			{
+				float dist=0;
+				for ( int c=0;c<4;c++ )
+					dist+= sqrt ( ( MarkerCanditates[i][c].x-MarkerCanditates[j][c].x ) * ( MarkerCanditates[i][c].x-MarkerCanditates[j][c].x ) + ( MarkerCanditates[i][c].y-MarkerCanditates[j][c].y ) * ( MarkerCanditates[i][c].y-MarkerCanditates[j][c].y ) );
+				dist/=4;
+				//if distance is too small
+				if ( dist< 10 )
+				{
+					TooNearCandidates.push_back ( std::pair<int,int> ( i,j ) );
+				}
+			}
+		}
+		//mark for removal the element of  the pair with smaller perimeter
+		std::valarray<bool> toRemove ( false,MarkerCanditates.size() );
+		for ( unsigned int i=0;i<TooNearCandidates.size();i++ )
+		{
+			if ( perimeter ( MarkerCanditates[TooNearCandidates[i].first ] ) >perimeter ( MarkerCanditates[ TooNearCandidates[i].second] ) )
+				toRemove[TooNearCandidates[i].second]=true;
+			else toRemove[TooNearCandidates[i].first]=true;
+		}
+
+		for (size_t i=0;i<MarkerCanditates.size();i++) 
+		{
+			if (!toRemove[i]) 
+			{
+				/*for(int k = 0; k < 4; k++)
+				{
+					if (k!= 3)
+					cv::line(TheInputImage,MarkerCanditates[i][k],MarkerCanditates[i][k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+					else
+						cv::line(TheInputImage,MarkerCanditates[i][k],MarkerCanditates[i][0],cv::Scalar(0,0,255,255),1,CV_AA);
+				}*/
+			}
+		}
+		//finally, assign to the remaining candidates the contour
+		//OutMarkerCanditates.reserve(MarkerCanditates.size());
+		/*for (size_t i=0;i<MarkerCanditates.size();i++) {
+        if (!toRemove[i]) {
+			for(int k = 0; k < 4; i++)
+			{
+				if (k!= 3)
+				cv::line(TheInputImage,MarkerCanditates[i][k],MarkerCanditates[i][k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+				else
+					cv::line(TheInputImage,MarkerCanditates[i][k],MarkerCanditates[i][0],cv::Scalar(0,0,255,255),1,CV_AA);
+			}
+           // OutMarkerCanditates.push_back(MarkerCanditates[i]);
+           // OutMarkerCanditates.back().contour=contours2[ MarkerCanditates[i].idx];
+           // if (swapped[i] && _enableCylinderWarp )//if the corners where swapped, it is required to reverse here the points so that they are in the same order
+           //     reverse(OutMarkerCanditates.back().contour.begin(),OutMarkerCanditates.back().contour.end());//????
+        }
+    }*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		AvrgTime.first+=((double)cv::getTickCount()-tick)/cv::getTickFrequency();
         AvrgTime.second++;
+		std::stringstream s;
+		//s << "(" << 1000*AvrgTime.first/AvrgTime.second << ") fps";
+		//cv::putText(TheInputImage,s.str(), cv::Point(10,50),cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0,0,255,255),2);
         std::cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<std::endl;
 
 		cv::imshow("in",TheInputImage);
@@ -144,8 +291,8 @@ int main(int argc, char* argv[])
 
 
 		key=cv::waitKey(waitTime);//wait for key to be pressed
-	}*/
-
+	}
+#else
 	
 	//Print keymapping:
 	std::cout	<< "KeyMapping:" << "\n"
@@ -369,11 +516,11 @@ int main(int argc, char* argv[])
 	//destroy windows
 	cvDestroyWindow(MAIN_TITTLE);
 	cvDestroyWindow(SIX_DOF_THRESHOLD);
-	
+#endif
     return 0;
 }
 
-
+#ifndef NEWMETHOD
 void SwitchScreen()
 {
 	screen_to_show ++;
@@ -465,3 +612,41 @@ void Switchright()
 		processors[selected_processor]->EnableKeyProcessor();
 	}
 }
+#else
+int perimeter ( std::vector<cv::Point2f> &a )
+{
+    int sum=0;
+    for ( unsigned int i=0;i<a.size();i++ )
+    {
+        int i2= ( i+1 ) %a.size();
+        sum+= sqrt ( ( a[i].x-a[i2].x ) * ( a[i].x-a[i2].x ) + ( a[i].y-a[i2].y ) * ( a[i].y-a[i2].y ) ) ;
+    }
+    return sum;
+}
+
+void cvTackBarEvents(int pos,void*)
+{
+	std::cout << a << " " << b << std::endl;
+   /* if (a<3) a=3;
+    if (a%2!=1) a++;
+    if (ThresParam2<1) ThresParam2=1;
+    ThresParam1=iThresParam1;
+    ThresParam2=iThresParam2;*/
+ /*   MDetector.setThresholdParams(ThresParam1,ThresParam2);
+//recompute
+    MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters);
+    TheInputImage.copyTo(TheInputImageCopy);
+    for (unsigned int i=0;i<TheMarkers.size();i++)	TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
+    //print other rectangles that contains no valid markers
+
+
+//draw a 3d cube in each marker if there is 3d info
+    if (TheCameraParameters.isValid())
+        for (unsigned int i=0;i<TheMarkers.size();i++)
+            CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+
+    cv::imshow("in",TheInputImageCopy);
+    cv::imshow("thres",MDetector.getThresholdedImage());
+	*/
+}
+#endif

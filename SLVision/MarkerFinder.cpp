@@ -25,6 +25,7 @@
 #include "TuioServer.h"
 #include "GlobalConfig.h"
 #include <iostream>
+#include <sstream>
 
 
 MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
@@ -177,10 +178,10 @@ void MarkerFinder::InitGeometry()
 	}*/
 
 	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
-	dst_pnt[0] = cvPoint2D32f (0, 0);
-	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, 0);
-	dst_pnt[2] = cvPoint2D32f (fiducial_image->width, fiducial_image->height);
-    dst_pnt[3] = cvPoint2D32f (0, fiducial_image->height);
+	dst_pnt[0] = cvPoint2D32f (0, fiducial_image->height);
+	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, fiducial_image->height);
+	dst_pnt[2] = cvPoint2D32f (fiducial_image->width, 0);
+    dst_pnt[3] = cvPoint2D32f (0, 0);
 	map_matrix = cvCreateMat  (3, 3, CV_32FC1);
 }
 
@@ -287,13 +288,18 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					cvResize(fiducial_image,fiducial_image_zoomed);
 
 					fiducial_finder->DecodeFiducial(fiducial_image, temporal);
-					//notzeroCount=cvCountNonZero(tempmask);
+#ifdef SHOWDEBUG
+					if(temporal.GetFiducialID() != -1)
+					{
+						cvNamedWindow ("fiducial_screen", CV_WINDOW_AUTOSIZE);
+						cvShowImage("fiducial_screen",fiducial_image);
+					}
+#endif
 
 					if(tmp_ssid == 0)
 					{
 						if(temporal.GetFiducialID() == -1) break;
 						//add fiducial
-						//fiducial_map[ssidGenerator++] = new Fiducial(temporal);
 						fiducial_map[Globals::ssidGenerator++] = new Fiducial(temporal);
 						tmp_ssid = Globals::ssidGenerator-1;
 					}
@@ -301,23 +307,19 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					{
 						fiducial_map[tmp_ssid]->Update(temporal);
 					}
-
-
-
 #ifdef ENABLEPOSE
-					
 					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
 					if(markerDirection==0)
 					{
-						src_pnt[0].x = fiducial_map[tmp_ssid]->a.x;		
-						src_pnt[1].x = fiducial_map[tmp_ssid]->d.x;
-						src_pnt[2].x = fiducial_map[tmp_ssid]->c.x;
-						src_pnt[3].x = fiducial_map[tmp_ssid]->b.x;
+						src_pnt[0].x = xlist[0];		
+						src_pnt[1].x = xlist[1];
+						src_pnt[2].x = xlist[2];
+						src_pnt[3].x = xlist[3];
 
-						src_pnt[0].y = fiducial_map[tmp_ssid]->a.y;
-						src_pnt[1].y = fiducial_map[tmp_ssid]->d.y;
-						src_pnt[2].y = fiducial_map[tmp_ssid]->c.y;
-						src_pnt[3].y = fiducial_map[tmp_ssid]->b.y;
+						src_pnt[0].y = ylist[0];
+						src_pnt[1].y = ylist[1];
+						src_pnt[2].y = ylist[2];
+						src_pnt[3].y = ylist[3];
 #ifdef USEEIGHTPOINTS
 						src_pnt[4].x = exlist[0];		
 						src_pnt[5].x = exlist[3];
@@ -325,22 +327,22 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						src_pnt[7].x = exlist[1];
 
 						src_pnt[4].y = eylist[0];
-						src_pnt[5].y = eylist[3];;
-						src_pnt[6].y = eylist[2];;
-						src_pnt[7].y = eylist[1];;
+						src_pnt[5].y = eylist[3];
+						src_pnt[6].y = eylist[2];
+						src_pnt[7].y = eylist[1];
 #endif
 					}
 					else if(markerDirection==1)//90
 					{
-						src_pnt[0].x = fiducial_map[tmp_ssid]->b.x;		
-						src_pnt[1].x = fiducial_map[tmp_ssid]->a.x;
-						src_pnt[2].x = fiducial_map[tmp_ssid]->d.x;
-						src_pnt[3].x = fiducial_map[tmp_ssid]->c.x;
+						src_pnt[0].x = xlist[3];		
+						src_pnt[1].x = xlist[0];
+						src_pnt[2].x = xlist[1];
+						src_pnt[3].x = xlist[2];
 
-						src_pnt[0].y = fiducial_map[tmp_ssid]->b.y;
-						src_pnt[1].y = fiducial_map[tmp_ssid]->a.y;
-						src_pnt[2].y = fiducial_map[tmp_ssid]->d.y;
-						src_pnt[3].y = fiducial_map[tmp_ssid]->c.y;
+						src_pnt[0].y = ylist[3];
+						src_pnt[1].y = ylist[0];
+						src_pnt[2].y = ylist[1];
+						src_pnt[3].y = ylist[2];
 #ifdef USEEIGHTPOINTS
 						src_pnt[4].x = exlist[1];		
 						src_pnt[5].x = exlist[0];
@@ -355,15 +357,15 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					}
 					else if(markerDirection==3)//180
 					{
-						src_pnt[0].x = fiducial_map[tmp_ssid]->c.x;		
-						src_pnt[1].x = fiducial_map[tmp_ssid]->b.x;
-						src_pnt[2].x = fiducial_map[tmp_ssid]->a.x;
-						src_pnt[3].x = fiducial_map[tmp_ssid]->d.x;
+						src_pnt[0].x = xlist[2];		
+						src_pnt[1].x = xlist[3];
+						src_pnt[2].x = xlist[0];
+						src_pnt[3].x = xlist[1];
 
-						src_pnt[0].y = fiducial_map[tmp_ssid]->c.y;
-						src_pnt[1].y = fiducial_map[tmp_ssid]->b.y;
-						src_pnt[2].y = fiducial_map[tmp_ssid]->a.y;
-						src_pnt[3].y = fiducial_map[tmp_ssid]->d.y;
+						src_pnt[0].y = ylist[2];
+						src_pnt[1].y = ylist[3];
+						src_pnt[2].y = ylist[0];
+						src_pnt[3].y = ylist[1];
 #ifdef USEEIGHTPOINTS
 						src_pnt[4].x = exlist[2];		
 						src_pnt[5].x = exlist[1];
@@ -378,15 +380,15 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					}
 					else if(markerDirection==2)//270
 					{
-						src_pnt[0].x = fiducial_map[tmp_ssid]->d.x;		
-						src_pnt[1].x = fiducial_map[tmp_ssid]->c.x;
-						src_pnt[2].x = fiducial_map[tmp_ssid]->b.x;
-						src_pnt[3].x = fiducial_map[tmp_ssid]->a.x;
+						src_pnt[0].x = xlist[1];		
+						src_pnt[1].x = xlist[2];
+						src_pnt[2].x = xlist[3];
+						src_pnt[3].x = xlist[0];
 
-						src_pnt[0].y = fiducial_map[tmp_ssid]->d.y;
-						src_pnt[1].y = fiducial_map[tmp_ssid]->c.y;
-						src_pnt[2].y = fiducial_map[tmp_ssid]->b.y;
-						src_pnt[3].y = fiducial_map[tmp_ssid]->a.y;
+						src_pnt[0].y = ylist[1];
+						src_pnt[1].y = ylist[2];
+						src_pnt[2].y = ylist[3];
+						src_pnt[3].y = ylist[0];
 #ifdef USEEIGHTPOINTS
 						src_pnt[4].x = exlist[3];		
 						src_pnt[5].x = exlist[2];
@@ -398,12 +400,19 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 						src_pnt[6].y = eylist[1];
 						src_pnt[7].y = eylist[0];
 #endif
-					}
+					}				
 					
 					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
 					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
 
 					CvPoint a;
+
+#ifdef SHOWDEBUG
+					std::ostringstream convert;
+					convert << "   --o: " << markerDirection;
+					a.x = src_pnt[0].x; a.y = src_pnt[0].y;
+					Globals::Font::Write(Globals::screen,convert.str().c_str(),a,FONT_AXIS,255,0,0);
+
 					a.x = src_pnt[0].x; a.y = src_pnt[0].y;
 					Globals::Font::Write(Globals::screen,"a",a,FONT_AXIS,255,0,0);
 					a.x = src_pnt[1].x; a.y = src_pnt[1].y;
@@ -415,21 +424,15 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 
 #ifdef USEEIGHTPOINTS
 					a.x = src_pnt[4].x; a.y = src_pnt[4].y;
-					Globals::Font::Write(Globals::screen,"a",a,FONT_AXIS,255,255,0);
+					Globals::Font::Write(Globals::screen,"a",a,FONT_AXIS,255,0,255);
 					a.x = src_pnt[5].x; a.y = src_pnt[5].y;
-					Globals::Font::Write(Globals::screen,"b",a,FONT_AXIS,255,255,0);
+					Globals::Font::Write(Globals::screen,"b",a,FONT_AXIS,255,0,255);
 					a.x = src_pnt[6].x; a.y = src_pnt[6].y;
-					Globals::Font::Write(Globals::screen,"c",a,FONT_AXIS,255,255,0);
+					Globals::Font::Write(Globals::screen,"c",a,FONT_AXIS,255,0,255);
 					a.x = src_pnt[7].x; a.y = src_pnt[7].y;
-					Globals::Font::Write(Globals::screen,"d",a,FONT_AXIS,255,255,0);
+					Globals::Font::Write(Globals::screen,"d",a,FONT_AXIS,255,0,255);
 #endif
-					/*for (int i = 0; i < 4; i++)
-					{
-						a.x = exlist[i]; a.y = eylist[i];
-						Globals::Font::Write(Globals::screen,"o",a,FONT_AXIS,255,0,0);
-					}*/
-					
-
+#endif
 					/*************************************
 					* Find extrinsic fiducial params
 					**************************************/
@@ -442,41 +445,30 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					cv::Mat ObjPoints(4,3,CV_32FC1);
 #endif
 					ObjPoints.at<float>(0,0)=0;
-					ObjPoints.at<float>(0,1)=0;
+					ObjPoints.at<float>(0,1)=halfSize;
 					ObjPoints.at<float>(0,2)=0;
-					ObjPoints.at<float>(1,0)=0;
+					ObjPoints.at<float>(1,0)=halfSize;
 					ObjPoints.at<float>(1,1)=halfSize;
 					ObjPoints.at<float>(1,2)=0;
 					ObjPoints.at<float>(2,0)=halfSize;
-					ObjPoints.at<float>(2,1)=halfSize;
+					ObjPoints.at<float>(2,1)=0;
 					ObjPoints.at<float>(2,2)=0;
-					ObjPoints.at<float>(3,0)=halfSize;
+					ObjPoints.at<float>(3,0)=0;
 					ObjPoints.at<float>(3,1)=0;
 					ObjPoints.at<float>(3,2)=0;
-					/*ObjPoints.at<float>(1,0)=-halfSize;
-					ObjPoints.at<float>(1,1)=halfSize;
-					ObjPoints.at<float>(1,2)=0;
-					ObjPoints.at<float>(2,0)=halfSize;
-					ObjPoints.at<float>(2,1)=halfSize;
-					ObjPoints.at<float>(2,2)=0;
-					ObjPoints.at<float>(3,0)=halfSize;
-					ObjPoints.at<float>(3,1)=-halfSize;
-					ObjPoints.at<float>(3,2)=0;
-					ObjPoints.at<float>(0,0)=-halfSize;
-					ObjPoints.at<float>(0,1)=-halfSize;
-					ObjPoints.at<float>(0,2)=0;*/
 #ifdef USEEIGHTPOINTS
-					ObjPoints.at<float>(4,0)=-0.5f;
-					ObjPoints.at<float>(4,1)=-0.5f;
+					double inc = halfSize/3.0;
+					ObjPoints.at<float>(4,0)=-inc;
+					ObjPoints.at<float>(4,1)=halfSize+inc;
 					ObjPoints.at<float>(4,2)=0;
-					ObjPoints.at<float>(5,0)=-0.5f;
-					ObjPoints.at<float>(5,1)=halfSize+0.5f;
+					ObjPoints.at<float>(5,0)=halfSize+inc;
+					ObjPoints.at<float>(5,1)=halfSize+inc;
 					ObjPoints.at<float>(5,2)=0;
-					ObjPoints.at<float>(6,0)=halfSize+0.5f;
-					ObjPoints.at<float>(6,1)=halfSize+0.5f;
+					ObjPoints.at<float>(6,0)=halfSize+inc;
+					ObjPoints.at<float>(6,1)=-inc;
 					ObjPoints.at<float>(6,2)=0;
-					ObjPoints.at<float>(7,0)=halfSize+0.5f;
-					ObjPoints.at<float>(7,1)=-0.5f;
+					ObjPoints.at<float>(7,0)=-inc;
+					ObjPoints.at<float>(7,1)=-inc;
 					ObjPoints.at<float>(7,2)=0;
 #endif
 
@@ -498,7 +490,6 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					raux.convertTo(Rvec,CV_32F);
 					taux.convertTo(Tvec ,CV_32F);
 #endif
-
 #ifdef ENABLEPOSE
 					/*************************************
 					* Prepare parameters
@@ -512,6 +503,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->xpos = Tvec.ptr<float>(0)[0];
 					fiducial_map[tmp_ssid]->ypos = Tvec.ptr<float>(0)[1];
 					fiducial_map[tmp_ssid]->zpos = Tvec.ptr<float>(0)[2];
+					//std::cout << fiducial_map[tmp_ssid]->xpos << "\t" << fiducial_map[tmp_ssid]->ypos << "\t" << fiducial_map[tmp_ssid]->zpos << std::endl;
 
 					fiducial_map[tmp_ssid]->r11 = R.ptr<float>(0)[0];
 					fiducial_map[tmp_ssid]->r12 = R.ptr<float>(0)[1];
@@ -530,66 +522,75 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					* Draw pose params  cube
 					**************************************/
 					cv::Mat objectPoints (8,3,CV_32FC1);
-					halfSize=fidsize/2;
-					objectPoints.at<float>(0,0)=-halfSize;
-					objectPoints.at<float>(0,1)=0;
-					objectPoints.at<float>(0,2)=-halfSize;
+					halfSize=fidsize/*/2*/;
+					objectPoints.at<float>(0,0)=0;
+					objectPoints.at<float>(0,1)=halfSize;
+					objectPoints.at<float>(0,2)=0;
+
 					objectPoints.at<float>(1,0)=halfSize;
-					objectPoints.at<float>(1,1)=0;
-					objectPoints.at<float>(1,2)=-halfSize;
+					objectPoints.at<float>(1,1)=halfSize;
+					objectPoints.at<float>(1,2)=0;
+
 					objectPoints.at<float>(2,0)=halfSize;
 					objectPoints.at<float>(2,1)=0;
-					objectPoints.at<float>(2,2)=halfSize;
-					objectPoints.at<float>(3,0)=-halfSize;
-					objectPoints.at<float>(3,1)=0;
-					objectPoints.at<float>(3,2)=halfSize;
+					objectPoints.at<float>(2,2)=0;
 
-					objectPoints.at<float>(4,0)=-halfSize;
-					objectPoints.at<float>(4,1)=fidsize;
-					objectPoints.at<float>(4,2)=-halfSize;
+					objectPoints.at<float>(3,0)=0;
+					objectPoints.at<float>(3,1)=0;
+					objectPoints.at<float>(3,2)=0;
+
+					objectPoints.at<float>(4,0)=0;
+					objectPoints.at<float>(4,1)=halfSize;
+					objectPoints.at<float>(4,2)=halfSize;
+
 					objectPoints.at<float>(5,0)=halfSize;
-					objectPoints.at<float>(5,1)=fidsize;
-					objectPoints.at<float>(5,2)=-halfSize;
+					objectPoints.at<float>(5,1)=halfSize;
+					objectPoints.at<float>(5,2)=halfSize;
+
 					objectPoints.at<float>(6,0)=halfSize;
-					objectPoints.at<float>(6,1)=fidsize;
+					objectPoints.at<float>(6,1)=0;
 					objectPoints.at<float>(6,2)=halfSize;
-					objectPoints.at<float>(7,0)=-halfSize;
-					objectPoints.at<float>(7,1)=fidsize;
+
+					objectPoints.at<float>(7,0)=0;
+					objectPoints.at<float>(7,1)=0;
 					objectPoints.at<float>(7,2)=halfSize;
+
 					cv::vector<cv::Point2f> imagePoints;
 
 					projectPoints( objectPoints, Rvec, Tvec,  Globals::CameraMatrix,Globals::Distortion,   imagePoints);
 					
 					//draw lines of different colours
 					for (int i=0;i<4;i++)
-						cvLine(Globals::screen,imagePoints[i],imagePoints[(i+1)%4],CV_RGB(255,255,0),2,8,0);
+						cvLine(Globals::screen,imagePoints[i],imagePoints[(i+1)%4],CV_RGB(255,255,0),1,8,0);
 
 					for (int i=0;i<4;i++)
-						cvLine(Globals::screen,imagePoints[i+4],imagePoints[4+(i+1)%4],CV_RGB(255,0,255),2,8,0);
+						cvLine(Globals::screen,imagePoints[i+4],imagePoints[4+(i+1)%4],CV_RGB(255,0,255),1,8,0);
 
 					for (int i=0;i<4;i++)
-						cvLine(Globals::screen,imagePoints[i],imagePoints[i+4],CV_RGB(0,255,255),2,8,0);
+						cvLine(Globals::screen,imagePoints[i],imagePoints[i+4],CV_RGB(0,255,255),1,8,0);
 					/*************************************
 					* Draw pose params  axis
 					**************************************/
-					{
+					
 					float size=fidsize*3;
-					cv::Mat objectPoints (4,3,CV_32FC1);
-					objectPoints.at<float>(0,0)=0;
-					objectPoints.at<float>(0,1)=0;
+					halfSize=fidsize/2;
+					objectPoints= cv::Mat(4,3,CV_32FC1);
+					objectPoints.at<float>(0,0)=halfSize;
+					objectPoints.at<float>(0,1)=halfSize;
 					objectPoints.at<float>(0,2)=0;
 					objectPoints.at<float>(1,0)=size;
-					objectPoints.at<float>(1,1)=0;
+					objectPoints.at<float>(1,1)=halfSize;
 					objectPoints.at<float>(1,2)=0;
-					objectPoints.at<float>(2,0)=0;
+					objectPoints.at<float>(2,0)=halfSize;
 					objectPoints.at<float>(2,1)=size;
 					objectPoints.at<float>(2,2)=0;
-					objectPoints.at<float>(3,0)=0;
-					objectPoints.at<float>(3,1)=0;
+					objectPoints.at<float>(3,0)=halfSize;
+					objectPoints.at<float>(3,1)=halfSize;
 					objectPoints.at<float>(3,2)=size;
 
-					cv::vector<cv::Point2f> imagePoints;
-					cv::projectPoints( objectPoints, Rvec,Tvec, Globals::CameraMatrix,Globals::Distortion,   imagePoints);
+					//cv::vector<cv::Point2f> imagePoints;
+					imagePoints.clear();
+					cv::projectPoints( objectPoints, Rvec,Tvec, Globals::CameraMatrix,Globals::Distortion, imagePoints);
 					//draw lines of different colours
 					cvLine(Globals::screen,imagePoints[0],imagePoints[1],CV_RGB(0,0,255),2,8,0);
 					Globals::Font::Write(Globals::screen,"X",imagePoints[1],FONT_AXIS,0,0,255);
@@ -597,7 +598,7 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					Globals::Font::Write(Globals::screen,"Y",imagePoints[2],FONT_AXIS,0,255,0);
 					cvLine(Globals::screen,imagePoints[0],imagePoints[3],CV_RGB(255,0,0),2,8,0);
 					Globals::Font::Write(Globals::screen,"Z",imagePoints[3],FONT_AXIS,255,0,0);
-					}
+					
 					#endif
 					}
 					
