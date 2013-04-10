@@ -135,12 +135,14 @@ void Globals::LoadDefaultDistortionMatrix()
 
 float Globals::GetX(int coord)
 {
-	return 1.0f-(float)(coord - Globals::calib_x_min) / (float)(Globals::calib_x_max - Globals::calib_x_min);
+	//return 1.0f-(float)(coord - Globals::calib_x_min) / (float)(Globals::calib_x_max - Globals::calib_x_min);
+	return coord;
 }
 
 float Globals::GetY(int coord)
 {
-	return (float)(coord - Globals::calib_y_min) / (float)(Globals::calib_y_max - Globals::calib_y_min);
+	//return (float)(coord - Globals::calib_y_min) / (float)(Globals::calib_y_max - Globals::calib_y_min);
+	return coord;
 }
 
 void Globals::Font::InitFont()
