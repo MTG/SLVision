@@ -514,6 +514,19 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->r31 = R.ptr<float>(2)[0];
 					fiducial_map[tmp_ssid]->r32 = R.ptr<float>(2)[1];
 					fiducial_map[tmp_ssid]->r33 = R.ptr<float>(2)[2];
+
+#ifdef SHOWDEBUG
+					std::ostringstream fidinfo;
+					fidinfo << "--------------------------------------------------------------------------------" << std::endl;
+					fidinfo << "Fiducial info;" << std::endl;
+					fidinfo << "\tID: " <<  fiducial_map[tmp_ssid]->GetFiducialID()  <<std::endl;
+					fidinfo << "\tgX: " <<  fiducial_map[tmp_ssid]->GetX() << "\tgY: " <<  fiducial_map[tmp_ssid]->GetY()  <<std::endl;
+					fidinfo << "\tX: " <<  fiducial_map[tmp_ssid]->xpos  <<std::endl;
+					fidinfo << "\tY: " <<  fiducial_map[tmp_ssid]->ypos  <<std::endl;
+					fidinfo << "\tZ: " <<  fiducial_map[tmp_ssid]->zpos  <<std::endl;
+					fidinfo << "\tyaw: " <<  fiducial_map[tmp_ssid]->yaw <<"\t" <<fiducial_map[tmp_ssid]->pitch << "\t" << fiducial_map[tmp_ssid]->roll  <<std::endl;
+					std::cout << fidinfo.str() << std::endl;
+#endif
 #endif
 					if(Globals::is_view_enabled)
 					{
@@ -642,8 +655,8 @@ void MarkerFinder::RepportOSC()
 				it->first,
 				0,
 				it->second->GetFiducialID(),
-				Globals::GetX(it->second->xpos),//it->second->xpos,
-				Globals::GetY(it->second->ypos),//it->second->ypos,
+				it->second->GetX()/Globals::width,//Globals::GetX(it->second->xpos),//it->second->xpos,
+				it->second->GetY()/Globals::height,//Globals::GetY(it->second->ypos),//it->second->ypos,
 				it->second->zpos,//Globals::GetZValue(it->second->zpos),
 				it->second->yaw,
 				it->second->pitch,

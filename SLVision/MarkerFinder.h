@@ -32,6 +32,7 @@ typedef std::map<unsigned int, Fiducial*> FiducialMap;
 #define ENABLEPOSE 1
 #define DRAWPOSE 1
 #define USEEIGHTPOINTS 1
+//#define SHOWDEBUG 1
 
 class MarkerFinder :
 	public FrameProcessor
