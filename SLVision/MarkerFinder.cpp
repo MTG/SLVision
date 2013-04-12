@@ -27,7 +27,6 @@
 #include <iostream>
 #include <sstream>
 
-
 MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
 {
 	//ssidGenerator = 1;
@@ -505,14 +504,33 @@ IplImage* MarkerFinder::Process(IplImage*	main_image)
 					fiducial_map[tmp_ssid]->zpos = Tvec.ptr<float>(0)[2];
 					//std::cout << fiducial_map[tmp_ssid]->xpos << "\t" << fiducial_map[tmp_ssid]->ypos << "\t" << fiducial_map[tmp_ssid]->zpos << std::endl;
 
-					fiducial_map[tmp_ssid]->r11 = R.ptr<float>(0)[0];
+
+					//Rotate XAxis
+					cv::Mat Rx= cv::Mat::eye(3,3,CV_32F);
+					float angle = M_PI;
+					Rx.at<float>(1,1) = cos(angle);
+					Rx.at<float>(1,2) = -sin(angle);
+					Rx.at<float>(2,1) = sin(angle);
+					Rx.at<float>(2,2) = cos(angle);
+					R = R*Rx;
+
+					//Rotate YAxis
+					/*cv::Mat Ry= cv::Mat::eye(3,3,CV_32F);
+					Ry.at<float>(1,1) = cos(angle);
+					Ry.at<float>(1,2) = -sin(angle);
+					Ry.at<float>(2,1) = sin(angle);
+					Ry.at<float>(2,2) = cos(angle);
+					R = R*Ry;*/
+
+
+					fiducial_map[tmp_ssid]->r11 = -R.ptr<float>(0)[0];
 					fiducial_map[tmp_ssid]->r12 = R.ptr<float>(0)[1];
-					fiducial_map[tmp_ssid]->r13 = R.ptr<float>(0)[2];
+					fiducial_map[tmp_ssid]->r13 = -R.ptr<float>(0)[2];
 					fiducial_map[tmp_ssid]->r21 = R.ptr<float>(1)[0];
-					fiducial_map[tmp_ssid]->r22 = R.ptr<float>(1)[1];
-					fiducial_map[tmp_ssid]->r23 = R.ptr<float>(1)[2];
-					fiducial_map[tmp_ssid]->r31 = R.ptr<float>(2)[0];
-					fiducial_map[tmp_ssid]->r32 = R.ptr<float>(2)[1];
+					fiducial_map[tmp_ssid]->r22 = -R.ptr<float>(1)[1];
+					fiducial_map[tmp_ssid]->r23 = -R.ptr<float>(1)[2];
+					fiducial_map[tmp_ssid]->r31 = -R.ptr<float>(2)[0];
+					fiducial_map[tmp_ssid]->r32 = -R.ptr<float>(2)[1];
 					fiducial_map[tmp_ssid]->r33 = R.ptr<float>(2)[2];
 
 #ifdef SHOWDEBUG

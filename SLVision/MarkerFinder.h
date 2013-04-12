@@ -26,7 +26,9 @@
 #include "FiducialFinder.h"
 
 #define FIDUCIAL_IMAGE_SIZE 70
-
+#ifndef M_PI
+#define M_PI 3.141592f
+#endif
 typedef std::map<unsigned int, Fiducial*> FiducialMap;
 
 #define ENABLEPOSE 1

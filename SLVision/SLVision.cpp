@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
 		//adaptive threshold
 		if ( a<3 ) a=3;
         else if ( ( ( int ) a ) %2 !=1 ) a= ( int ) ( a+1 );
-		cv::adaptiveThreshold ( imgToBeThresHolded,thres,255,cv::ADAPTIVE_THRESH_MEAN_C,cv::THRESH_BINARY_INV,a,b );
+		cv::adaptiveThreshold ( imgToBeThresHolded,thres,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY,47,2 );
 		
 
 		///detect rectangles
