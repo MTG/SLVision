@@ -208,8 +208,8 @@ void TouchFinder::RepportOSC()
 					it->first, 
 					0, 
 					0,
-					Globals::GetX(it->second->GetX()),//it->second->x/Globals::width, 
-					Globals::GetY(it->second->GetY()),//it->second->y/Globals::height, 
+					((it->second->GetX()/1.333f)/Globals::width)+0.2f,//Globals::GetX(it->second->GetX()),// 
+					it->second->GetY()/Globals::height, //Globals::GetY(it->second->GetY()),//
 					it->second->area, 
 					0);
 			}
