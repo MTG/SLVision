@@ -24,21 +24,19 @@
 //#define NEWMETHOD 2
 
 #ifndef NEWMETHOD
-//#include <cv.h>
-//#include <cxcore.h>
-//#include <highgui.h>
 #include "Globals.h"
 #include "MarkerFinder.h"
-#include "TuioServer.h"
-#include "Calibrator.h"
+//#include "TuioServer.h"
+//#include "Calibrator.h"
 #include "GlobalConfig.h"
-#include "TouchFinder.h"
-#include "HandFinder.h"
+//#include "TouchFinder.h"
+//#include "HandFinder.h"
+
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
-#include <cstdio>
-#include <conio.h>
+#include <string>
+#include <sstream>
 
 //VIEW constants
 #define VIEW_RAW					0
@@ -51,7 +49,6 @@
 #define SIX_DOF_THRESHOLD			"Threshold 6 DoF"
 #define TOUCH_THRESHOLD				"Threshold Touch"
 #define HAND_THRESHOLD				"Threshold hand"
-//#define THRESHOLD_SURFACE_TITTLE	"Threshold surface"
 
 typedef std::vector<FrameProcessor*> Vector_processors;
 
@@ -64,10 +61,10 @@ void Switchright();
 
 
 Vector_processors	processors;
-Calibrator*			calibrator;
+//Calibrator*			calibrator;
 MarkerFinder*		markerfinder;
-TouchFinder*		touchfinder;
-HandFinder*			handfinder;
+//TouchFinder*		touchfinder;
+//HandFinder*			handfinder;
 
 // main window properties
 int64	process_time;
@@ -80,6 +77,25 @@ int screen_to_show; //0 source, 1 thresholds, 2 Nothing
 
 bool show_options;
 int selected_processor;
+
+//Camera capture vars
+int cameraID;
+cv::VideoCapture VCapturer;
+//Camera input
+cv::Mat InputCamera;
+
+//Window treatment
+cv::Mat EmptyImage;
+int enable_view_window;
+std::string main_window_tittle;
+std::string view_window_tittle;
+
+//interface vars
+int waitTime=10;
+
+///Function headers
+void cvEnableView(int pos,void*);
+
 
 #else
 //new_Method
@@ -295,61 +311,114 @@ int main(int argc, char* argv[])
 #else
 	
 	//Print keymapping:
-	std::cout	<< "KeyMapping:" << "\n"
-				<< "Esc" << ":\t " << "Exit SLVision." << "\n"
-				<< KEY_CHANGE_VIEW << ":\t " << "Change view (when anything is displayed, performance is enhanced)." << "\n"
-				<< KEY_CALIBRATION << ":\t " << "Opens Calibration window." << "\n"
-				<< "o" << ":\t " << "Shows option dialog:" << "\n"
-				<< "\t   " << "4 , 6" << ":\t " << "Changes processor." << "\n"
-				<< "\t   " << "8 , 2" << ":\t " << "Switchs processor options." << "\n"
-				<< "\t   " << "+ , -" << ":\t " << "Changes options values." << "\n" ;
-	//
-	IplImage*		bgs_image;
-	IplImage*		six_dof_output;
-	IplImage*		touch_finder_output;
-	IplImage*		hand_finder_output;
-	CvCapture*		cv_camera_capture;
-	IplImage*		captured_image;
-	IplImage*		gray_image;
-	char			presskey;
+	//std::cout	<< "KeyMapping:" << "\n"
+	//			<< "Esc" << ":\t " << "Exit SLVision." << "\n"
+	//			<< KEY_CHANGE_VIEW << ":\t " << "Change view (when anything is displayed, performance is enhanced)." << "\n"
+	//			<< KEY_CALIBRATION << ":\t " << "Opens Calibration window." << "\n"
+	//			<< "o" << ":\t " << "Shows option dialog:" << "\n"
+	//			<< "\t   " << "4 , 6" << ":\t " << "Changes processor." << "\n"
+	//			<< "\t   " << "8 , 2" << ":\t " << "Switchs processor options." << "\n"
+	//			<< "\t   " << "+ , -" << ":\t " << "Changes options values." << "\n" ;
+	////
+	//IplImage*		bgs_image;
+	//IplImage*		six_dof_output;
+	//IplImage*		touch_finder_output;
+	//IplImage*		hand_finder_output;
+	//CvCapture*		cv_camera_capture;
+	//IplImage*		captured_image;
+	//IplImage*		gray_image;
+	//char			presskey;
 
-	claibrateMode			= false;
+	//claibrateMode			= false;
 	is_running				= true;
-	bg_substraction			= false;
-	process_bg				= false;
+	//bg_substraction			= false;
+	//process_bg				= false;
 
-	Globals::LoadDefaultDistortionMatrix();
+	
 
+	/******************************************************/
 	//Camera initialization and initialize frame
-	cv_camera_capture = cvCaptureFromCAM(CAMERA_ID);		//allocates and initialized the CvCapture structure for reading a video stream from the camera
-	if(cv_camera_capture == NULL) 
+	/******************************************************/
+//	cv_camera_capture = cvCaptureFromCAM(CAMERA_ID);		//allocates and initialized the CvCapture structure for reading a video stream from the camera
+//	if(cv_camera_capture == NULL) 
+//		return -1;
+//	captured_image = cvQueryFrame(cv_camera_capture);		//grabs a frame from camera
+//	Globals::screen = captured_image;
+//	gray_image = cvCreateImage(cvGetSize(captured_image),IPL_DEPTH_8U,1);
+//	bgs_image = cvCreateImage(cvGetSize(captured_image),IPL_DEPTH_8U,1);
+	//Open camera
+	cameraID = CAMERA_ID;
+	VCapturer.open(cameraID);
+	if(!VCapturer.isOpened())
+	{
+		std::cout << "Unable to open camera id: " << CAMERA_ID << std::endl;
 		return -1;
-	captured_image = cvQueryFrame(cv_camera_capture);		//grabs a frame from camera
-	Globals::screen = captured_image;
-	gray_image = cvCreateImage(cvGetSize(captured_image),IPL_DEPTH_8U,1);
-	bgs_image = cvCreateImage(cvGetSize(captured_image),IPL_DEPTH_8U,1);
+	}
+	//capture a frame
+	VCapturer>>InputCamera;
 
-	// retreive width and height
-	Globals::width = cvGetSize(captured_image).width;
-	Globals::height = cvGetSize(captured_image).height;
-	sprintf(Globals::dim,"%ix%i",Globals::width,Globals::height);
+	/******************************************************/
+	// retreive width and height and init camera matrices
+	/******************************************************/
+	//Globals::LoadDefaultDistortionMatrix();
+//	Globals::width = cvGetSize(captured_image).width;
+//	Globals::height = cvGetSize(captured_image).height;
+//	sprintf(Globals::dim,"%ix%i",Globals::width,Globals::height);
 
+	/******************************************************/
+	// Init views and Main screen
+	/******************************************************/
+	main_window_tittle = std::string("SLVision");
+	view_window_tittle = std::string("Camera View");
+	EmptyImage = cv::Mat(2,500,CV_8UC1);
+	//cv::imshow(main_window_tittle,EmptyImage);
+	//conf, thres fiducials, thres hands, thres fingers.
+	cv::namedWindow(main_window_tittle,CV_WINDOW_AUTOSIZE);
+	//cv::imshow(view_window_tittle,InputCamera);
+	cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
+    //cv::createTrackbar("ThresParam2", "in",&b, 13, cvTackBarEvents);
+	
+	/******************************************************/
+	// Init Frame Processors
+	/******************************************************/
+
+
+	while(is_running)
+	{
+		VCapturer.retrieve( InputCamera);
+
+
+		int key = cv::waitKey(waitTime);//wait for key to be pressed
+		switch(key)
+		{
+		case 27:
+			is_running = false;
+			break;
+		}
+		if(enable_view_window == 1)
+		{
+			cv::imshow(view_window_tittle,InputCamera);
+		}
+		cv::imshow(main_window_tittle,EmptyImage);
+		cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
+	}
+
+#ifdef old_core
 	///init objects
-	calibrator = new Calibrator();
+//	calibrator = new Calibrator();
 	
 	markerfinder = new MarkerFinder();
 	processors.push_back(markerfinder);
-	TuioServer::Instance().RegisterProcessor(markerfinder);
+//	TuioServer::Instance().RegisterProcessor(markerfinder);
 	
-	touchfinder = new TouchFinder();
-	processors.push_back(touchfinder);
-	TuioServer::Instance().RegisterProcessor(touchfinder);
+//	touchfinder = new TouchFinder();
+//	processors.push_back(touchfinder);
+//	TuioServer::Instance().RegisterProcessor(touchfinder);
 
-	handfinder = new HandFinder();
-	HandFinder::instance = handfinder;
-	//Globals::hand_finder = handfinder;
-	processors.push_back(handfinder);
-	TuioServer::Instance().RegisterProcessor(handfinder);
+//	handfinder = new HandFinder();
+//	HandFinder::instance = handfinder;
+//	processors.push_back(handfinder);
+//	TuioServer::Instance().RegisterProcessor(handfinder);
 
 	//SetView
 	screen_to_show = datasaver::GlobalConfig::getRef("MAIN:VIEW",0);
@@ -390,18 +459,18 @@ int main(int argc, char* argv[])
 
 			//******processors****
 			six_dof_output = markerfinder->ProcessFrame(gray_image);
-			touch_finder_output = touchfinder->ProcessFrame(gray_image);
-			hand_finder_output = handfinder->ProcessFrame(gray_image);
+//			touch_finder_output = touchfinder->ProcessFrame(gray_image);
+//			hand_finder_output = handfinder->ProcessFrame(gray_image);
 			//***********
 			//******OSC SEND DATA****
 			markerfinder->SendOSCData();
-			touchfinder->SendOSCData();
-			handfinder->SendOSCData();
+//			touchfinder->SendOSCData();
+//			handfinder->SendOSCData();
 			
 		}
 		else
 		{
-			calibrator->ProcessFrame(gray_image);
+//			calibrator->ProcessFrame(gray_image);
 		}
 		
 		process_time = cvGetTickCount()-process_time;
@@ -421,13 +490,13 @@ int main(int argc, char* argv[])
 			if(screen_to_show == VIEW_THRESHOLD)
 			{
 				if(markerfinder->IsEnabled()) cvShowImage(SIX_DOF_THRESHOLD,six_dof_output);
-				if(touchfinder->IsEnabled()) cvShowImage(TOUCH_THRESHOLD,touch_finder_output);
-				if(handfinder->IsEnabled()) cvShowImage(HAND_THRESHOLD,hand_finder_output);
+//				if(touchfinder->IsEnabled()) cvShowImage(TOUCH_THRESHOLD,touch_finder_output);
+//				if(handfinder->IsEnabled()) cvShowImage(HAND_THRESHOLD,hand_finder_output);
 			}
 		}
 
 		//sends OSC bundle or update it
-		TuioServer::Instance().SendBundle();
+//		TuioServer::Instance().SendBundle();
 		//Key Check
 		presskey=cvWaitKey (10);
 		switch(presskey)
@@ -438,24 +507,18 @@ int main(int argc, char* argv[])
 			case KEY_CHANGE_VIEW:
 				SwitchScreen();
 				break;
-//			case KEY_SHOW_FID_PROCESSOR:
-//				ToggleDisplayFIDProcessor();
-//				break;
 			case KEY_CALIBRATION:
 				ToggleCalibrationMode();
 				break;
 			case KEY_CALIBRATION_GRID:
 			case KEY_RESET:
-//			case KEY_RESET_Z:
-//				if(claibrateMode) calibrator->ProcessKey(presskey);
-//				break;
 			case KEY_PREVIOUS_OPTION_1:
 			case KEY_PREVIOUS_OPTION_2:
 			case KEY_PREVIOUS_OPTION_3:
 				
 				if(claibrateMode)
 				{
-					calibrator->ProcessKey(presskey);
+//					calibrator->ProcessKey(presskey);
 				}
 				else if(show_options)
 					Switchleft();
@@ -465,7 +528,7 @@ int main(int argc, char* argv[])
 			case KEY_NEXT_OPTION_3:
 				if(claibrateMode)
 				{
-					calibrator->ProcessKey(presskey);
+//					calibrator->ProcessKey(presskey);
 				}
 				else if(show_options)
 					Switchright();
@@ -497,7 +560,7 @@ int main(int argc, char* argv[])
 				}
 				else if(claibrateMode)
 				{
-					calibrator->ProcessKey(presskey);
+//					calibrator->ProcessKey(presskey);
 				}
 				break;
 				//test
@@ -505,20 +568,38 @@ int main(int argc, char* argv[])
 	} ///end while bucle
 
 	//finishing and erasing data:
-	TuioServer::Instance().SendEmptyBundle(); //sends clear empty tuioMessage
+//	TuioServer::Instance().SendEmptyBundle(); //sends clear empty tuioMessage
 	cvReleaseCapture(&cv_camera_capture);
 	cvReleaseImage(&gray_image);
 	delete (markerfinder);
-	delete (&TuioServer::Instance());
-	delete (calibrator);
-	delete (touchfinder);
-	delete (handfinder);
+//	delete (&TuioServer::Instance());
+//	delete (calibrator);
+//	delete (touchfinder);
+//	delete (handfinder);
 	//destroy windows
 	cvDestroyWindow(MAIN_TITTLE);
 	cvDestroyWindow(SIX_DOF_THRESHOLD);
 #endif
+#endif
     return 0;
 }
+
+
+void cvEnableView(int pos,void* name)
+{
+	std::cout << pos << std::endl;
+	if(pos == 0)
+	{
+		cv::destroyWindow(view_window_tittle);
+	}
+	else
+	{
+		cv::namedWindow(view_window_tittle,CV_WINDOW_AUTOSIZE);
+	}
+}
+
+
+
 
 #ifndef NEWMETHOD
 void SwitchScreen()
@@ -561,8 +642,8 @@ void SetView(int view)
 			cvDestroyWindow(MAIN_TITTLE);
 			//frame processors windows
 			if(markerfinder->IsEnabled()) cvNamedWindow (SIX_DOF_THRESHOLD, CV_WINDOW_AUTOSIZE);
-			if(touchfinder->IsEnabled()) cvNamedWindow (TOUCH_THRESHOLD, CV_WINDOW_AUTOSIZE);
-			if(handfinder->IsEnabled()) cvNamedWindow (HAND_THRESHOLD, CV_WINDOW_AUTOSIZE);
+//			if(touchfinder->IsEnabled()) cvNamedWindow (TOUCH_THRESHOLD, CV_WINDOW_AUTOSIZE);
+//			if(handfinder->IsEnabled()) cvNamedWindow (HAND_THRESHOLD, CV_WINDOW_AUTOSIZE);
 			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
 		}
 	}
@@ -576,7 +657,7 @@ void ToggleCalibrationMode()
 	claibrateMode = !claibrateMode;
 	if(claibrateMode)
 	{
-		calibrator->StartCalibration();
+//		calibrator->StartCalibration();
 		if(processors.size() != 0)
 		{
 			show_options = false;
@@ -586,7 +667,7 @@ void ToggleCalibrationMode()
 	}
 	else
 	{
-		calibrator->EndCalibration();
+//		calibrator->EndCalibration();
 	}
 }
 
