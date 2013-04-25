@@ -62,7 +62,7 @@ void Switchright();
 
 Vector_processors	processors;
 //Calibrator*			calibrator;
-MarkerFinder*		markerfinder;
+
 //TouchFinder*		touchfinder;
 //HandFinder*			handfinder;
 
@@ -91,11 +91,15 @@ std::string main_window_tittle;
 std::string view_window_tittle;
 
 //interface vars
-int waitTime=10;
+bool guicreated = false;
+int waitTime = 10;
+
+//Frame Processors
+MarkerFinder*	markerfinder;
 
 ///Function headers
 void cvEnableView(int pos,void*);
-
+void CreateGUI();
 
 #else
 //new_Method
@@ -330,15 +334,15 @@ int main(int argc, char* argv[])
 	//char			presskey;
 
 	//claibrateMode			= false;
-	is_running				= true;
+	
 	//bg_substraction			= false;
 	//process_bg				= false;
 
 	
 
-	/******************************************************/
-	//Camera initialization and initialize frame
-	/******************************************************/
+	/******************************************************
+	*Camera initialization and initialize frame
+	*******************************************************/
 //	cv_camera_capture = cvCaptureFromCAM(CAMERA_ID);		//allocates and initialized the CvCapture structure for reading a video stream from the camera
 //	if(cv_camera_capture == NULL) 
 //		return -1;
@@ -354,53 +358,65 @@ int main(int argc, char* argv[])
 		std::cout << "Unable to open camera id: " << CAMERA_ID << std::endl;
 		return -1;
 	}
+	is_running = true;
 	//capture a frame
 	VCapturer>>InputCamera;
 
-	/******************************************************/
-	// retreive width and height and init camera matrices
-	/******************************************************/
-	//Globals::LoadDefaultDistortionMatrix();
+	/******************************************************
+	* retreive width and height and init camera matrices
+	*******************************************************/
+//	Globals::LoadDefaultDistortionMatrix();
 //	Globals::width = cvGetSize(captured_image).width;
 //	Globals::height = cvGetSize(captured_image).height;
 //	sprintf(Globals::dim,"%ix%i",Globals::width,Globals::height);
 
-	/******************************************************/
-	// Init views and Main screen
-	/******************************************************/
+	/******************************************************
+	* Init views and Main screen
+	*******************************************************/
 	main_window_tittle = std::string("SLVision");
 	view_window_tittle = std::string("Camera View");
-	EmptyImage = cv::Mat(2,500,CV_8UC1);
-	//cv::imshow(main_window_tittle,EmptyImage);
+	EmptyImage = cv::Mat(200,500,CV_8UC1);
 	//conf, thres fiducials, thres hands, thres fingers.
 	cv::namedWindow(main_window_tittle,CV_WINDOW_AUTOSIZE);
-	//cv::imshow(view_window_tittle,InputCamera);
-	cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
-    //cv::createTrackbar("ThresParam2", "in",&b, 13, cvTackBarEvents);
+	CreateGUI();
 	
-	/******************************************************/
-	// Init Frame Processors
-	/******************************************************/
+	/******************************************************
+	* Init Frame Processors
+	*******************************************************/
 
 
+	/******************************************************
+	* Main loop app
+	*******************************************************/
 	while(is_running)
 	{
 		VCapturer.retrieve( InputCamera);
+		/******************************************************
+		* Process Video
+		*******************************************************/
 
-
+		/******************************************************
+		* Key check
+		*******************************************************/
 		int key = cv::waitKey(waitTime);//wait for key to be pressed
 		switch(key)
 		{
 		case 27:
 			is_running = false;
 			break;
+		case 'o':
+			guicreated = false;
+			break;
 		}
 		if(enable_view_window == 1)
 		{
 			cv::imshow(view_window_tittle,InputCamera);
 		}
+		/******************************************************
+		* Draw GUI
+		*******************************************************/
+		CreateGUI();
 		cv::imshow(main_window_tittle,EmptyImage);
-		cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
 	}
 
 #ifdef old_core
@@ -598,101 +614,110 @@ void cvEnableView(int pos,void* name)
 	}
 }
 
+void CreateGUI()
+{
+	if(!guicreated)
+	{
+		cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
+		guicreated = true;
+	}
+}
+
 
 
 
 #ifndef NEWMETHOD
-void SwitchScreen()
-{
-	screen_to_show ++;
-	if(screen_to_show > VIEW_NONE) screen_to_show = 0;
-		SetView(screen_to_show);
-}
+//void SwitchScreen()
+//{
+//	screen_to_show ++;
+//	if(screen_to_show > VIEW_NONE) screen_to_show = 0;
+//		SetView(screen_to_show);
+//}
+//
+//void SetView(int view)
+//{
+//	int &glob_view = datasaver::GlobalConfig::getRef("MAIN:VIEW",0);
+//	if(view < 0 || view >= VIEW_NONE)
+//	{
+//		screen_to_show = VIEW_NONE;
+//		Globals::is_view_enabled = false;
+//		cvDestroyWindow(SIX_DOF_THRESHOLD);
+//		cvDestroyWindow(TOUCH_THRESHOLD);
+//		cvDestroyWindow(MAIN_TITTLE);
+//		cvDestroyWindow(HAND_THRESHOLD);
+//		cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
+//	}
+//	else
+//	{
+//		screen_to_show = view;
+//		Globals::is_view_enabled = true;
+//		if(screen_to_show == VIEW_RAW)
+//		{
+//			cvDestroyWindow(HAND_THRESHOLD);
+//			cvDestroyWindow(TOUCH_THRESHOLD);
+//			cvDestroyWindow(SIX_DOF_THRESHOLD);
+//			cvDestroyWindow(MAIN_TITTLE);
+//			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
+//		}
+//		else if(screen_to_show == VIEW_THRESHOLD)
+//		{
+//			cvDestroyWindow(HAND_THRESHOLD);
+//			cvDestroyWindow(TOUCH_THRESHOLD);
+//			cvDestroyWindow(SIX_DOF_THRESHOLD);
+//			cvDestroyWindow(MAIN_TITTLE);
+//			//frame processors windows
+//			if(markerfinder->IsEnabled()) cvNamedWindow (SIX_DOF_THRESHOLD, CV_WINDOW_AUTOSIZE);
+////			if(touchfinder->IsEnabled()) cvNamedWindow (TOUCH_THRESHOLD, CV_WINDOW_AUTOSIZE);
+////			if(handfinder->IsEnabled()) cvNamedWindow (HAND_THRESHOLD, CV_WINDOW_AUTOSIZE);
+//			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
+//		}
+//	}
+//	glob_view = screen_to_show;
+//}
 
-void SetView(int view)
-{
-	int &glob_view = datasaver::GlobalConfig::getRef("MAIN:VIEW",0);
-	if(view < 0 || view >= VIEW_NONE)
-	{
-		screen_to_show = VIEW_NONE;
-		Globals::is_view_enabled = false;
-		cvDestroyWindow(SIX_DOF_THRESHOLD);
-		cvDestroyWindow(TOUCH_THRESHOLD);
-		cvDestroyWindow(MAIN_TITTLE);
-		cvDestroyWindow(HAND_THRESHOLD);
-		cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
-	}
-	else
-	{
-		screen_to_show = view;
-		Globals::is_view_enabled = true;
-		if(screen_to_show == VIEW_RAW)
-		{
-			cvDestroyWindow(HAND_THRESHOLD);
-			cvDestroyWindow(TOUCH_THRESHOLD);
-			cvDestroyWindow(SIX_DOF_THRESHOLD);
-			cvDestroyWindow(MAIN_TITTLE);
-			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
-		}
-		else if(screen_to_show == VIEW_THRESHOLD)
-		{
-			cvDestroyWindow(HAND_THRESHOLD);
-			cvDestroyWindow(TOUCH_THRESHOLD);
-			cvDestroyWindow(SIX_DOF_THRESHOLD);
-			cvDestroyWindow(MAIN_TITTLE);
-			//frame processors windows
-			if(markerfinder->IsEnabled()) cvNamedWindow (SIX_DOF_THRESHOLD, CV_WINDOW_AUTOSIZE);
-//			if(touchfinder->IsEnabled()) cvNamedWindow (TOUCH_THRESHOLD, CV_WINDOW_AUTOSIZE);
-//			if(handfinder->IsEnabled()) cvNamedWindow (HAND_THRESHOLD, CV_WINDOW_AUTOSIZE);
-			cvNamedWindow (MAIN_TITTLE, CV_WINDOW_AUTOSIZE);
-		}
-	}
-	glob_view = screen_to_show;
-}
-
-
-void ToggleCalibrationMode()
-{
-	if(screen_to_show != VIEW_RAW) return;
-	claibrateMode = !claibrateMode;
-	if(claibrateMode)
-	{
-//		calibrator->StartCalibration();
-		if(processors.size() != 0)
-		{
-			show_options = false;
-			processors[selected_processor]->EnableKeyProcessor(show_options);
-		}
-
-	}
-	else
-	{
-//		calibrator->EndCalibration();
-	}
-}
-
-void Switchleft()
-{
-	if(processors.size() > 1)
-	{
-		processors[selected_processor]->EnableKeyProcessor(false);
-		selected_processor --;
-		if(selected_processor < 0) selected_processor = processors.size() - 1;
-		processors[selected_processor]->EnableKeyProcessor();
-	}
-}
-
-void Switchright()
-{
-	if(processors.size() > 1)
-	{
-		processors[selected_processor]->EnableKeyProcessor(false);
-		selected_processor ++;
-		if(selected_processor >= (int)processors.size()) 
-			selected_processor = 0;
-		processors[selected_processor]->EnableKeyProcessor();
-	}
-}
+//
+//void ToggleCalibrationMode()
+//{
+//	if(screen_to_show != VIEW_RAW) return;
+//	claibrateMode = !claibrateMode;
+//	if(claibrateMode)
+//	{
+////		calibrator->StartCalibration();
+//		if(processors.size() != 0)
+//		{
+//			show_options = false;
+//			processors[selected_processor]->EnableKeyProcessor(show_options);
+//		}
+//
+//	}
+//	else
+//	{
+////		calibrator->EndCalibration();
+//	}
+//}
+//
+//void Switchleft()
+//{
+//	if(processors.size() > 1)
+//	{
+//		processors[selected_processor]->EnableKeyProcessor(false);
+//		selected_processor --;
+//		if(selected_processor < 0) selected_processor = processors.size() - 1;
+//		processors[selected_processor]->EnableKeyProcessor();
+//	}
+//}
+//
+//void Switchright()
+//{
+//	if(processors.size() > 1)
+//	{
+//		processors[selected_processor]->EnableKeyProcessor(false);
+//		selected_processor ++;
+//		if(selected_processor >= (int)processors.size()) 
+//			selected_processor = 0;
+//		processors[selected_processor]->EnableKeyProcessor();
+//	}
+//}
 #else
 int perimeter ( std::vector<cv::Point2f> &a )
 {

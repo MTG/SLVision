@@ -25,69 +25,81 @@
 
 FrameProcessor::FrameProcessor(std::string name)
 {
-	process_key = false;
-	guiMenu = new GuiMenu(name);
+//	process_key = false;
+//	guiMenu = new GuiMenu(name);
 	enable = true;
+	show_screen = false;
+	this->name = name;
 }
 
 FrameProcessor::~FrameProcessor(void)
 {
 }
 
-IplImage* FrameProcessor::ProcessFrame(IplImage*	main_image)
+cv::Mat* FrameProcessor::ProcessFrame(cv::Mat*	main_image)
 {
 	if(enable)
 		return Process(main_image);
 	return NULL;
 }
 
-void FrameProcessor::EnableKeyProcessor(bool en)
+void FrameProcessor::ShowScreen(int state)
 {
-	process_key = en;
-}
-
-bool FrameProcessor::can_process_key()
-{
-	return process_key;
-}
-
-void FrameProcessor::ProcessKey(char key)
-{
-	if(process_key)
+	if(show_screen == false && state == 1)
 	{
-		switch(key)
-		{
-			case KEY_MENU_UP_1:
-			case KEY_MENU_UP_2:
-			case KEY_MENU_UP_3:
-				guiMenu->MoveDown();
-				break;
-			case KEY_MENU_DOWN_1:
-			case KEY_MENU_DOWN_2:
-			case KEY_MENU_DOWN_3:
-				guiMenu->MoveUp();
-				break;
-			case KEY_MENU_INCR_1:
-			case KEY_MENU_INCR_2:
-			case KEY_MENU_INCR_3:
-				guiMenu->SelectedUp();
-				UpdatedValuesFromGui();
-				break;
-			case KEY_MENU_DECR_1:
-			case KEY_MENU_DECR_2:
-			case KEY_MENU_DECR_3:
-				guiMenu->SelectedDown();
-				UpdatedValuesFromGui();
-				break;
-		}
-		KeyInput(key);
+
+	}
+	else if(show_screen == true && state == 0)
+	{
 	}
 }
+//void FrameProcessor::EnableKeyProcessor(bool en)
+//{
+//	process_key = en;
+//}
 
-void FrameProcessor::DrawMenu(IplImage* img)
-{
-	if(process_key)guiMenu->Draw(img);
-}
+//bool FrameProcessor::can_process_key()
+//{
+//	return process_key;
+//}
+//
+//void FrameProcessor::ProcessKey(char key)
+//{
+//	if(process_key)
+//	{
+//		switch(key)
+//		{
+//			case KEY_MENU_UP_1:
+//			case KEY_MENU_UP_2:
+//			case KEY_MENU_UP_3:
+//				guiMenu->MoveDown();
+//				break;
+//			case KEY_MENU_DOWN_1:
+//			case KEY_MENU_DOWN_2:
+//			case KEY_MENU_DOWN_3:
+//				guiMenu->MoveUp();
+//				break;
+//			case KEY_MENU_INCR_1:
+//			case KEY_MENU_INCR_2:
+//			case KEY_MENU_INCR_3:
+//				guiMenu->SelectedUp();
+//				UpdatedValuesFromGui();
+//				break;
+//			case KEY_MENU_DECR_1:
+//			case KEY_MENU_DECR_2:
+//			case KEY_MENU_DECR_3:
+//				guiMenu->SelectedDown();
+//				UpdatedValuesFromGui();
+//				break;
+//		}
+//		KeyInput(key);
+//	}
+//}
+
+//void FrameProcessor::DrawMenu(IplImage* img)
+//{
+//	if(process_key)guiMenu->Draw(img);
+//}
 
 bool FrameProcessor::IsEnabled()
 {
@@ -99,7 +111,7 @@ void FrameProcessor::Enable(bool enable)
 	this->enable = enable;
 }
 
-void FrameProcessor::SendOSCData()
-{
-	this->RepportOSC();
-}
+//void FrameProcessor::SendOSCData()
+//{
+//	this->RepportOSC();
+//}
