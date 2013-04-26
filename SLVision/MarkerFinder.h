@@ -31,11 +31,26 @@ public:
 	~MarkerFinder(void);
 	AliveList GetAlive();
 protected:
+	cv::Mat grey, thres, thres2;
+
+	int & use_adaptive_bar_value;
+	bool use_adaptive_threshold;
+
+	int & block_size;
+	int & threshold_C;
+	int & Threshold_value;
+
+
+	std::vector<std::vector<cv::Point> > contours;
+	std::vector<cv::Vec4i> hierarchy;
 	//void InitGeometry();
 	//void InitFrames(IplImage*	main_image);
 	//void UpdatedValuesFromGui();
-	cv::Mat* Process(cv::Mat*	main_image);
+	void Process(cv::Mat&	main_image);
+	void BuildGui(bool force = false);
 	//void RepportOSC();
+
+	
 };
 
 

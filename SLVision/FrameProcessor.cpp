@@ -22,11 +22,11 @@
 */
 
 #include "FrameProcessor.h"
+#include "GlobalConfig.h"
 
-FrameProcessor::FrameProcessor(std::string name)
+FrameProcessor::FrameProcessor(std::string name):
+	enable_processor(datasaver::GlobalConfig::getRef("FrameProcessor:"+name+":enable",1))
 {
-//	process_key = false;
-//	guiMenu = new GuiMenu(name);
 	enable = true;
 	show_screen = false;
 	this->name = name;
@@ -36,21 +36,37 @@ FrameProcessor::~FrameProcessor(void)
 {
 }
 
-cv::Mat* FrameProcessor::ProcessFrame(cv::Mat*	main_image)
+void FrameProcessor::ProcessFrame(cv::Mat&	main_image)
 {
+	if(enable_processor == 1 && !this->IsEnabled())
+	{
+		Enable(true);
+	}
+	else if(enable_processor == 0 && this->IsEnabled())
+	{
+		Enable(false);
+	}
+
 	if(enable)
-		return Process(main_image);
-	return NULL;
+		Process(main_image);
+	else if( show_screen)
+	{
+		cv::imshow(this->name,main_image);
+	}
 }
 
 void FrameProcessor::ShowScreen(int state)
 {
 	if(show_screen == false && state == 1)
 	{
-
+		cv::namedWindow(name,CV_WINDOW_AUTOSIZE);
+		show_screen = true;
+		BuildGui();
 	}
 	else if(show_screen == true && state == 0)
 	{
+		cv::destroyWindow(name);
+		show_screen = false;
 	}
 }
 //void FrameProcessor::EnableKeyProcessor(bool en)

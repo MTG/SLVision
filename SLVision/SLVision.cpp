@@ -87,6 +87,7 @@ cv::Mat InputCamera;
 //Window treatment
 cv::Mat EmptyImage;
 int enable_view_window;
+int enable_marker_window;
 std::string main_window_tittle;
 std::string view_window_tittle;
 
@@ -99,6 +100,7 @@ MarkerFinder*	markerfinder;
 
 ///Function headers
 void cvEnableView(int pos,void*);
+void cvEnableMarker(int pos,void*);
 void CreateGUI();
 
 #else
@@ -383,7 +385,7 @@ int main(int argc, char* argv[])
 	/******************************************************
 	* Init Frame Processors
 	*******************************************************/
-
+	markerfinder = new MarkerFinder();
 
 	/******************************************************
 	* Main loop app
@@ -394,7 +396,7 @@ int main(int argc, char* argv[])
 		/******************************************************
 		* Process Video
 		*******************************************************/
-
+		markerfinder->ProcessFrame(InputCamera);
 		/******************************************************
 		* Key check
 		*******************************************************/
@@ -603,7 +605,6 @@ int main(int argc, char* argv[])
 
 void cvEnableView(int pos,void* name)
 {
-	std::cout << pos << std::endl;
 	if(pos == 0)
 	{
 		cv::destroyWindow(view_window_tittle);
@@ -614,11 +615,17 @@ void cvEnableView(int pos,void* name)
 	}
 }
 
+void cvEnableMarker(int pos,void* name)
+{
+	markerfinder->ShowScreen(pos);
+}
+
 void CreateGUI()
 {
 	if(!guicreated)
 	{
 		cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
+		cv::createTrackbar("ShowMarker", main_window_tittle,&enable_marker_window, 1, cvEnableMarker);
 		guicreated = true;
 	}
 }

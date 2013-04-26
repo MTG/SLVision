@@ -22,14 +22,27 @@
 */
 
 #include "MarkerFinder.h"
+#include "GlobalConfig.h"
 
 
 
-MarkerFinder::MarkerFinder():FrameProcessor("MarkerFinder")
+MarkerFinder::MarkerFinder():
+	FrameProcessor("MarkerFinder"),
+	//enable_processor(datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1)),
+	use_adaptive_bar_value(datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1)),
+	block_size (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:blocksize",47)),
+	threshold_C (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:threshold_C",2)),
+	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold:threshold_value",33))
 {
 	//init values
-	//create gui
+	if(use_adaptive_bar_value == 0) use_adaptive_threshold = false;
+	else use_adaptive_threshold = true;
 
+	if(enable_processor == 1) Enable(true);
+	else Enable(false);
+
+	//create gui
+	BuildGui();
 
 	//ssidGenerator = 1;
 	//fiducial_finder = new FiducialFinder(FIDUCIAL_IMAGE_SIZE);
@@ -71,6 +84,7 @@ MarkerFinder::MarkerFinder():FrameProcessor("MarkerFinder")
 
 MarkerFinder::~MarkerFinder(void)
 {
+
 //	cvReleaseImage(&main_processed_image);	
 //	cvReleaseImage(&main_processed_contour);
 //	cvReleaseImage(&fiducial_image);	
@@ -97,164 +111,79 @@ AliveList MarkerFinder::GetAlive()
 }
 
 
-cv::Mat* MarkerFinder::Process(cv::Mat*	main_image)
+void MarkerFinder::Process(cv::Mat&	main_image)
 {
-	return main_image;
+	/******************************************************
+	* Redraw GUI if needed
+	*******************************************************/
+	if(use_adaptive_bar_value == 0 && use_adaptive_threshold == true)
+	{
+		use_adaptive_threshold = false;
+		BuildGui(true);
+	}
+	else if (use_adaptive_bar_value == 1 && use_adaptive_threshold == false)
+	{
+		use_adaptive_threshold = true;
+		BuildGui(true);
+	}
+	/******************************************************
+	* Convert image to graycsale
+	*******************************************************/
+	if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
+	else     grey=main_image;
+	/******************************************************
+	* Apply threshold
+	*******************************************************/
+	if(use_adaptive_threshold)
+	{
+		if (block_size<3) block_size=3;
+		if (block_size%2!=1) block_size++;
+		cv::adaptiveThreshold ( grey,thres,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY_INV,block_size,threshold_C );
+	}
+	else 
+		cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY_INV);
+	/******************************************************
+	* Find contours
+	*******************************************************/
+	thres2 = thres.clone();
+	cv::findContours ( thres2 , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
+
+
+
+
+	/******************************************************
+	* Show thresholded Image
+	*******************************************************/
+	if (this->show_screen)
+	{
+		cv::imshow(this->name,thres);
+	}
 }
 
-//#include "TuioServer.h"
-//#include "GlobalConfig.h"
-//#include <iostream>
-//#include <sstream>
-//
-//MarkerFinder::MarkerFinder():FrameProcessor("6DoF MarkerFinder")
-//{
-//	//ssidGenerator = 1;
-//	fiducial_finder = new FiducialFinder(FIDUCIAL_IMAGE_SIZE);
-//	firstcontour=NULL;
-//	polycontour=NULL;
-//	InitFrames(Globals::screen);
-//	InitGeometry();
-//
-//	int cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
-//	if(cf_enabled == 1) Enable(true);
-//	else Enable(false);
-//
-//	int cf_adaptive_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1);
-//	if(cf_adaptive_threshold == 1) use_adaptive_threshold = true;
-//	else use_adaptive_threshold = false;
-//
-//	adaptive_block_size = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:block_size",55);
-//	
-//	threshold_value = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
-//	
-//	if((int)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1))
-//		invert_rotation_matrix = true;
-//	else
-//		invert_rotation_matrix = false;
-//	//populate gui
-//	
-//	guiMenu->AddBar("0-Enable",0,1,1);
-//	guiMenu->AddBar("1-Threshold",0,255,1);
-//	guiMenu->AddBar("2-Enable_adaptive_threshold",0,1,1);
-//	guiMenu->AddBar("3-Adaptive_threshold_block_size",3,101,4);
-//	guiMenu->AddBar("4-Invert_rotation_matrix",0,1,1);
-//
-//	guiMenu->SetValue("0-Enable",(float)cf_enabled);
-//	guiMenu->SetValue("1-Threshold",(float)threshold_value);
-//	guiMenu->SetValue("2-Enable_adaptive_threshold",(float)use_adaptive_threshold);
-//	guiMenu->SetValue("3-Adaptive_threshold_block_size",(float)adaptive_block_size);
-//	guiMenu->SetValue("4-Invert_rotation_matrix",(float)(int)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1));
-//
-//}
-//
-//void MarkerFinder::UpdatedValuesFromGui()
-//{
-//	int &cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
-//	int &cf_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
-//	int &cf_adaptive_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1);
-//	int &cf_adaptive_block_size = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:block_size",55);
-//	int &cf_invert_rotation_matrix = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1);
-//
-//	if(guiMenu->GetValue("0-Enable") == 0)
-//	{
-//		Enable(false);
-//		cf_enabled = 0;
-//	}
-//	else if(guiMenu->GetValue("0-Enable") == 1) 
-//	{
-//		Enable(true);
-//		cf_enabled = 1;
-//	}	 
-//	threshold_value = (int)ceil(guiMenu->GetValue("1-Threshold"));
-//	cf_threshold = threshold_value;
-//
-//	if(guiMenu->GetValue("2-Enable_adaptive_threshold") == 1 ) 
-//		use_adaptive_threshold = true;
-//	else
-//		use_adaptive_threshold = false;
-//	//use_adaptive_threshold = (int)ceil();
-//	cf_adaptive_threshold = use_adaptive_threshold;
-//
-//	adaptive_block_size =  (int)ceil(guiMenu->GetValue("3-Adaptive_threshold_block_size"));
-//	cf_adaptive_block_size = adaptive_block_size;
-//
-//	if(guiMenu->GetValue("4-Invert_rotation_matrix") == 1)
-//	{
-//		cf_invert_rotation_matrix = 1;
-//		invert_rotation_matrix = true;
-//	}
-//	else
-//	{
-//		cf_invert_rotation_matrix = 0;
-//		invert_rotation_matrix = false;
-//	}
-//}
-//
-//MarkerFinder::~MarkerFinder(void)
-//{
-//	cvReleaseImage(&main_processed_image);	
-//	cvReleaseImage(&main_processed_contour);
-//	cvReleaseImage(&fiducial_image);	
-//	cvReleaseMat (&map_matrix);
-//	cvReleaseMemStorage(&main_storage_poligon);
-//	cvReleaseMemStorage(&main_storage);
-//	delete(fiducial_finder);
-//}
-//
+
+void MarkerFinder::BuildGui(bool force)
+{
+	if(force)
+	{
+		cv::destroyWindow(name);
+		cv::namedWindow(name,CV_WINDOW_AUTOSIZE);
+	}
+	cv::createTrackbar("Enable", name,&enable_processor, 1, NULL);
+	cv::createTrackbar("Use Adaptive", name,&use_adaptive_bar_value, 1, NULL);
+	if(use_adaptive_bar_value == 1)
+	{
+		cv::createTrackbar("block_size", name,&block_size, 50, NULL);
+		cv::createTrackbar("C", name,&threshold_C, 10, NULL);
+	}
+	else
+	{
+		cv::createTrackbar("th.value", name,&Threshold_value, 255, NULL);
+	}
+}
+
+
 //void MarkerFinder::InitGeometry()
 //{
-///*	Globals::intrinsic = (CvMat*)cvLoad(M_PATH_INTRINSIC);
-//	Globals::distortion = (CvMat*)cvLoad(M_PATH_DISTORTION);
-//	if(Globals::intrinsic == NULL || Globals::distortion == NULL) Globals::LoadDefaultDistortionMatrix();
-//*/
-//	
-//	/*rotation = cvCreateMat (1, 3, CV_32FC1);
-//	rotationMatrix = cvCreateMat (3, 3, CV_32FC1);
-//	translation = cvCreateMat (1 , 3, CV_32FC1);
-//	
-//	srcPoints3D = cvCreateMat (4, 1, CV_32FC3);
-//	dstPoints2D = cvCreateMat (4, 1, CV_32FC3);
-//
-//	baseMarkerPoints[0].x =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[0].y =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[0].z = 0.0;
-//		
-//	baseMarkerPoints[1].x =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[1].y =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[1].z = 0.0;
-//
-//	baseMarkerPoints[2].x =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[2].y =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[2].z = 0.0;
-// 
-//	baseMarkerPoints[3].x =(float) 1 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[3].y =(float) 0 * datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//	baseMarkerPoints[3].z = 0.0;
-//
-//	for ( i=0;i<4;i++)
-//	{	
-//		switch (i)
-//		{
-//			case 0:	srcPoints3D->data.fl[0]     =0;
-//				    srcPoints3D->data.fl[1]     =0;
-//					srcPoints3D->data.fl[2]     =0;
-//					break;
-//			case 1:	srcPoints3D->data.fl[0+i*3] =(float)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//					srcPoints3D->data.fl[1+i*3] =0;
-//					srcPoints3D->data.fl[2+i*3] =0;
-//					break;
-//			case 2:	srcPoints3D->data.fl[0+i*3] =0;
-//					srcPoints3D->data.fl[1+i*3] =(float)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);
-//					srcPoints3D->data.fl[2+i*3] =0;
-//					break;
-//			case 3:	srcPoints3D->data.fl[0+i*3] =0;
-//					srcPoints3D->data.fl[1+i*3] =0;
-//					srcPoints3D->data.fl[2+i*3] =-(float)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:FiducialSize[mm]",90);;
-//					break;
-//		
-//		}
-//	}*/
 //
 //	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
 //	dst_pnt[0] = cvPoint2D32f (0, fiducial_image->height);

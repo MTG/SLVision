@@ -32,22 +32,24 @@ class FrameProcessor
 private:
 	//bool process_key;
 	bool enable;
-	bool show_screen;
-	std::string name;
 protected:
+	int & enable_processor;
+	std::string name;
+	bool show_screen;
 	//GuiMenu* guiMenu;
 	//bool can_process_key();
 	//virtual void KeyInput(char key)=0;
 	//virtual void UpdatedValuesFromGui()=0; 
-	virtual cv::Mat* Process(cv::Mat*	main_image)=0;
-	virtual void GenerateGUI()=0;
+	virtual void Process(cv::Mat&	main_image)=0;
+	virtual void BuildGui(bool force = false)=0;
+	//virtual void GenerateGUI()=0;
 
 	//virtual void RepportOSC()=0;
 public:
 	FrameProcessor(std::string name);
 	virtual ~FrameProcessor(void);
 	virtual AliveList GetAlive()=0;
-	cv::Mat* ProcessFrame(cv::Mat*	main_image);
+	void ProcessFrame(cv::Mat&	main_image);
 	//void ProcessKey(char key);
 	//void EnableKeyProcessor(bool en = true);
 	//void DrawMenu(IplImage* img);
