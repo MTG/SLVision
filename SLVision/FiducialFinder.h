@@ -23,9 +23,8 @@
 
 #pragma once
 #include <list>
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 #include "Fiducial.h"
 
 #define MIN_DIST_TO_SIDE	10
@@ -43,17 +42,19 @@ typedef std::map<unsigned long, int> IDMap;
 class FiducialFinder
 {
 	int				fiducial_window_size;
-	CvMoments*      fiducial_blob_moments;
-	IplImage*		fiducial_processed_image;
-	CvMemStorage*	fiducial_storage;
+	//CvMoments*      fiducial_blob_moments;
+	//IplImage*		fiducial_processed_image;
+	//CvMemStorage*	fiducial_storage;
 	intList			fiducial_nodes;
 	int				nodecount;
 	IDMap			idmap;
+	std::vector<std::vector<cv::Point> > contours;
+	std::vector<cv::Vec4i> hierarchy;
 
 public:
 	FiducialFinder(int _fiducial_window_size);
 	~FiducialFinder();
-	int DecodeFiducial(IplImage* src, Fiducial & candidate);
+	int DecodeFiducial(cv::Mat& src, Fiducial & candidate);
 protected:
 	unsigned int BinaryListToInt(const intList &data);
 	unsigned int StringBinaryListToInt(const char* data);

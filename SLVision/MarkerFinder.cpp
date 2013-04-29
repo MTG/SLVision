@@ -32,7 +32,8 @@ MarkerFinder::MarkerFinder():
 	use_adaptive_bar_value(datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1)),
 	block_size (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:blocksize",47)),
 	threshold_C (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:threshold_C",2)),
-	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold:threshold_value",33))
+	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold:threshold_value",33)),
+	finder (FiducialFinder(FIDUCIAL_IMAGE_SIZE))
 {
 	//init values
 	if(use_adaptive_bar_value == 0) use_adaptive_threshold = false;
@@ -49,37 +50,22 @@ MarkerFinder::MarkerFinder():
 	//firstcontour=NULL;
 	//polycontour=NULL;
 	//InitFrames(Globals::screen);
-	//InitGeometry();
+	InitGeometry();
+}
 
-	//int cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1);
-	//if(cf_enabled == 1) Enable(true);
-	//else Enable(false);
-
-	//int cf_adaptive_threshold = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1);
-	//if(cf_adaptive_threshold == 1) use_adaptive_threshold = true;
-	//else use_adaptive_threshold = false;
-
-	//adaptive_block_size = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:block_size",55);
-	
-	//threshold_value = datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold_value",100);
-	
-	//if((int)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1))
-	//	invert_rotation_matrix = true;
-	//else
-	//	invert_rotation_matrix = false;
-	//populate gui
-	
-	/*guiMenu->AddBar("0-Enable",0,1,1);
-	guiMenu->AddBar("1-Threshold",0,255,1);
-	guiMenu->AddBar("2-Enable_adaptive_threshold",0,1,1);
-	guiMenu->AddBar("3-Adaptive_threshold_block_size",3,101,4);
-	guiMenu->AddBar("4-Invert_rotation_matrix",0,1,1);
-
-	guiMenu->SetValue("0-Enable",(float)cf_enabled);
-	guiMenu->SetValue("1-Threshold",(float)threshold_value);
-	guiMenu->SetValue("2-Enable_adaptive_threshold",(float)use_adaptive_threshold);
-	guiMenu->SetValue("3-Adaptive_threshold_block_size",(float)adaptive_block_size);
-	guiMenu->SetValue("4-Invert_rotation_matrix",(float)(int)datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:invert_rotation_matrix",1));*/
+void MarkerFinder::InitGeometry()
+{
+	fiducial_image = cv::Mat(FIDUCIAL_IMAGE_SIZE,FIDUCIAL_IMAGE_SIZE,CV_BGR2GRAY);
+	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
+	/*dst_pnt[0] = cvPoint2D32f (0, FIDUCIAL_IMAGE_SIZE);
+	dst_pnt[1] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, FIDUCIAL_IMAGE_SIZE);
+	dst_pnt[2] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, 0);
+    dst_pnt[3] = cvPoint2D32f (0, 0);*/
+	dst_pnt[0] = cvPoint2D32f (0, FIDUCIAL_IMAGE_SIZE);
+	dst_pnt[1] = cvPoint2D32f (0, 0);
+	dst_pnt[2] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, 0);
+    dst_pnt[3] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, FIDUCIAL_IMAGE_SIZE);
+	//map_matrix = cvCreateMat  (3, 3, CV_32FC1);
 }
 
 MarkerFinder::~MarkerFinder(void)
@@ -146,10 +132,95 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	* Find contours
 	*******************************************************/
 	thres2 = thres.clone();
+	double _minSize=0.04;
+	double _maxSize=0.5;
+	int minSize=_minSize*std::max(thres.cols,thres.rows)*4;
+	int maxSize=_maxSize*std::max(thres.cols,thres.rows)*4;
 	cv::findContours ( thres2 , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
+	cv::vector<cv::Point>  approxCurve;
 
+	/*int minSize=_minSize*std::max(thres.cols,thres.rows)*4;
+		int maxSize=_maxSize*std::max(thres.cols,thres.rows)*4;
+		std::vector<std::vector<cv::Point> > contours2;
+		std::vector<cv::Vec4i> hierarchy2;
+		thres.copyTo ( thres2 );
+		cv::findContours ( thres2 , contours2, hierarchy2,CV_RETR_TREE, CV_CHAIN_APPROX_NONE );
+		cv::vector<cv::Point>  approxCurve;*/
 
+	std::vector<std::vector<cv::Point2f>> SquareCanditates;
+	int idx = 0;
+    for( ; idx >= 0; idx = hierarchy[idx][0] )
+    {
+		//80's effect
+		//if ( minSize< contours[idx].size() &&contours[idx].size()<maxSize  )
+		//{
+        //cv::Scalar color( rand()&255, rand()&255, rand()&255 );
+        //drawContours( main_image, contours, idx, color, CV_FILLED, 8, hierarchy );
+		//}
+		if ( minSize< contours[idx].size() &&contours[idx].size()<maxSize  )
+		{
+			approxPolyDP (  contours[idx]  ,approxCurve , double ( contours[idx].size() ) *0.05, true );
+			if ( approxCurve.size() ==4 )
+			{
+				if ( cv::isContourConvex ( cv::Mat ( approxCurve ) ) )
+				{
+					//ensure that the   distace between consecutive points is large enough
+					float minDist=1e10;
+					for ( int j=0;j<4;j++ )
+					{
+						float d= std::sqrt ( ( float ) ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) * ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) +
+											 ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) * ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) );
+						if ( d<minDist ) minDist=d;
+					}
+					//check that distance is not very small
+					if ( minDist>10 )
+					{
+						//add the points
+						SquareCanditates.push_back ( std::vector<cv::Point2f>() );
+						//MarkerCanditates.back().idx=i;
+						for ( int j=0;j<4;j++ )
+						{
+							SquareCanditates.back().push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+						}
+					}
 
+				}
+			}
+		}
+		
+		
+	}
+	//Detect squares
+	std::vector<std::vector<cv::Point2f>> Squares;
+	SquareDetector(SquareCanditates, Squares);
+	for (size_t i=0;i<Squares.size();i++) 
+	{
+		///show perimeter
+		for(int k = 0; k < 4; k++)
+		{
+			if (k!= 3)
+				cv::line(main_image,Squares[i][k],Squares[i][k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+			else
+				cv::line(main_image,Squares[i][k],Squares[i][0],cv::Scalar(0,0,255,255),1,CV_AA);
+			tmp_pnt[k] = cv::Point2f(Squares[i][k]);
+		}
+
+		///Marker identification
+
+			//check for the exsiting ones matching
+		//Zoom the square to detect the fiducial
+		mapmatrix = cv::getPerspectiveTransform(tmp_pnt,dst_pnt);
+		cv::warpPerspective(thres,fiducial_image,mapmatrix,cv::Size(FIDUCIAL_IMAGE_SIZE,FIDUCIAL_IMAGE_SIZE));
+		cv::resize(fiducial_image, fiducial_image_zoomed, cv::Size(FIDUCIAL_IMAGE_SIZE*2,FIDUCIAL_IMAGE_SIZE*2));
+		if (this->show_screen) cv::imshow("fidfinder",fiducial_image_zoomed);
+//					cvWarpPerspective (main_processed_image, fiducial_image, map_matrix, CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS, cvScalarAll (0));
+//
+//					int maxCount=0;
+//					int markerDirection=0;
+//					cvResize(fiducial_image,fiducial_image_zoomed);
+	}
+
+	finder.DecodeFiducial(fiducial_image_zoomed, Fiducial());
 
 	/******************************************************
 	* Show thresholded Image
@@ -161,37 +232,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 }
 
 
-void MarkerFinder::BuildGui(bool force)
-{
-	if(force)
-	{
-		cv::destroyWindow(name);
-		cv::namedWindow(name,CV_WINDOW_AUTOSIZE);
-	}
-	cv::createTrackbar("Enable", name,&enable_processor, 1, NULL);
-	cv::createTrackbar("Use Adaptive", name,&use_adaptive_bar_value, 1, NULL);
-	if(use_adaptive_bar_value == 1)
-	{
-		cv::createTrackbar("block_size", name,&block_size, 50, NULL);
-		cv::createTrackbar("C", name,&threshold_C, 10, NULL);
-	}
-	else
-	{
-		cv::createTrackbar("th.value", name,&Threshold_value, 255, NULL);
-	}
-}
 
-
-//void MarkerFinder::InitGeometry()
-//{
-//
-//	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
-//	dst_pnt[0] = cvPoint2D32f (0, fiducial_image->height);
-//	dst_pnt[1] = cvPoint2D32f (fiducial_image->width, fiducial_image->height);
-//	dst_pnt[2] = cvPoint2D32f (fiducial_image->width, 0);
-//    dst_pnt[3] = cvPoint2D32f (0, 0);
-//	map_matrix = cvCreateMat  (3, 3, CV_32FC1);
-//}
 //
 //void MarkerFinder::InitFrames(IplImage*	main_image)
 //{
@@ -715,3 +756,101 @@ void MarkerFinder::BuildGui(bool force)
 //		fiducial_map.erase(*it);
 //	}
 //}
+
+
+void MarkerFinder::SquareDetector(std::vector<std::vector<cv::Point2f>>& MarkerCanditates,std::vector<std::vector<cv::Point2f>>& dest)
+{
+	dest.clear();
+	///sort the points in anti-clockwise order
+	std::valarray<bool> swapped(false,MarkerCanditates.size());//used later
+	for ( unsigned int i=0;i<MarkerCanditates.size();i++ )
+	{
+		//trace a line between the first and second point.
+		//if the thrid point is at the right side, then the points are anti-clockwise
+		double dx1 = MarkerCanditates[i][1].x - MarkerCanditates[i][0].x;
+		double dy1 =  MarkerCanditates[i][1].y - MarkerCanditates[i][0].y;
+		double dx2 = MarkerCanditates[i][2].x - MarkerCanditates[i][0].x;
+		double dy2 = MarkerCanditates[i][2].y - MarkerCanditates[i][0].y;
+		double o = ( dx1*dy2 )- ( dy1*dx2 );
+		if ( o  < 0.0 )		 //if the third point is in the left side, then sort in anti-clockwise order
+		{
+			std::swap ( MarkerCanditates[i][1],MarkerCanditates[i][3] );
+			swapped[i]=true;
+			//sort the contour points
+	//  	    reverse(MarkerCanditates[i].contour.begin(),MarkerCanditates[i].contour.end());//????
+		}
+	}
+	/// remove these elements whise corners are too close to each other
+	//first detect candidates
+	std::vector<std::pair<int,int>  > TooNearCandidates;
+	for ( unsigned int i=0;i<MarkerCanditates.size();i++ )
+	{
+		// 	cout<<"Marker i="<<i<<MarkerCanditates[i]<<endl;
+		//calculate the average distance of each corner to the nearest corner of the other marker candidate
+		for ( unsigned int j=i+1;j<MarkerCanditates.size();j++ )
+		{
+			float dist=0;
+			for ( int c=0;c<4;c++ )
+				dist+= sqrt ( ( MarkerCanditates[i][c].x-MarkerCanditates[j][c].x ) * ( MarkerCanditates[i][c].x-MarkerCanditates[j][c].x ) + ( MarkerCanditates[i][c].y-MarkerCanditates[j][c].y ) * ( MarkerCanditates[i][c].y-MarkerCanditates[j][c].y ) );
+			dist/=4;
+			//if distance is too small
+			if ( dist< 10 )
+			{
+				TooNearCandidates.push_back ( std::pair<int,int> ( i,j ) );
+			}
+		}
+	}
+	//mark for removal the element of  the pair with smaller perimeter
+	std::valarray<bool> toRemove ( false,MarkerCanditates.size() );
+	for ( unsigned int i=0;i<TooNearCandidates.size();i++ )
+	{
+		if ( perimeter ( MarkerCanditates[TooNearCandidates[i].first ] ) > perimeter ( MarkerCanditates[ TooNearCandidates[i].second] ) )
+			toRemove[TooNearCandidates[i].second]=true;
+		else toRemove[TooNearCandidates[i].first]=true;
+	}
+	for (size_t i=0;i<MarkerCanditates.size();i++) 
+	{
+		if (!toRemove[i]) 
+		{
+			dest.push_back(MarkerCanditates[i]);
+		/*	for(int k = 0; k < 4; k++)
+			{
+				if (k!= 3)
+				cv::line(main_image,MarkerCanditates[i][k],MarkerCanditates[i][k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+				else
+					cv::line(main_image,MarkerCanditates[i][k],MarkerCanditates[i][0],cv::Scalar(0,0,255,255),1,CV_AA);
+			}*/
+		}
+	}
+}
+
+int MarkerFinder::perimeter ( std::vector<cv::Point2f> &a )
+{
+    int sum=0;
+    for ( unsigned int i=0;i<a.size();i++ )
+    {
+        int i2= ( i+1 ) %a.size();
+        sum+= sqrt ( ( a[i].x-a[i2].x ) * ( a[i].x-a[i2].x ) + ( a[i].y-a[i2].y ) * ( a[i].y-a[i2].y ) ) ;
+    }
+    return sum;
+}
+
+void MarkerFinder::BuildGui(bool force)
+{
+	if(force)
+	{
+		cv::destroyWindow(name);
+		cv::namedWindow(name,CV_WINDOW_AUTOSIZE);
+	}
+	cv::createTrackbar("Enable", name,&enable_processor, 1, NULL);
+	cv::createTrackbar("Use Adaptive", name,&use_adaptive_bar_value, 1, NULL);
+	if(use_adaptive_bar_value == 1)
+	{
+		cv::createTrackbar("block_size", name,&block_size, 50, NULL);
+		cv::createTrackbar("C", name,&threshold_C, 10, NULL);
+	}
+	else
+	{
+		cv::createTrackbar("th.value", name,&Threshold_value, 255, NULL);
+	}
+}

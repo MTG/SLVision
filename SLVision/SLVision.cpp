@@ -96,6 +96,7 @@ bool guicreated = false;
 int waitTime = 10;
 
 //Frame Processors
+std::pair<double,double> AvrgTime(0,0);//average time required for detection
 MarkerFinder*	markerfinder;
 
 ///Function headers
@@ -396,7 +397,16 @@ int main(int argc, char* argv[])
 		/******************************************************
 		* Process Video
 		*******************************************************/
+		double tick = (double)cv::getTickCount();
+		//////
 		markerfinder->ProcessFrame(InputCamera);
+		//////
+		AvrgTime.first+=((double)cv::getTickCount()-tick)/cv::getTickFrequency();
+        AvrgTime.second++;
+		//std::stringstream s;
+		//s << "(" << 1000*AvrgTime.first/AvrgTime.second << ") fps";
+		//cv::putText(TheInputImage,s.str(), cv::Point(10,50),cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0,0,255,255),2);
+ //       std::cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<std::endl;
 		/******************************************************
 		* Key check
 		*******************************************************/

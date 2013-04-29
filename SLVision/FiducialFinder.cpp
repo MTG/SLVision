@@ -30,22 +30,51 @@
 FiducialFinder::FiducialFinder(int _fiducial_window_size)
 {
 	fiducial_window_size = _fiducial_window_size;
-	fiducial_storage = cvCreateMemStorage (0);
-	fiducial_processed_image = cvCreateImage(cvSize(fiducial_window_size,fiducial_window_size),IPL_DEPTH_8U,1);
-	fiducial_blob_moments = (CvMoments*)malloc( sizeof(CvMoments) );
+//	fiducial_storage = cvCreateMemStorage (0);
+//	fiducial_processed_image = cvCreateImage(cvSize(fiducial_window_size,fiducial_window_size),IPL_DEPTH_8U,1);
+//	fiducial_blob_moments = (CvMoments*)malloc( sizeof(CvMoments) );
 	InitFID();
 }
 
 FiducialFinder::~FiducialFinder()
 {
-	free(fiducial_blob_moments);
-	cvReleaseImage(&fiducial_processed_image);
-	cvReleaseMemStorage(&fiducial_storage);
+//	free(fiducial_blob_moments);
+//	cvReleaseImage(&fiducial_processed_image);
+//	cvReleaseMemStorage(&fiducial_storage);
 }
 
-int FiducialFinder::DecodeFiducial(IplImage* src, Fiducial & candidate)
+int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 {
 	float x, y;
+	float bx, by;
+	int counter;
+
+	cv::Mat img_contours = src.clone();
+	cv::findContours(img_contours,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE);
+	fiducial_nodes.clear();
+	bx = 0; by =0;
+	counter =0;
+
+	for(int i = 0; i < hierarchy.size(); i++)
+	{
+		std::cout << i << "  h0: " << hierarchy[i][0]<< "  h1: " << hierarchy[i][1]<< "  h2: " << hierarchy[i][2]<< "  h3: " << hierarchy[i][3]<< std::endl;
+	}
+	/*
+	for ( unsigned int i=0;i<contours.size();i++ )
+	{
+		cv::Moments fiducial_blob_moments = cv::moments(contours[i],true);
+		x = (float)(fiducial_blob_moments.m10 / fiducial_blob_moments.m00);
+		y = (float)(fiducial_blob_moments.m01 / fiducial_blob_moments.m00);
+
+		if(	x > MIN_DIST_TO_SIDE && 
+			y > MIN_DIST_TO_SIDE && 
+			x <70-MIN_DIST_TO_SIDE && 
+			y<70-MIN_DIST_TO_SIDE)
+		{
+			//if(contours[i
+		}
+	}*/
+/*	float x, y;
 	float bx, by;
 	int counter;
 	int axis;
@@ -105,7 +134,7 @@ int FiducialFinder::DecodeFiducial(IplImage* src, Fiducial & candidate)
 	//Get the fiducial ID
 	fiducial_nodes.sort();	
 	int tmpid = GetId(BinaryListToInt(fiducial_nodes));
-	if(tmpid != -1) candidate.SetId(tmpid);
+	if(tmpid != -1) candidate.SetId(tmpid);*/
 
 	return 1;	
 }

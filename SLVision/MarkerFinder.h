@@ -23,6 +23,8 @@
 
 #pragma once
 #include "frameprocessor.h"
+#include "FiducialFinder.h"
+#define FIDUCIAL_IMAGE_SIZE 70
 
 class MarkerFinder: public FrameProcessor
 {
@@ -43,6 +45,10 @@ protected:
 
 	std::vector<std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
+
+	cv::Mat fiducial_image,fiducial_image_zoomed;
+	cv::Point2f dst_pnt[4], tmp_pnt[4];
+	cv::Mat mapmatrix;
 	//void InitGeometry();
 	//void InitFrames(IplImage*	main_image);
 	//void UpdatedValuesFromGui();
@@ -50,7 +56,11 @@ protected:
 	void BuildGui(bool force = false);
 	//void RepportOSC();
 
-	
+	FiducialFinder finder;
+
+	void InitGeometry();
+	int perimeter ( std::vector<cv::Point2f> &a );
+	void SquareDetector(std::vector<std::vector<cv::Point2f>>& MarkerCanditates, std::vector<std::vector<cv::Point2f>>& dest);
 };
 
 
