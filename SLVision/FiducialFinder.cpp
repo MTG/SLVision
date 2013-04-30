@@ -43,21 +43,78 @@ FiducialFinder::~FiducialFinder()
 //	cvReleaseMemStorage(&fiducial_storage);
 }
 
+vector_nodes FiducialFinder::GetLevel (int level, int id, std::vector<cv::Vec4i>& hierarchy)
+{
+	vector_nodes input;
+	input.push_back(node(level,id));
+	if(hierarchy[id][2] != -1)
+	{
+		vector_nodes temp = GetLevel (level+1, hierarchy[id][2], hierarchy);
+		for(int i = 0; i < temp.size(); i++)
+			input.push_back(temp[i]);
+	}
+	if(hierarchy[id][0] != -1)
+	{
+		vector_nodes temp = GetLevel (level, hierarchy[id][0], hierarchy);
+		for(int i = 0; i < temp.size(); i++)
+			input.push_back(temp[i]);
+	}
+	return input;
+}
+
 int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 {
 	float x, y;
 	float bx, by;
-	int counter;
+	int counter,axis;
 
-	cv::Mat img_contours = src.clone();
-	cv::findContours(img_contours,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE);
+
+	cv::Mat fid;
+	src.copyTo ( fid );
+	cv::findContours(fid,contours,hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE );
+	//std::cout << "fi" << std::endl;
 	fiducial_nodes.clear();
+
 	bx = 0; by =0;
 	counter =0;
-
-	for(int i = 0; i < hierarchy.size(); i++)
+	if(hierarchy.size()!= 0)
 	{
-		std::cout << i << "  h0: " << hierarchy[i][0]<< "  h1: " << hierarchy[i][1]<< "  h2: " << hierarchy[i][2]<< "  h3: " << hierarchy[i][3]<< std::endl;
+		for(int i = 0; i < hierarchy.size(); i++)
+		{
+			std::cout << i << "  h0: " << hierarchy[i][0]<< "  h1: " << hierarchy[i][1]<< "  h2: " << hierarchy[i][2]<< "  h3: " << hierarchy[i][3]<< std::endl;
+		}
+		//std::cout << std::endl;
+		//std::cout << "getlevel" << std::endl;
+		vector_nodes nodes = GetLevel(0,0,hierarchy);
+		for(int i = 0; i< nodes.size(); i++)
+		{
+			if(nodes[i].first > 1)
+			{
+				int node_level = abs(nodes[i].first-3);
+				//std::cout << node_level << "oo" << nodes[i].second << "  " ;
+				fiducial_nodes.push_back(node_level);
+				if(node_level == 1)
+				{
+					cv::Moments fiducial_blob_moments = cv::moments(contours[nodes[i].second],true);
+					x = (float)(fiducial_blob_moments.m10 / fiducial_blob_moments.m00);
+					y = (float)(fiducial_blob_moments.m01 / fiducial_blob_moments.m00);
+					counter++;
+					bx += x;
+					by += y;
+				}
+			}
+		}
+
+		bx = bx / counter;
+		by = by / counter;
+		axis = 0;
+		//Get the fiducial orientation
+		GetMinDistToFiducialAxis(axis,bx,by);
+		std::cout <<axis << " " << bx << " " << by<< std::endl;
+		//fiducial_nodes.sort();
+		int tmpid = GetId(BinaryListToInt(fiducial_nodes));
+		std::cout <<tmpid<< std::endl;
+		std::cout <<std::endl;
 	}
 	/*
 	for ( unsigned int i=0;i<contours.size();i++ )

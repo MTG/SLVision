@@ -33,7 +33,7 @@ MarkerFinder::MarkerFinder():
 	block_size (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:blocksize",47)),
 	threshold_C (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:threshold_C",2)),
 	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold:threshold_value",33)),
-	finder (FiducialFinder(FIDUCIAL_IMAGE_SIZE))
+	finder (FiducialFinder(FIDUCIAL_WIN_SIZE))
 {
 	//init values
 	if(use_adaptive_bar_value == 0) use_adaptive_threshold = false;
@@ -55,16 +55,16 @@ MarkerFinder::MarkerFinder():
 
 void MarkerFinder::InitGeometry()
 {
-	fiducial_image = cv::Mat(FIDUCIAL_IMAGE_SIZE,FIDUCIAL_IMAGE_SIZE,CV_BGR2GRAY);
+	fiducial_image = cv::Mat(FIDUCIAL_WIN_SIZE,FIDUCIAL_WIN_SIZE,CV_8UC1);
 	//std::cout << "size: " << fiducial_image->width << "  " << fiducial_image->height << std::endl;
 	/*dst_pnt[0] = cvPoint2D32f (0, FIDUCIAL_IMAGE_SIZE);
 	dst_pnt[1] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, FIDUCIAL_IMAGE_SIZE);
 	dst_pnt[2] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, 0);
     dst_pnt[3] = cvPoint2D32f (0, 0);*/
-	dst_pnt[0] = cvPoint2D32f (0, FIDUCIAL_IMAGE_SIZE);
+	dst_pnt[0] = cvPoint2D32f (0, FIDUCIAL_WIN_SIZE);
 	dst_pnt[1] = cvPoint2D32f (0, 0);
-	dst_pnt[2] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, 0);
-    dst_pnt[3] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, FIDUCIAL_IMAGE_SIZE);
+	dst_pnt[2] = cvPoint2D32f (FIDUCIAL_WIN_SIZE, 0);
+    dst_pnt[3] = cvPoint2D32f (FIDUCIAL_WIN_SIZE, FIDUCIAL_WIN_SIZE);
 	//map_matrix = cvCreateMat  (3, 3, CV_32FC1);
 }
 
@@ -210,9 +210,9 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 			//check for the exsiting ones matching
 		//Zoom the square to detect the fiducial
 		mapmatrix = cv::getPerspectiveTransform(tmp_pnt,dst_pnt);
-		cv::warpPerspective(thres,fiducial_image,mapmatrix,cv::Size(FIDUCIAL_IMAGE_SIZE,FIDUCIAL_IMAGE_SIZE));
-		cv::resize(fiducial_image, fiducial_image_zoomed, cv::Size(FIDUCIAL_IMAGE_SIZE*2,FIDUCIAL_IMAGE_SIZE*2));
-		if (this->show_screen) cv::imshow("fidfinder",fiducial_image_zoomed);
+		cv::warpPerspective(thres,fiducial_image,mapmatrix,cv::Size(FIDUCIAL_WIN_SIZE,FIDUCIAL_WIN_SIZE));
+		cv::resize(fiducial_image, fiducial_image_zoomed, cv::Size(FIDUCIAL_WIN_SIZE*2,FIDUCIAL_WIN_SIZE*2));
+		
 //					cvWarpPerspective (main_processed_image, fiducial_image, map_matrix, CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS, cvScalarAll (0));
 //
 //					int maxCount=0;
@@ -220,8 +220,13 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 //					cvResize(fiducial_image,fiducial_image_zoomed);
 	}
 
-	finder.DecodeFiducial(fiducial_image_zoomed, Fiducial());
+	Fiducial temp = Fiducial();
+	finder.DecodeFiducial(fiducial_image, temp);
+	//contours = std::vector<std::vector<cv::Point> > ();
+	
 
+
+if (this->show_screen) cv::imshow("fidfinder",fiducial_image_zoomed);
 	/******************************************************
 	* Show thresholded Image
 	*******************************************************/

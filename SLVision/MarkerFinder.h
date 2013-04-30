@@ -24,7 +24,6 @@
 #pragma once
 #include "frameprocessor.h"
 #include "FiducialFinder.h"
-#define FIDUCIAL_IMAGE_SIZE 70
 
 class MarkerFinder: public FrameProcessor
 {

@@ -38,18 +38,20 @@
 //datatypes
 typedef std::list<int>		intList;
 typedef std::map<unsigned long, int> IDMap;
+typedef std::pair<int,int> node;
+typedef std::vector<std::pair<int,int>> vector_nodes;
+
 
 class FiducialFinder
 {
 	int				fiducial_window_size;
-	//CvMoments*      fiducial_blob_moments;
-	//IplImage*		fiducial_processed_image;
-	//CvMemStorage*	fiducial_storage;
 	intList			fiducial_nodes;
 	int				nodecount;
 	IDMap			idmap;
 	std::vector<std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
+
+	vector_nodes GetLevel (int level, int id, std::vector<cv::Vec4i>& hierarchy);
 
 public:
 	FiducialFinder(int _fiducial_window_size);
