@@ -138,15 +138,9 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	int maxSize=_maxSize*std::max(thres.cols,thres.rows)*4;
 	cv::findContours ( thres2 , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
 	cv::vector<cv::Point>  approxCurve;
-
-	/*int minSize=_minSize*std::max(thres.cols,thres.rows)*4;
-		int maxSize=_maxSize*std::max(thres.cols,thres.rows)*4;
-		std::vector<std::vector<cv::Point> > contours2;
-		std::vector<cv::Vec4i> hierarchy2;
-		thres.copyTo ( thres2 );
-		cv::findContours ( thres2 , contours2, hierarchy2,CV_RETR_TREE, CV_CHAIN_APPROX_NONE );
-		cv::vector<cv::Point>  approxCurve;*/
-
+	/******************************************************
+	* Find Squares
+	*******************************************************/
 	std::vector<std::vector<cv::Point2f>> SquareCanditates;
 	int idx = 0;
     for( ; idx >= 0; idx = hierarchy[idx][0] )
@@ -183,14 +177,13 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 							SquareCanditates.back().push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
 						}
 					}
-
 				}
 			}
 		}
-		
-		
 	}
-	//Detect squares
+	/******************************************************
+	* Find Markers
+	*******************************************************/
 	std::vector<std::vector<cv::Point2f>> Squares;
 	SquareDetector(SquareCanditates, Squares);
 	for (size_t i=0;i<Squares.size();i++) 
@@ -212,26 +205,23 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 		mapmatrix = cv::getPerspectiveTransform(tmp_pnt,dst_pnt);
 		cv::warpPerspective(thres,fiducial_image,mapmatrix,cv::Size(FIDUCIAL_WIN_SIZE,FIDUCIAL_WIN_SIZE));
 		cv::resize(fiducial_image, fiducial_image_zoomed, cv::Size(FIDUCIAL_WIN_SIZE*2,FIDUCIAL_WIN_SIZE*2));
-		
-//					cvWarpPerspective (main_processed_image, fiducial_image, map_matrix, CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS, cvScalarAll (0));
-//
-//					int maxCount=0;
-//					int markerDirection=0;
-//					cvResize(fiducial_image,fiducial_image_zoomed);
 	}
-
+	/******************************************************
+	* Decode Markers
+	*******************************************************/
 	Fiducial temp = Fiducial();
 	finder.DecodeFiducial(fiducial_image, temp);
 	//contours = std::vector<std::vector<cv::Point> > ();
 	
 
 
-if (this->show_screen) cv::imshow("fidfinder",fiducial_image_zoomed);
+	
 	/******************************************************
 	* Show thresholded Image
 	*******************************************************/
 	if (this->show_screen)
 	{
+		cv::imshow("fidfinder",fiducial_image_zoomed);
 		cv::imshow(this->name,thres);
 	}
 }
