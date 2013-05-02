@@ -61,10 +61,10 @@ void MarkerFinder::InitGeometry()
 	dst_pnt[1] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, FIDUCIAL_IMAGE_SIZE);
 	dst_pnt[2] = cvPoint2D32f (FIDUCIAL_IMAGE_SIZE, 0);
     dst_pnt[3] = cvPoint2D32f (0, 0);*/
-	dst_pnt[0] = cvPoint2D32f (0, FIDUCIAL_WIN_SIZE);
-	dst_pnt[1] = cvPoint2D32f (0, 0);
-	dst_pnt[2] = cvPoint2D32f (FIDUCIAL_WIN_SIZE, 0);
-    dst_pnt[3] = cvPoint2D32f (FIDUCIAL_WIN_SIZE, FIDUCIAL_WIN_SIZE);
+	dst_pnt[2] = cvPoint2D32f (0, FIDUCIAL_WIN_SIZE);
+	dst_pnt[3] = cvPoint2D32f (0, 0);
+	dst_pnt[0] = cvPoint2D32f (FIDUCIAL_WIN_SIZE, 0);
+    dst_pnt[1] = cvPoint2D32f (FIDUCIAL_WIN_SIZE, FIDUCIAL_WIN_SIZE);
 	//map_matrix = cvCreateMat  (3, 3, CV_32FC1);
 }
 
@@ -141,7 +141,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Find Squares
 	*******************************************************/
-	std::vector<std::vector<cv::Point2f>> SquareCanditates;
+	std::vector<candidate> SquareCanditates;
 	int idx = 0;
     for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
@@ -169,12 +169,18 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 					//check that distance is not very small
 					if ( minDist>10 )
 					{
+						//calculates the area
+						double area = cv::contourArea(contours[idx]);
+						//calculates the centroid
+						cv::Moments fiducial_blob_moments = cv::moments(contours[idx],true);
+						double x = (float)(fiducial_blob_moments.m10 / fiducial_blob_moments.m00);
+						double y = (float)(fiducial_blob_moments.m01 / fiducial_blob_moments.m00);
 						//add the points
-						SquareCanditates.push_back ( std::vector<cv::Point2f>() );
+						SquareCanditates.push_back ( candidate(area,x,y,std::vector<cv::Point2f>()) );
 						//MarkerCanditates.back().idx=i;
 						for ( int j=0;j<4;j++ )
 						{
-							SquareCanditates.back().push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+							SquareCanditates.back().points.push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
 						}
 					}
 				}
@@ -184,38 +190,49 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Find Markers
 	*******************************************************/
-	std::vector<std::vector<cv::Point2f>> Squares;
+	std::vector<candidate> Squares;
 	SquareDetector(SquareCanditates, Squares);
 	for (size_t i=0;i<Squares.size();i++) 
 	{
-		///show perimeter
-		for(int k = 0; k < 4; k++)
-		{
-			if (k!= 3)
-				cv::line(main_image,Squares[i][k],Squares[i][k+1],cv::Scalar(0,0,255,255),1,CV_AA);
-			else
-				cv::line(main_image,Squares[i][k],Squares[i][0],cv::Scalar(0,0,255,255),1,CV_AA);
-			tmp_pnt[k] = cv::Point2f(Squares[i][k]);
-		}
-
+		
 		///Marker identification
-
-			//check for the exsiting ones matching
+		for(int k = 0; k < 4; k++)
+			tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
+			//check for the exsiting ones matching !!!!!!
 		//Zoom the square to detect the fiducial
 		mapmatrix = cv::getPerspectiveTransform(tmp_pnt,dst_pnt);
 		cv::warpPerspective(thres,fiducial_image,mapmatrix,cv::Size(FIDUCIAL_WIN_SIZE,FIDUCIAL_WIN_SIZE));
 		cv::resize(fiducial_image, fiducial_image_zoomed, cv::Size(FIDUCIAL_WIN_SIZE*2,FIDUCIAL_WIN_SIZE*2));
+		/******************************************************
+		* Decode Markers
+		*******************************************************/
+		Fiducial temp = Fiducial();
+		temp.Update(Squares[i].x,Squares[i].y,Squares[i].points[0],Squares[i].points[1],Squares[i].points[2],Squares[i].points[3],Squares[i].area,0);
+		int tmp_id = finder.DecodeFiducial(fiducial_image, temp);
+		if(tmp_id >= 0)
+		{
+			/******************************************************
+			* Draw vertices
+			*******************************************************/
+			cv::putText(main_image, "a", temp.GetCorner(0), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+			cv::putText(main_image, "b", temp.GetCorner(1), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+			cv::putText(main_image, "c", temp.GetCorner(2), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+			cv::putText(main_image, "d", temp.GetCorner(3), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+			///show perimeter
+			for(int k = 0; k < 4; k++)
+			{
+				if (k!= 3)
+					cv::line(main_image,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+				else
+					cv::line(main_image,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
+				tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
+			}
+		}
 	}
-	/******************************************************
-	* Decode Markers
-	*******************************************************/
-	Fiducial temp = Fiducial();
-	finder.DecodeFiducial(fiducial_image, temp);
-	//contours = std::vector<std::vector<cv::Point> > ();
+	
 	
 
-
-	
+	cv::putText(main_image, "hola don pepito", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
 	/******************************************************
 	* Show thresholded Image
 	*******************************************************/
@@ -753,7 +770,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 //}
 
 
-void MarkerFinder::SquareDetector(std::vector<std::vector<cv::Point2f>>& MarkerCanditates,std::vector<std::vector<cv::Point2f>>& dest)
+void MarkerFinder::SquareDetector(std::vector<candidate>& MarkerCanditates,std::vector<candidate>& dest)
 {
 	dest.clear();
 	///sort the points in anti-clockwise order
@@ -762,14 +779,14 @@ void MarkerFinder::SquareDetector(std::vector<std::vector<cv::Point2f>>& MarkerC
 	{
 		//trace a line between the first and second point.
 		//if the thrid point is at the right side, then the points are anti-clockwise
-		double dx1 = MarkerCanditates[i][1].x - MarkerCanditates[i][0].x;
-		double dy1 =  MarkerCanditates[i][1].y - MarkerCanditates[i][0].y;
-		double dx2 = MarkerCanditates[i][2].x - MarkerCanditates[i][0].x;
-		double dy2 = MarkerCanditates[i][2].y - MarkerCanditates[i][0].y;
+		double dx1 = MarkerCanditates[i].points[1].x - MarkerCanditates[i].points[0].x;
+		double dy1 =  MarkerCanditates[i].points[1].y - MarkerCanditates[i].points[0].y;
+		double dx2 = MarkerCanditates[i].points[2].x - MarkerCanditates[i].points[0].x;
+		double dy2 = MarkerCanditates[i].points[2].y - MarkerCanditates[i].points[0].y;
 		double o = ( dx1*dy2 )- ( dy1*dx2 );
 		if ( o  < 0.0 )		 //if the third point is in the left side, then sort in anti-clockwise order
 		{
-			std::swap ( MarkerCanditates[i][1],MarkerCanditates[i][3] );
+			std::swap ( MarkerCanditates[i].points[1],MarkerCanditates[i].points[3] );
 			swapped[i]=true;
 			//sort the contour points
 	//  	    reverse(MarkerCanditates[i].contour.begin(),MarkerCanditates[i].contour.end());//????
@@ -786,7 +803,10 @@ void MarkerFinder::SquareDetector(std::vector<std::vector<cv::Point2f>>& MarkerC
 		{
 			float dist=0;
 			for ( int c=0;c<4;c++ )
-				dist+= sqrt ( ( MarkerCanditates[i][c].x-MarkerCanditates[j][c].x ) * ( MarkerCanditates[i][c].x-MarkerCanditates[j][c].x ) + ( MarkerCanditates[i][c].y-MarkerCanditates[j][c].y ) * ( MarkerCanditates[i][c].y-MarkerCanditates[j][c].y ) );
+				dist+= sqrt (	( MarkerCanditates[i].points[c].x-MarkerCanditates[j].points[c].x ) * 
+								( MarkerCanditates[i].points[c].x-MarkerCanditates[j].points[c].x ) + 
+								( MarkerCanditates[i].points[c].y-MarkerCanditates[j].points[c].y ) * 
+								( MarkerCanditates[i].points[c].y-MarkerCanditates[j].points[c].y ) );
 			dist/=4;
 			//if distance is too small
 			if ( dist< 10 )
@@ -799,7 +819,7 @@ void MarkerFinder::SquareDetector(std::vector<std::vector<cv::Point2f>>& MarkerC
 	std::valarray<bool> toRemove ( false,MarkerCanditates.size() );
 	for ( unsigned int i=0;i<TooNearCandidates.size();i++ )
 	{
-		if ( perimeter ( MarkerCanditates[TooNearCandidates[i].first ] ) > perimeter ( MarkerCanditates[ TooNearCandidates[i].second] ) )
+		if ( perimeter ( MarkerCanditates[TooNearCandidates[i].first ].points ) > perimeter ( MarkerCanditates[ TooNearCandidates[i].second].points ) )
 			toRemove[TooNearCandidates[i].second]=true;
 		else toRemove[TooNearCandidates[i].first]=true;
 	}

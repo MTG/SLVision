@@ -22,8 +22,8 @@
 */
 
 #pragma once
-#include <cv.h>
-#include <cxcore.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 
 float vect_point_dist(float ax, float ay, float bx, float by, float cx, float cy);
 float ivect_point_dist(int ax, int ay, int bx, int by, int cx, int cy);
@@ -42,9 +42,10 @@ class Fiducial
 //	static unsigned int id_generator;
 	bool is_updated;
 	double removed_time;
+	cv::Point2f a,b,c,d;
 public:
-	CvPoint a,b,c,d;
-	CvPoint ea,eb,ec,ed;
+	
+	//CvPoint ea,eb,ec,ed;
 	float yaw,pitch,roll;
 	float xpos, ypos, zpos;
 
@@ -55,7 +56,7 @@ public:
 	~Fiducial(void);
 	void clear();
 	void SetId(unsigned int id);
-	void Update(float x, float y,CvPoint a,CvPoint b,CvPoint c,CvPoint d, float area, int orientation);
+	void Update(float x, float y,cv::Point2f a,cv::Point2f b,cv::Point2f c,cv::Point2f d, float area, int orientation);
 	void Update(const Fiducial &copy);
 	bool Is_inside(const Fiducial &f);
 	bool CanUpdate(const Fiducial &f, float & minimum_distance);
@@ -67,7 +68,9 @@ public:
 	bool CanBeRemoved(double actual_time);
 	void RemoveStart(double actual_time);
 	void SetOrientation(int o);
+	cv::Point2f GetCorner(int corner);
+	void OritentateCorners();
 	//fiducial id generator
-//	static unsigned int GetNewId();
+	//static unsigned int GetNewId();
 };
 

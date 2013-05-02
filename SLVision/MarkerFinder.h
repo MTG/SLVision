@@ -25,6 +25,21 @@
 #include "frameprocessor.h"
 #include "FiducialFinder.h"
 
+
+class candidate
+{
+public:
+	std::vector<cv::Point2f> points;
+	double area, x, y;
+	candidate( double _area, double _x, double _y, std::vector<cv::Point2f>& _points):
+		points(std::vector<cv::Point2f>(_points)),
+		area(_area),
+		x(_x),
+		y(_y)
+	{
+	}
+};
+
 class MarkerFinder: public FrameProcessor
 {
 public:
@@ -59,7 +74,7 @@ protected:
 
 	void InitGeometry();
 	int perimeter ( std::vector<cv::Point2f> &a );
-	void SquareDetector(std::vector<std::vector<cv::Point2f>>& MarkerCanditates, std::vector<std::vector<cv::Point2f>>& dest);
+	void SquareDetector(std::vector<candidate>& MarkerCanditates, std::vector<candidate>& dest);
 };
 
 

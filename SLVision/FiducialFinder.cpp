@@ -67,24 +67,27 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 	float x, y;
 	float bx, by;
 	int counter,axis;
-
-
+	fiducial_nodes.clear();
+	bx = 0; by =0;
+	counter =0;
+	/******************************************************
+	* Find the fiducial hierarchy
+	*******************************************************/
 	cv::Mat fid;
 	src.copyTo ( fid );
 	cv::findContours(fid,contours,hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE );
-	//std::cout << "fi" << std::endl;
-	fiducial_nodes.clear();
 
-	bx = 0; by =0;
-	counter =0;
 	if(hierarchy.size()!= 0)
 	{
-		for(int i = 0; i < hierarchy.size(); i++)
-		{
-			std::cout << i << "  h0: " << hierarchy[i][0]<< "  h1: " << hierarchy[i][1]<< "  h2: " << hierarchy[i][2]<< "  h3: " << hierarchy[i][3]<< std::endl;
-		}
+		//for(int i = 0; i < hierarchy.size(); i++)
+		//{
+		//	std::cout << i << "  h0: " << hierarchy[i][0]<< "  h1: " << hierarchy[i][1]<< "  h2: " << hierarchy[i][2]<< "  h3: " << hierarchy[i][3]<< std::endl;
+		//}
 		//std::cout << std::endl;
 		//std::cout << "getlevel" << std::endl;
+		/******************************************************
+		* Retrieve hierarchy data: nodes, orientation and fiducial code
+		*******************************************************/
 		vector_nodes nodes = GetLevel(0,0,hierarchy);
 		for(int i = 0; i< nodes.size(); i++)
 		{
@@ -104,18 +107,34 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 				}
 			}
 		}
-
 		bx = bx / counter;
 		by = by / counter;
 		axis = 0;
 		//Get the fiducial orientation
 		GetMinDistToFiducialAxis(axis,bx,by);
-		std::cout <<axis << " " << bx << " " << by<< std::endl;
-		//fiducial_nodes.sort();
+
+		
+		//std::cout <<axis << " " << bx << " " << by<< std::endl;
+		//for(intList::iterator it = fiducial_nodes.begin(); it != fiducial_nodes.end(); it++)
+		//{
+		//	std::cout << (*it);
+		//}
+		//std::cout << std::endl;
+
+		/******************************************************
+		* Fiducial Decode
+		*******************************************************/
 		int tmpid = GetId(BinaryListToInt(fiducial_nodes));
-		std::cout <<tmpid<< std::endl;
-		std::cout <<std::endl;
+		if(tmpid >= 0)
+		{
+			candidate.SetOrientation(axis);
+			candidate.OritentateCorners();
+			return tmpid;
+		}
+		//std::cout <<tmpid<< std::endl;
+		//std::cout <<std::endl;			
 	}
+	candidate.OritentateCorners();
 	/*
 	for ( unsigned int i=0;i<contours.size();i++ )
 	{
@@ -193,8 +212,9 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 	int tmpid = GetId(BinaryListToInt(fiducial_nodes));
 	if(tmpid != -1) candidate.SetId(tmpid);*/
 
-	return 1;	
+	return -1;	
 }
+
 
 float FiducialFinder::GetMinDistToFiducialAxis(int &axis, float x, float y)
 {
@@ -230,15 +250,21 @@ float FiducialFinder::GetMinDistToFiducialAxis(int &axis, float x, float y)
 
 unsigned int FiducialFinder::BinaryListToInt(const intList &data)
 {
-	int cnt = 0;
 	unsigned int candidate = 0;
+	int previous = 0;
 	for(intList::const_iterator it = data.begin(); it != data.end(); it++)
 	{
-		for (int i = 0; i < (*it); i++)
-			cnt++;
-		candidate += 1<<cnt;
-		cnt++;
+		if((*it) == 1)
+		{
+			candidate += previous;
+			previous = 1;
+		}
+		else if((*it) == 0)
+		{
+			previous *=10;
+		}
 	}
+	candidate += previous;
 	return candidate;
 }
 
@@ -246,7 +272,6 @@ unsigned int FiducialFinder::StringBinaryListToInt(const char* data)
 {
 	intList list;
 	int i = 0;
-	unsigned int candidate = 0;
 	while(data[i] != '\0')
 	{
 		if(data[i] == '1')
@@ -254,16 +279,7 @@ unsigned int FiducialFinder::StringBinaryListToInt(const char* data)
 		else list.push_back(0);
 		i++;
 	}
-	i = 0;
-	for(intList::reverse_iterator it = list.rbegin(); it != list.rend(); it++)
-	{
-		if(*it ==1)
-		{
-			candidate += 1<<i;
-		}
-		i++;
-	}
-	return candidate;
+	return BinaryListToInt(list);
 }
 
 void FiducialFinder::RepportOSC()

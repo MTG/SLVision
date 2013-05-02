@@ -27,7 +27,7 @@
 #define AREA_OFFSET 1000
 #define REMOVE_OFFSET 500
 
-Fiducial::Fiducial(void):x(0),y(0),area(0),a(cvPoint(0,0)),b(cvPoint(0,0)),c(cvPoint(0,0)),d(cvPoint(0,0)),fiducial_id(-1),orientation(0),is_updated(false),removed_time(-1)
+Fiducial::Fiducial(void):x(0),y(0),area(0),a(cv::Point2f(0,0)),b(cv::Point2f(0,0)),c(cv::Point2f(0,0)),d(cv::Point2f(0,0)),fiducial_id(-1),orientation(0),is_updated(false),removed_time(-1)
 {
 	yaw=0;
 	pitch=0;
@@ -43,10 +43,10 @@ Fiducial::Fiducial(const Fiducial &copy):removed_time(-1)
 {
 	x = copy.x;
 	y = copy.y;
-	a = cvPoint(copy.a.x,copy.a.y);
-	b = cvPoint(copy.b.x,copy.b.y);
-	c = cvPoint(copy.c.x,copy.c.y);
-	d = cvPoint(copy.d.x,copy.d.y);
+	a = cv::Point2f(copy.a.x,copy.a.y);
+	b = cv::Point2f(copy.b.x,copy.b.y);
+	c = cv::Point2f(copy.c.x,copy.c.y);
+	d = cv::Point2f(copy.d.x,copy.d.y);
 	fiducial_id = copy.fiducial_id;
 	orientation = copy.orientation;
 	area = copy.area;
@@ -61,10 +61,10 @@ void Fiducial::clear()
 {
 	x = 0;
 	y = 0;
-	a = cvPoint(0,0);
-	b = cvPoint(0,0);
-	c = cvPoint(0,0);
-	d = cvPoint(0,0);
+	a = cv::Point2f(0,0);
+	b = cv::Point2f(0,0);
+	c = cv::Point2f(0,0);
+	d = cv::Point2f(0,0);
 	fiducial_id = -1;
 	orientation = 0;
 	is_updated = true;
@@ -80,14 +80,14 @@ void Fiducial::Update(const Fiducial &copy)
 	Update(copy.x, copy.y, copy.a, copy.b, copy.c, copy.d, copy.area, copy.orientation);
 }
 
-void Fiducial::Update(float _x, float _y,CvPoint _a,CvPoint _b,CvPoint _c,CvPoint _d, float _area, int orientation)
+void Fiducial::Update(float _x, float _y,cv::Point2f _a,cv::Point2f _b,cv::Point2f _c,cv::Point2f _d, float _area, int orientation)
 {
 	this->x = _x;
 	this->y = _y;
-	this->a = cvPoint(_a.x, _a.y);
-	this->b = cvPoint(_b.x, _b.y);
-	this->c = cvPoint(_c.x, _c.y);
-	this->d = cvPoint(_d.x, _d.y);
+	this->a = cv::Point2f(_a.x, _a.y);
+	this->b = cv::Point2f(_b.x, _b.y);
+	this->c = cv::Point2f(_c.x, _c.y);
+	this->d = cv::Point2f(_d.x, _d.y);
 	this->area = fabs(_area);
 	is_updated = true;
 	this->orientation = orientation;
@@ -184,7 +184,7 @@ unsigned int Fiducial::GetNewId()
 * general purpose functions
 *****************************************/
 
-float nsqdist(const CvPoint &a, const CvPoint &b)
+float nsqdist(const cv::Point2f &a, const cv::Point2f &b)
 {
 	return insqdist(a.x,a.y,b.x,b.y);
 }
@@ -227,3 +227,153 @@ double IsLeft(double ax, double ay, double bx, double by, float px, float py)
 {
 	return ((bx - ax) * (py - ay) - (px - ax) * (by - ay));
 }
+
+cv::Point2f Fiducial::GetCorner(int corner)
+{
+	switch(corner)
+	{
+	case 0:
+		return a;
+		break;
+	case 1:
+		return b;
+		break;
+	case 2:
+		return c;
+		break;
+	case 3:
+		return d;
+		break;
+	}
+	return a;
+}
+
+void Fiducial::OritentateCorners()
+{
+	
+	int markerDirection = GetOrientation();
+	std::cout << markerDirection<< std::endl;
+	cv::Point2f ta,tb,tc,td;
+	ta = cv::Point2f(a); tb = cv::Point2f(b); tc = cv::Point2f(c); td = cv::Point2f(d);
+	//a0 b1 c2 d3
+	switch(markerDirection)
+	{
+	case 0:
+		a = tb;
+		b = tc;
+		c = td;
+		d = ta;
+		break;
+	case 1:
+		a = tc;
+		b = td;
+		c = ta;
+		d = tb;
+		break;
+	case 2:
+
+		break;
+	case 3:
+		
+		a = td;
+		b = ta;
+		c = tb;
+		d = tc;
+		break;
+	}
+}
+
+
+
+/*//					if(markerDirection==0)
+//					{
+//						src_pnt[0].x = xlist[0];		
+//						src_pnt[1].x = xlist[1];
+//						src_pnt[2].x = xlist[2];
+//						src_pnt[3].x = xlist[3];
+//
+//						src_pnt[0].y = ylist[0];
+//						src_pnt[1].y = ylist[1];
+//						src_pnt[2].y = ylist[2];
+//						src_pnt[3].y = ylist[3];
+//#ifdef USEEIGHTPOINTS
+//						src_pnt[4].x = exlist[0];		
+//						src_pnt[5].x = exlist[3];
+//						src_pnt[6].x = exlist[2];
+//						src_pnt[7].x = exlist[1];
+//
+//						src_pnt[4].y = eylist[0];
+//						src_pnt[5].y = eylist[3];
+//						src_pnt[6].y = eylist[2];
+//						src_pnt[7].y = eylist[1];
+//#endif
+//					}
+//					else if(markerDirection==1)//90
+//					{
+//						src_pnt[0].x = xlist[3];		
+//						src_pnt[1].x = xlist[0];
+//						src_pnt[2].x = xlist[1];
+//						src_pnt[3].x = xlist[2];
+//
+//						src_pnt[0].y = ylist[3];
+//						src_pnt[1].y = ylist[0];
+//						src_pnt[2].y = ylist[1];
+//						src_pnt[3].y = ylist[2];
+//#ifdef USEEIGHTPOINTS
+//						src_pnt[4].x = exlist[1];		
+//						src_pnt[5].x = exlist[0];
+//						src_pnt[6].x = exlist[3];
+//						src_pnt[7].x = exlist[2];
+//
+//						src_pnt[4].y = eylist[1];
+//						src_pnt[5].y = eylist[0];
+//						src_pnt[6].y = eylist[3];
+//						src_pnt[7].y = eylist[2];
+//#endif
+//					}
+//					else if(markerDirection==3)//180
+//					{
+//						src_pnt[0].x = xlist[2];		
+//						src_pnt[1].x = xlist[3];
+//						src_pnt[2].x = xlist[0];
+//						src_pnt[3].x = xlist[1];
+//
+//						src_pnt[0].y = ylist[2];
+//						src_pnt[1].y = ylist[3];
+//						src_pnt[2].y = ylist[0];
+//						src_pnt[3].y = ylist[1];
+//#ifdef USEEIGHTPOINTS
+//						src_pnt[4].x = exlist[2];		
+//						src_pnt[5].x = exlist[1];
+//						src_pnt[6].x = exlist[0];
+//						src_pnt[7].x = exlist[3];
+//
+//						src_pnt[4].y = eylist[2];
+//						src_pnt[5].y = eylist[1];
+//						src_pnt[6].y = eylist[0];
+//						src_pnt[7].y = eylist[3];
+//#endif
+//					}
+//					else if(markerDirection==2)//270
+//					{
+//						src_pnt[0].x = xlist[1];		
+//						src_pnt[1].x = xlist[2];
+//						src_pnt[2].x = xlist[3];
+//						src_pnt[3].x = xlist[0];
+//
+//						src_pnt[0].y = ylist[1];
+//						src_pnt[1].y = ylist[2];
+//						src_pnt[2].y = ylist[3];
+//						src_pnt[3].y = ylist[0];
+//#ifdef USEEIGHTPOINTS
+//						src_pnt[4].x = exlist[3];		
+//						src_pnt[5].x = exlist[2];
+//						src_pnt[6].x = exlist[1];
+//						src_pnt[7].x = exlist[0];
+//
+//						src_pnt[4].y = eylist[3];
+//						src_pnt[5].y = eylist[2];
+//						src_pnt[6].y = eylist[1];
+//						src_pnt[7].y = eylist[0];
+//#endif
+//					}	*/
