@@ -22,12 +22,17 @@
 */
 
 #include "Fiducial.h"
+#include "Globals.h"
+
+#ifndef M_PI
+#define M_PI 3.141592654f
+#endif
 
 #define DISTANCE_OFFSET 30
 #define AREA_OFFSET 1000
 #define REMOVE_OFFSET 500
 
-Fiducial::Fiducial(void):x(0),y(0),area(0),a(cv::Point2f(0,0)),b(cv::Point2f(0,0)),c(cv::Point2f(0,0)),d(cv::Point2f(0,0)),fiducial_id(-1),orientation(0),is_updated(false),removed_time(-1)
+Fiducial::Fiducial(void):x(0),y(0),area(0),size(0),a(cv::Point2f(0,0)),b(cv::Point2f(0,0)),c(cv::Point2f(0,0)),d(cv::Point2f(0,0)),fiducial_id(-1),orientation(0),is_updated(false),removed_time(-1)
 {
 	yaw=0;
 	pitch=0;
@@ -43,6 +48,7 @@ Fiducial::Fiducial(const Fiducial &copy):removed_time(-1)
 {
 	x = copy.x;
 	y = copy.y;
+	size = copy.size;
 	a = cv::Point2f(copy.a.x,copy.a.y);
 	b = cv::Point2f(copy.b.x,copy.b.y);
 	c = cv::Point2f(copy.c.x,copy.c.y);
@@ -73,6 +79,11 @@ void Fiducial::clear()
 void Fiducial::SetId(unsigned int id)
 {
 	this->fiducial_id = id;
+}
+
+void Fiducial::SetSize(int size)
+{
+	this->size = size;
 }
 
 void Fiducial::Update(const Fiducial &copy)
@@ -141,6 +152,21 @@ float Fiducial::GetX()
 float Fiducial::GetY()
 {
 	return y;
+}
+
+float Fiducial::GetSize()
+{
+	return size;
+}
+
+cv::Mat Fiducial::GetRotationVector()
+{
+	return rotation_vector;
+}
+
+cv::Mat Fiducial::GetTranslationVector()
+{
+	return translation_vector;
 }
 
 bool Fiducial::IsUpdated()
@@ -252,7 +278,6 @@ void Fiducial::OritentateCorners()
 {
 	
 	int markerDirection = GetOrientation();
-	std::cout << markerDirection<< std::endl;
 	cv::Point2f ta,tb,tc,td;
 	ta = cv::Point2f(a); tb = cv::Point2f(b); tc = cv::Point2f(c); td = cv::Point2f(d);
 	//a0 b1 c2 d3
@@ -283,97 +308,87 @@ void Fiducial::OritentateCorners()
 	}
 }
 
+void Fiducial::CalculateIntrinsics()
+{
+	if(size != 0)
+	{
+		/******************************************************
+		* Define target points
+		*******************************************************/
+		cv::Mat ObjPoints(4,3,CV_32FC1);
+		ObjPoints.at<float>(0,0)=0;
+		ObjPoints.at<float>(0,1)=size;
+		ObjPoints.at<float>(0,2)=0;
+		ObjPoints.at<float>(1,0)=size;
+		ObjPoints.at<float>(1,1)=size;
+		ObjPoints.at<float>(1,2)=0;
+		ObjPoints.at<float>(2,0)=size;
+		ObjPoints.at<float>(2,1)=0;
+		ObjPoints.at<float>(2,2)=0;
+		ObjPoints.at<float>(3,0)=0;
+		ObjPoints.at<float>(3,1)=0;
+		ObjPoints.at<float>(3,2)=0;
+		/******************************************************
+		* Define source points
+		*******************************************************/
+		cv::Mat ImagePoints(4,2,CV_32FC1);
+		ImagePoints.at<float>(0,0)=(a.x);
+		ImagePoints.at<float>(0,1)=(a.y);
+		ImagePoints.at<float>(1,0)=(b.x);
+		ImagePoints.at<float>(1,1)=(b.y);
+		ImagePoints.at<float>(2,0)=(c.x);
+		ImagePoints.at<float>(2,1)=(c.y);
+		ImagePoints.at<float>(3,0)=(d.x);
+		ImagePoints.at<float>(3,1)=(d.y);
+		/******************************************************
+		* Define source points
+		*******************************************************/
+		cv::solvePnP(ObjPoints, ImagePoints, Globals::CameraMatrix, Globals::Distortion,rotation_vector,translation_vector);
+		rotation_vector.convertTo(rotation_vector,CV_32F);
+		translation_vector.convertTo(translation_vector ,CV_32F);
+		/******************************************************
+		* Prepare parameters
+		*******************************************************/
+		cv::Mat R(3,3,CV_32F);
+		Rodrigues(rotation_vector, R);
 
+		xpos = translation_vector.ptr<float>(0)[0];
+		ypos = translation_vector.ptr<float>(0)[1];
+		zpos = translation_vector.ptr<float>(0)[2];
+		//std::cout << fiducial_map[tmp_ssid]->xpos << "\t" << fiducial_map[tmp_ssid]->ypos << "\t" << fiducial_map[tmp_ssid]->zpos << std::endl;
+		//Rotate XAxis
+		cv::Mat Rx= cv::Mat::eye(3,3,CV_32F);
+		float angle = M_PI;
+		Rx.at<float>(1,1) = cos(angle);
+		Rx.at<float>(1,2) = -sin(angle);
+		Rx.at<float>(2,1) = sin(angle);
+		Rx.at<float>(2,2) = cos(angle);
+		R = R*Rx;
 
-/*//					if(markerDirection==0)
-//					{
-//						src_pnt[0].x = xlist[0];		
-//						src_pnt[1].x = xlist[1];
-//						src_pnt[2].x = xlist[2];
-//						src_pnt[3].x = xlist[3];
-//
-//						src_pnt[0].y = ylist[0];
-//						src_pnt[1].y = ylist[1];
-//						src_pnt[2].y = ylist[2];
-//						src_pnt[3].y = ylist[3];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[0];		
-//						src_pnt[5].x = exlist[3];
-//						src_pnt[6].x = exlist[2];
-//						src_pnt[7].x = exlist[1];
-//
-//						src_pnt[4].y = eylist[0];
-//						src_pnt[5].y = eylist[3];
-//						src_pnt[6].y = eylist[2];
-//						src_pnt[7].y = eylist[1];
-//#endif
-//					}
-//					else if(markerDirection==1)//90
-//					{
-//						src_pnt[0].x = xlist[3];		
-//						src_pnt[1].x = xlist[0];
-//						src_pnt[2].x = xlist[1];
-//						src_pnt[3].x = xlist[2];
-//
-//						src_pnt[0].y = ylist[3];
-//						src_pnt[1].y = ylist[0];
-//						src_pnt[2].y = ylist[1];
-//						src_pnt[3].y = ylist[2];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[1];		
-//						src_pnt[5].x = exlist[0];
-//						src_pnt[6].x = exlist[3];
-//						src_pnt[7].x = exlist[2];
-//
-//						src_pnt[4].y = eylist[1];
-//						src_pnt[5].y = eylist[0];
-//						src_pnt[6].y = eylist[3];
-//						src_pnt[7].y = eylist[2];
-//#endif
-//					}
-//					else if(markerDirection==3)//180
-//					{
-//						src_pnt[0].x = xlist[2];		
-//						src_pnt[1].x = xlist[3];
-//						src_pnt[2].x = xlist[0];
-//						src_pnt[3].x = xlist[1];
-//
-//						src_pnt[0].y = ylist[2];
-//						src_pnt[1].y = ylist[3];
-//						src_pnt[2].y = ylist[0];
-//						src_pnt[3].y = ylist[1];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[2];		
-//						src_pnt[5].x = exlist[1];
-//						src_pnt[6].x = exlist[0];
-//						src_pnt[7].x = exlist[3];
-//
-//						src_pnt[4].y = eylist[2];
-//						src_pnt[5].y = eylist[1];
-//						src_pnt[6].y = eylist[0];
-//						src_pnt[7].y = eylist[3];
-//#endif
-//					}
-//					else if(markerDirection==2)//270
-//					{
-//						src_pnt[0].x = xlist[1];		
-//						src_pnt[1].x = xlist[2];
-//						src_pnt[2].x = xlist[3];
-//						src_pnt[3].x = xlist[0];
-//
-//						src_pnt[0].y = ylist[1];
-//						src_pnt[1].y = ylist[2];
-//						src_pnt[2].y = ylist[3];
-//						src_pnt[3].y = ylist[0];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[3];		
-//						src_pnt[5].x = exlist[2];
-//						src_pnt[6].x = exlist[1];
-//						src_pnt[7].x = exlist[0];
-//
-//						src_pnt[4].y = eylist[3];
-//						src_pnt[5].y = eylist[2];
-//						src_pnt[6].y = eylist[1];
-//						src_pnt[7].y = eylist[0];
-//#endif
-//					}	*/
+		//Rotate YAxis
+		/*cv::Mat Ry= cv::Mat::eye(3,3,CV_32F);
+		Ry.at<float>(1,1) = cos(angle);
+		Ry.at<float>(1,2) = -sin(angle);
+		Ry.at<float>(2,1) = sin(angle);
+		Ry.at<float>(2,2) = cos(angle);
+		R = R*Ry;*/
+
+		r11 = -R.ptr<float>(0)[0];
+		r12 = R.ptr<float>(0)[1];
+		r13 = -R.ptr<float>(0)[2];
+		r21 = R.ptr<float>(1)[0];
+		r22 = -R.ptr<float>(1)[1];
+		r23 = -R.ptr<float>(1)[2];
+		r31 = -R.ptr<float>(2)[0];
+		r32 = -R.ptr<float>(2)[1];
+		r33 = R.ptr<float>(2)[2];
+		
+		//yaw = atan2(-R.ptr<float>(2)[0],sqrt( R.ptr<float>(2)[1]*R.ptr<float>(2)[1] + R.ptr<float>(2)[2]*R.ptr<float>(2)[2]));
+		//pitch = atan2(R.ptr<float>(2)[1],R.ptr<float>(2)[2]);
+		//roll = (2.0f*3.141592654f)-atan2(R.ptr<float>(1)[0],R.ptr<float>(0)[0]);
+		yaw = atan2(-r31,sqrt( r32*r32 + r33*r33));
+		pitch = atan2(r32,r33);
+		roll = (2.0f*M_PI)-atan2(r21,r11);
+
+	}
+}

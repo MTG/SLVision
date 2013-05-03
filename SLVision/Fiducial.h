@@ -37,12 +37,14 @@ class Fiducial
 	
 	float x, y;
 	float area;
+	float size;
 	unsigned int fiducial_id;
 	int orientation;
 //	static unsigned int id_generator;
 	bool is_updated;
 	double removed_time;
 	cv::Point2f a,b,c,d;
+	cv::Mat rotation_vector,translation_vector;
 public:
 	
 	//CvPoint ea,eb,ec,ed;
@@ -56,6 +58,8 @@ public:
 	~Fiducial(void);
 	void clear();
 	void SetId(unsigned int id);
+	void SetSize(int size);
+	void CalculateIntrinsics();
 	void Update(float x, float y,cv::Point2f a,cv::Point2f b,cv::Point2f c,cv::Point2f d, float area, int orientation);
 	void Update(const Fiducial &copy);
 	bool Is_inside(const Fiducial &f);
@@ -64,6 +68,9 @@ public:
 	unsigned int GetFiducialID();
 	float GetX();
 	float GetY();
+	float GetSize();
+	cv::Mat GetRotationVector();
+	cv::Mat GetTranslationVector();
 	bool IsUpdated();
 	bool CanBeRemoved(double actual_time);
 	void RemoveStart(double actual_time);

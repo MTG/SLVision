@@ -37,7 +37,7 @@
 #define MIN_DIST_TO_SIDE	10
 //datatypes
 typedef std::list<int>		intList;
-typedef std::map<unsigned long, int> IDMap;
+typedef std::map<unsigned long, std::pair<int,int>> IDMap;
 typedef std::pair<int,int> node;
 typedef std::vector<std::pair<int,int>> vector_nodes;
 
@@ -59,9 +59,10 @@ public:
 	int DecodeFiducial(cv::Mat& src, Fiducial & candidate);
 protected:
 	unsigned int BinaryListToInt(const intList &data);
-	unsigned int StringBinaryListToInt(const char* data);
+	unsigned int StringBinaryListToInt(const char* data, int& size);
 	float GetMinDistToFiducialAxis(int &axis, float x, float y);
 	int GetId(unsigned int candidate);
+	int GetSize(unsigned int candidate);
 	void InitFID();
 	void LoadFiducialList ();
 	void RepportOSC();

@@ -85,7 +85,7 @@ void Calibrator::StartChessBoardFinder()
 
 void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 {
-	if(chessboard_finder)
+/*	if(chessboard_finder)
 	{
 		if(successes < N_BOARDS)
 		{
@@ -193,7 +193,7 @@ void Calibrator::ProcessFrame(IplImage*	main_image) //gray scale image as input?
 		Globals::Font::Write(t," 'g' chessboard calibration; 'z' reset z max and min; 'c' to exit calibration",cvPoint(10,20),FONT_HELP,0,0,0);
 		Globals::Font::Write(t," 'r' reset;",cvPoint(10,40),FONT_HELP,0,0,0);
 		cvShowImage("Undistort", t);
-	}
+	}*/
 }
 
 void Calibrator::EndCalibration()
@@ -204,7 +204,7 @@ void Calibrator::EndCalibration()
 #include <iostream>
 void Calibrator::ProcessKey(char key)
 {
-	switch(key)
+/*	switch(key)
 	{
 	case KEY_CALIBRATION_GRID:
 		StartChessBoardFinder();
@@ -245,5 +245,5 @@ void Calibrator::ProcessKey(char key)
 		else if(selected_side == 1)Globals::calib_y_max --;
 		//std::cout << "xM: " << Globals::calib_x_max << " xm: " << Globals::calib_x_min << " yM: " << Globals::calib_y_max << " ym: " << Globals::calib_y_min << std::endl;
 		break;
-	}		
+	}	*/	
 }

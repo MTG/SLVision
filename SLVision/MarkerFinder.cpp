@@ -23,16 +23,16 @@
 
 #include "MarkerFinder.h"
 #include "GlobalConfig.h"
-
+#include "Globals.h"
 
 
 MarkerFinder::MarkerFinder():
 	FrameProcessor("MarkerFinder"),
 	//enable_processor(datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:enable",1)),
-	use_adaptive_bar_value(datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:enable",1)),
-	block_size (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:blocksize",47)),
-	threshold_C (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:adaptive_threshold:threshold_C",2)),
-	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:6DoF_fiducial_finder:threshold:threshold_value",33)),
+	use_adaptive_bar_value(datasaver::GlobalConfig::getRef("FrameProcessor:MarkerFinder:adaptive_threshold:enable",1)),
+	block_size (datasaver::GlobalConfig::getRef("FrameProcessor:MarkerFinder:adaptive_threshold:blocksize",47)),
+	threshold_C (datasaver::GlobalConfig::getRef("FrameProcessor:MarkerFinder:adaptive_threshold:threshold_C",2)),
+	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:MarkerFinder:threshold:threshold_value",33)),
 	finder (FiducialFinder(FIDUCIAL_WIN_SIZE))
 {
 	//init values
@@ -211,21 +211,109 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 		int tmp_id = finder.DecodeFiducial(fiducial_image, temp);
 		if(tmp_id >= 0)
 		{
-			/******************************************************
-			* Draw vertices
-			*******************************************************/
-			cv::putText(main_image, "a", temp.GetCorner(0), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-			cv::putText(main_image, "b", temp.GetCorner(1), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-			cv::putText(main_image, "c", temp.GetCorner(2), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-			cv::putText(main_image, "d", temp.GetCorner(3), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-			///show perimeter
-			for(int k = 0; k < 4; k++)
+			if(Globals::is_view_enabled)
 			{
-				if (k!= 3)
-					cv::line(main_image,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
-				else
-					cv::line(main_image,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
-				tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
+				/******************************************************
+				* Draw vertices
+				*******************************************************/
+				cv::putText(main_image, "a", temp.GetCorner(0), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				cv::putText(main_image, "b", temp.GetCorner(1), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				cv::putText(main_image, "c", temp.GetCorner(2), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				cv::putText(main_image, "d", temp.GetCorner(3), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				///show perimeter
+				for(int k = 0; k < 4; k++)
+				{
+					if (k!= 3)
+						cv::line(main_image,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+					else
+						cv::line(main_image,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
+					tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
+				}
+				/******************************************************
+				* Draw 3Daxis
+				*******************************************************/
+
+				/*************************************
+				* Draw pose params  cube
+				**************************************/
+				cv::Mat objectPoints (8,3,CV_32FC1);
+				objectPoints.at<float>(0,0)=0;
+				objectPoints.at<float>(0,1)=temp.GetSize();
+				objectPoints.at<float>(0,2)=0;
+
+				objectPoints.at<float>(1,0)=temp.GetSize();
+				objectPoints.at<float>(1,1)=temp.GetSize();
+				objectPoints.at<float>(1,2)=0;
+
+				objectPoints.at<float>(2,0)=temp.GetSize();
+				objectPoints.at<float>(2,1)=0;
+				objectPoints.at<float>(2,2)=0;
+
+				objectPoints.at<float>(3,0)=0;
+				objectPoints.at<float>(3,1)=0;
+				objectPoints.at<float>(3,2)=0;
+
+				objectPoints.at<float>(4,0)=0;
+				objectPoints.at<float>(4,1)=temp.GetSize();
+				objectPoints.at<float>(4,2)=temp.GetSize();
+
+				objectPoints.at<float>(5,0)=temp.GetSize();
+				objectPoints.at<float>(5,1)=temp.GetSize();
+				objectPoints.at<float>(5,2)=temp.GetSize();
+
+				objectPoints.at<float>(6,0)=temp.GetSize();
+				objectPoints.at<float>(6,1)=0;
+				objectPoints.at<float>(6,2)=temp.GetSize();
+
+				objectPoints.at<float>(7,0)=0;
+				objectPoints.at<float>(7,1)=0;
+				objectPoints.at<float>(7,2)=temp.GetSize();
+
+				cv::vector<cv::Point2f> imagePoints;
+				cv::Mat Tvec = temp.GetTranslationVector();
+				cv::Mat Rvec = temp.GetRotationVector();
+				if(!(Tvec.rows == 0 || Tvec.cols == 0 || Rvec.rows == 0 || Rvec.cols == 0))
+				{
+					cv::projectPoints(objectPoints,temp.GetRotationVector(), temp.GetTranslationVector(),Globals::CameraMatrix,Globals::Distortion,imagePoints);
+			
+					//draw lines of different colours
+					for (int i=0;i<4;i++)
+						cv::line(main_image,imagePoints[i],imagePoints[(i+1)%4],cv::Scalar(0,255,255,255),1,CV_AA);
+
+					for (int i=0;i<4;i++)
+						cv::line(main_image,imagePoints[i+4],imagePoints[4+(i+1)%4],cv::Scalar(255,0,255,255),1,CV_AA);
+
+					for (int i=0;i<4;i++)
+						cv::line(main_image,imagePoints[i],imagePoints[i+4],cv::Scalar(255,255,0,255),1,CV_AA);
+				}
+
+				/*************************************
+				* Draw pose params  axis
+				**************************************/
+				float size=temp.GetSize()*3;
+				float halfSize=temp.GetSize()/2;
+				objectPoints= cv::Mat(4,3,CV_32FC1);
+				objectPoints.at<float>(0,0)=halfSize;
+				objectPoints.at<float>(0,1)=halfSize;
+				objectPoints.at<float>(0,2)=0;
+				objectPoints.at<float>(1,0)=size;
+				objectPoints.at<float>(1,1)=halfSize;
+				objectPoints.at<float>(1,2)=0;
+				objectPoints.at<float>(2,0)=halfSize;
+				objectPoints.at<float>(2,1)=size;
+				objectPoints.at<float>(2,2)=0;
+				objectPoints.at<float>(3,0)=halfSize;
+				objectPoints.at<float>(3,1)=halfSize;
+				objectPoints.at<float>(3,2)=size;
+				imagePoints.clear();
+				cv::projectPoints( objectPoints, Rvec,Tvec, Globals::CameraMatrix,Globals::Distortion, imagePoints);
+				//draw lines of different colours
+				cv::line(main_image,imagePoints[0],imagePoints[1],cv::Scalar(0,0,255,255),2,CV_AA);
+				cv::putText(main_image, "X", imagePoints[1], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(0,0,255));
+				cv::line(main_image,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),2,CV_AA);
+				cv::putText(main_image, "Y", imagePoints[2], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(0,255,0));
+				cv::line(main_image,imagePoints[0],imagePoints[3],cv::Scalar(255,0,0,255),2,CV_AA);
+				cv::putText(main_image, "Z", imagePoints[3], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(255,0,0));
 			}
 		}
 	}
@@ -828,13 +916,6 @@ void MarkerFinder::SquareDetector(std::vector<candidate>& MarkerCanditates,std::
 		if (!toRemove[i]) 
 		{
 			dest.push_back(MarkerCanditates[i]);
-		/*	for(int k = 0; k < 4; k++)
-			{
-				if (k!= 3)
-				cv::line(main_image,MarkerCanditates[i][k],MarkerCanditates[i][k+1],cv::Scalar(0,0,255,255),1,CV_AA);
-				else
-					cv::line(main_image,MarkerCanditates[i][k],MarkerCanditates[i][0],cv::Scalar(0,0,255,255),1,CV_AA);
-			}*/
 		}
 	}
 }

@@ -65,12 +65,6 @@
     <ClCompile Include="Calibrator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MenuBar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GuiMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XML_Configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -155,12 +149,6 @@
       <Filter>oscpack\osc</Filter>
     </ClInclude>
     <ClInclude Include="Calibrator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuBar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GuiMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XML_Configuration.h">
