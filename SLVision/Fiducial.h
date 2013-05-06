@@ -27,9 +27,9 @@
 #include <opencv2/core/core.hpp>
 
 float vect_point_dist(float ax, float ay, float bx, float by, float cx, float cy);
-float ivect_point_dist(int ax, int ay, int bx, int by, int cx, int cy);
+float ivect_point_dist(float ax, float ay, float bx, float by, float cx, float cy);
 float fnsqdist(float x, float y, float a, float b);
-float insqdist(int x, int y, int a, int b);
+float insqdist(float x, float y, float a, float b);
 float nsqdist(const CvPoint &a, const CvPoint &b);
 double IsLeft(double ax, double ay, double bx, double by, float px, float py);
 
@@ -64,7 +64,7 @@ public:
 	~Fiducial(void);
 	void clear();
 	void SetId(unsigned int id);
-	void SetSize(int size);
+	void SetSize(float size);
 	void CalculateIntrinsics();
 	void Update(float x, float y,cv::Point2f a,cv::Point2f b,cv::Point2f c,cv::Point2f d, float area, int orientation);
 #ifdef USE_EIGHT_POINTS

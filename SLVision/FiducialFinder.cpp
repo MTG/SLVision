@@ -44,13 +44,13 @@ vector_nodes FiducialFinder::GetLevel (int level, int id, std::vector<cv::Vec4i>
 	if(hierarchy[id][2] != -1)
 	{
 		vector_nodes temp = GetLevel (level+1, hierarchy[id][2], hierarchy);
-		for(int i = 0; i < temp.size(); i++)
+		for(unsigned int i = 0; i < temp.size(); i++)
 			input.push_back(temp[i]);
 	}
 	if(hierarchy[id][0] != -1)
 	{
 		vector_nodes temp = GetLevel (level, hierarchy[id][0], hierarchy);
-		for(int i = 0; i < temp.size(); i++)
+		for(unsigned int i = 0; i < temp.size(); i++)
 			input.push_back(temp[i]);
 	}
 	return input;
@@ -83,7 +83,7 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 		* Retrieve hierarchy data: nodes, orientation and fiducial code
 		*******************************************************/
 		vector_nodes nodes = GetLevel(0,0,hierarchy);
-		for(int i = 0; i< nodes.size(); i++)
+		for(unsigned int i = 0; i< nodes.size(); i++)
 		{
 			if(nodes[i].first > 1)
 			{
@@ -123,7 +123,7 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 		{
 			candidate.SetId(tmpid);
 			candidate.SetOrientation(axis);
-			candidate.SetSize(GetSize(BinaryListToInt(fiducial_nodes)));
+			candidate.SetSize((float)GetSize(BinaryListToInt(fiducial_nodes)));
 			candidate.OritentateCorners();
 			candidate.CalculateIntrinsics();
 			return tmpid;

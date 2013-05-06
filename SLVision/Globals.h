@@ -49,6 +49,7 @@ public:
 	static int				width;
 	static int				height;
 	static unsigned int		ssidGenerator;
+	static std::string		dim;
 
 	static void LoadDefaultDistortionMatrix();
 

@@ -32,7 +32,7 @@ bool			Globals::is_view_enabled			= false;
 
 int				Globals::width						= 0;
 int				Globals::height						= 0;
-//char			Globals::dim[100];
+std::string		Globals::dim;
 
 unsigned int	Globals::ssidGenerator				= 1;
 

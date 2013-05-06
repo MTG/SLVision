@@ -24,7 +24,7 @@
 #include "LowPass.h"
 
 
-LowPass::LowPass(int queue_size)
+LowPass::LowPass(unsigned int queue_size)
 {
 	value = 0;
 	queuesize = queue_size;

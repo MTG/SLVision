@@ -59,9 +59,9 @@ public:
 	void SendBundle();
 	void SendEmptyBundle();
 	
-	void AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area);
-	void AddHandPath(unsigned int sid, std::vector<Hand_Vertex> &path);
-	void AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path);
+//	void AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area);
+//	void AddHandPath(unsigned int sid, std::vector<Hand_Vertex> &path);
+//	void AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path);
 	/*void AddHandFingers(unsigned int sid, float x1, float y1, 
 		float x2, float y2, float x3, float y3, float x4, float y4, float x5, float y5);*/
 private:

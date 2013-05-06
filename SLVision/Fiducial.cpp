@@ -39,7 +39,6 @@ Fiducial::Fiducial(void):x(0),y(0),area(0),size(0),a(cv::Point2f(0,0)),b(cv::Poi
 	roll=0;
 }
 
-
 Fiducial::~Fiducial(void)
 {
 }
@@ -83,6 +82,9 @@ Fiducial::Fiducial(const Fiducial &copy):removed_time(-1)
 	g = cv::Point2f(copy.g.x,copy.g.y);
 	h = cv::Point2f(copy.h.x,copy.h.y);
 #endif
+	
+	rotation_vector = cv::Mat(copy.rotation_vector);
+	translation_vector = cv::Mat(copy.translation_vector);
 }
 
 void Fiducial::clear()
@@ -103,7 +105,7 @@ void Fiducial::SetId(unsigned int id)
 	this->fiducial_id = id;
 }
 
-void Fiducial::SetSize(int size)
+void Fiducial::SetSize(float size)
 {
 	this->size = size;
 }
@@ -145,6 +147,9 @@ void Fiducial::Update(const Fiducial &copy)
 	g = cv::Point2f(copy.g.x,copy.g.y);
 	h = cv::Point2f(copy.h.x,copy.h.y);
 #endif
+
+	rotation_vector = cv::Mat(copy.rotation_vector);
+	translation_vector = cv::Mat(copy.translation_vector);
 }
 
 void Fiducial::Update(float _x, float _y,cv::Point2f _a,cv::Point2f _b,cv::Point2f _c,cv::Point2f _d, float _area, int orientation)
@@ -270,64 +275,6 @@ void Fiducial::RemoveStart(double actual_time)
 void Fiducial::SetOrientation(int o)
 {
 	orientation = o;
-}
-
-/****************************************
-* Fiduail ID Generator
-*****************************************/
-/*///id generator
-unsigned int Fiducial::GetNewId()
-{
-	return id_generator++;
-}*/
-
-
-/****************************************
-* general purpose functions
-*****************************************/
-
-float nsqdist(const cv::Point2f &a, const cv::Point2f &b)
-{
-	return insqdist(a.x,a.y,b.x,b.y);
-}
-
-float fnsqdist(float x, float y, float a, float b)
-{
-	float uu = (float)(a-x);
-	float vv = (float)(b-y);
-	return sqrt(uu*uu + vv*vv);
-}
-
-float insqdist(int x, int y, int a, int b)
-{
-	float uu = (float)(a-x);
-	float vv = (float)(b-y);
-	return sqrt(uu*uu + vv*vv);
-}
-
-//vector AB  point C
-float vect_point_dist(float ax, float ay, float bx, float by, float cx, float cy)
-{
-	float abx = bx-ax;
-	float aby = by-ay;
-	float acx = cx-ax;
-	float acy = cy-ay;
-	return ( ( abx*acy - aby*acx) / sqrt(abx*abx +aby*aby));
-}
-
-float ivect_point_dist(int ax, int ay, int bx, int by, int cx, int cy)
-{
-	float abx = (float)(bx-ax);
-	float aby = (float)(by-ay);
-	float acx = (float)(cx-ax);
-	float acy = (float)(cy-ay);
-	return ( ( abx*acy - aby*acx) / sqrt(abx*abx +aby*aby));
-}
-
-/// Givven a segment A(ax,ay)--B(bx,by) returns if the point P(px,py) is at the left side of the segment.
-double IsLeft(double ax, double ay, double bx, double by, float px, float py)
-{
-	return ((bx - ax) * (py - ay) - (px - ax) * (by - ay));
 }
 
 cv::Point2f Fiducial::GetCorner(int corner)
@@ -547,3 +494,52 @@ void Fiducial::CalculateIntrinsics()
 
 	}
 }
+
+/****************************************
+* general purpose functions
+*****************************************/
+
+float nsqdist(const cv::Point2f &a, const cv::Point2f &b)
+{
+	return insqdist(a.x,a.y,b.x,b.y);
+}
+
+float fnsqdist(float x, float y, float a, float b)
+{
+	float uu = (float)(a-x);
+	float vv = (float)(b-y);
+	return sqrt(uu*uu + vv*vv);
+}
+
+float insqdist(float x, float y, float a, float b)
+{
+	float uu = (float)(a-x);
+	float vv = (float)(b-y);
+	return sqrt(uu*uu + vv*vv);
+}
+
+//vector AB  point C
+float vect_point_dist(float ax, float ay, float bx, float by, float cx, float cy)
+{
+	float abx = bx-ax;
+	float aby = by-ay;
+	float acx = cx-ax;
+	float acy = cy-ay;
+	return ( ( abx*acy - aby*acx) / sqrt(abx*abx +aby*aby));
+}
+
+float ivect_point_dist(float ax, float ay, float bx, float by, float cx, float cy)
+{
+	float abx = (float)(bx-ax);
+	float aby = (float)(by-ay);
+	float acx = (float)(cx-ax);
+	float acy = (float)(cy-ay);
+	return ( ( abx*acy - aby*acx) / sqrt(abx*abx +aby*aby));
+}
+
+/// Givven a segment A(ax,ay)--B(bx,by) returns if the point P(px,py) is at the left side of the segment.
+double IsLeft(double ax, double ay, double bx, double by, float px, float py)
+{
+	return ((bx - ax) * (py - ay) - (px - ax) * (by - ay));
+}
+

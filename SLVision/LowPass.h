@@ -27,7 +27,7 @@
 class LowPass
 {
 private:
-	int queuesize;
+	unsigned  queuesize;
 	std::list<float> data;
 	float value;
 public:
@@ -39,7 +39,7 @@ public:
 	//return the med value
 
 	///LowPass(int queue_size)
-	LowPass(int queue_size);
+	LowPass(unsigned  queue_size);
 	LowPass(const LowPass &copy);
 	float addvalue(float value);
 	float getvalue ();

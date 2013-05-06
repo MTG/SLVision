@@ -20,7 +20,7 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-
+/*
 #include "Hand.h"
 #include "Globals.h"
 #include "Fiducial.h"
@@ -412,7 +412,7 @@ void Hand::GetPreviousIndexVertex(int & actual)
 
 void Hand::draw(float x, float y)
 {
-/*	if(Globals::is_view_enabled)
+	if(Globals::is_view_enabled)
 	{
 		//Draw from - to points and lines
 		cvLine(Globals::screen,
@@ -486,7 +486,7 @@ void Hand::draw(float x, float y)
 		if(!confirmed_hand) Globals::Font::Write(Globals::screen,buffer,centroid,FONT_AXIS,255,0,0);
 		else Globals::Font::Write(Globals::screen,buffer,centroid,FONT_AXIS,0,255,0);
 		
-	}*/
+	}
 }
 
 bool Hand::IsUpdated()
@@ -575,4 +575,4 @@ bool Hand::IsFinger(float x, float y)
 		if(dist < 5 ) return true;
 	}
 	return false;
-}
+}*/

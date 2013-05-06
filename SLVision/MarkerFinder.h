@@ -36,9 +36,9 @@ public:
 #endif
 	std::vector<cv::Point2f> points;
 
-	double area, x, y;
+	float area, x, y;
 #ifdef USE_EIGHT_POINTS
-	candidate( double _area, double _x, double _y, std::vector<cv::Point2f>& _points, std::vector<cv::Point2f>& _interior_points):
+	candidate( float _area, float _x, float _y, std::vector<cv::Point2f>& _points, std::vector<cv::Point2f>& _interior_points):
 		interior_points(std::vector<cv::Point2f>(_interior_points)),
 		points(std::vector<cv::Point2f>(_points)),
 		area(_area),
@@ -47,7 +47,7 @@ public:
 	{
 	}
 #else
-	candidate( double _area, double _x, double _y, std::vector<cv::Point2f>& _points):
+	candidate( float _area, float _x, float _y, std::vector<cv::Point2f>& _points):
 		points(std::vector<cv::Point2f>(_points)),
 		area(_area),
 		x(_x),
@@ -80,98 +80,14 @@ protected:
 	cv::Mat									fiducial_image,fiducial_image_zoomed;
 	cv::Point2f								dst_pnt[4], tmp_pnt[4];
 	cv::Mat									mapmatrix;
+	std::vector<unsigned int>				to_remove;
+	bool									is_fiducial_display_shown;
 
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);
-	//void RepportOSC();
+	void RepportOSC();
 	void InitGeometry();
 	int perimeter ( std::vector<cv::Point2f> &a );
 	void SquareDetector(std::vector<candidate>& MarkerCanditates, std::vector<candidate>& dest);
 	bool IsSquare(int index);
 };
-
-
-//#include "frameprocessor.h"
-//#include "FiducialFinder.h"
-//
-//#define FIDUCIAL_IMAGE_SIZE 70
-//#ifndef M_PI
-//#define M_PI 3.141592f
-//#endif
-//
-//
-//#define ENABLEPOSE 1
-//#define DRAWPOSE 1
-//#define USEEIGHTPOINTS 1
-////#define SHOWDEBUG 1
-//
-//class MarkerFinder :
-//	public FrameProcessor
-//{
-//	cv::Mat Rvec,Tvec;
-//
-//	//FIDUCIAL IMAGE Data
-//	IplImage*		fiducial_image;
-//	IplImage*		fiducial_image_zoomed;
-//	//MAIN IMAGE Data
-//	IplImage*		main_processed_image;
-//	IplImage*		main_processed_contour;
-//	CvMemStorage*	main_storage;
-//	CvMemStorage*	main_storage_poligon;
-//	CvMoments*		blob_moments;
-//
-//	CvSeq*			firstcontour;
-//	CvSeq*			polycontour;
-//	//
-//	FiducialFinder* fiducial_finder;
-//
-//	//unsigned int ssidGenerator;
-//	FiducialMap		fiducial_map;
-//	
-//	unsigned int	tmp_ssid;
-//	bool			to_process;
-//	float			minimum_distance;
-//	std::vector<unsigned int> to_remove;
-//	Fiducial		temporal;
-//
-//	//
-//	CvMat*			map_matrix;
-//	CvPoint2D32f dst_pnt[4], tmp_pnt[4];
-//#ifdef USEEIGHTPOINTS
-//	CvPoint2D32f src_pnt[8];
-//#else
-//	CvPoint2D32f src_pnt[4];
-//#endif
-//
-//	int i, j, k;
-//	CvMat object_points;
-//	CvMat image_points;
-//	CvMat point_counts;
-//	CvMat *rotation;
-//	CvMat *translation;
-//	CvMat *srcPoints3D;
-//	CvMat *dstPoints2D;
-//	CvPoint3D32f baseMarkerPoints[4];
-//
-//	char text[100];
-//
-//	CvMat *rotationMatrix;
-//
-//	int threshold_value;
-//	bool use_adaptive_threshold;
-//	int adaptive_block_size;
-//	bool invert_rotation_matrix;
-//
-//public:
-//	MarkerFinder(void);
-//	~MarkerFinder(void);
-//	AliveList GetAlive();
-//	void KeyInput(char key);
-//protected:
-//	void InitGeometry();
-//	void InitFrames(IplImage*	main_image);
-//	void UpdatedValuesFromGui();
-//	IplImage* Process(IplImage*	main_image);
-//	void RepportOSC();
-//};
-//
