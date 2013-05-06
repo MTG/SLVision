@@ -53,14 +53,36 @@ Fiducial::Fiducial(const Fiducial &copy):removed_time(-1)
 	b = cv::Point2f(copy.b.x,copy.b.y);
 	c = cv::Point2f(copy.c.x,copy.c.y);
 	d = cv::Point2f(copy.d.x,copy.d.y);
+
 	fiducial_id = copy.fiducial_id;
 	orientation = copy.orientation;
 	area = copy.area;
 	is_updated = true;
 
-	yaw=0;
-	pitch=0;
-	roll=0;
+	yaw=copy.yaw;
+	pitch=copy.pitch;
+
+	roll=copy.roll;
+	r11 = copy.r11;
+	r12 = copy.r12;
+	r13 = copy.r13;
+	r21 = copy.r21;
+	r22 = copy.r22;
+	r23 = copy.r23;
+	r31 = copy.r31;
+	r32 = copy.r32;
+	r33 = copy.r33;
+
+	xpos = copy.xpos;
+	ypos = copy.ypos;
+	zpos = copy.zpos;
+
+#ifdef USE_EIGHT_POINTS
+	e = cv::Point2f(copy.e.x,copy.e.y);
+	f = cv::Point2f(copy.f.x,copy.f.y);
+	g = cv::Point2f(copy.g.x,copy.g.y);
+	h = cv::Point2f(copy.h.x,copy.h.y);
+#endif
 }
 
 void Fiducial::clear()
@@ -88,7 +110,41 @@ void Fiducial::SetSize(int size)
 
 void Fiducial::Update(const Fiducial &copy)
 {
-	Update(copy.x, copy.y, copy.a, copy.b, copy.c, copy.d, copy.area, copy.orientation);
+	x = copy.x;
+	y = copy.y;
+	size = copy.size;
+	a = cv::Point2f(copy.a.x,copy.a.y);
+	b = cv::Point2f(copy.b.x,copy.b.y);
+	c = cv::Point2f(copy.c.x,copy.c.y);
+	d = cv::Point2f(copy.d.x,copy.d.y);
+	orientation = copy.orientation;
+	area = copy.area;
+	is_updated = true;
+
+	yaw=copy.yaw;
+	pitch=copy.pitch;
+
+	roll=copy.roll;
+	r11 = copy.r11;
+	r12 = copy.r12;
+	r13 = copy.r13;
+	r21 = copy.r21;
+	r22 = copy.r22;
+	r23 = copy.r23;
+	r31 = copy.r31;
+	r32 = copy.r32;
+	r33 = copy.r33;
+
+	xpos = copy.xpos;
+	ypos = copy.ypos;
+	zpos = copy.zpos;
+
+#ifdef USE_EIGHT_POINTS
+	e = cv::Point2f(copy.e.x,copy.e.y);
+	f = cv::Point2f(copy.f.x,copy.f.y);
+	g = cv::Point2f(copy.g.x,copy.g.y);
+	h = cv::Point2f(copy.h.x,copy.h.y);
+#endif
 }
 
 void Fiducial::Update(float _x, float _y,cv::Point2f _a,cv::Point2f _b,cv::Point2f _c,cv::Point2f _d, float _area, int orientation)
@@ -102,7 +158,27 @@ void Fiducial::Update(float _x, float _y,cv::Point2f _a,cv::Point2f _b,cv::Point
 	this->area = fabs(_area);
 	is_updated = true;
 	this->orientation = orientation;
+#ifdef USE_EIGHT_POINTS
+	has_inner_corenr = false;
+#endif
 }
+
+#ifdef USE_EIGHT_POINTS
+	void Fiducial::Update(float _x, float _y,cv::Point2f _a,cv::Point2f _b,cv::Point2f _c,cv::Point2f _d,cv::Point2f _e,cv::Point2f _f,cv::Point2f _g,cv::Point2f _h, float _area, int _orientation)
+	{
+		Update(_x, _y,_a, _b, _c, _d, _area, _orientation);
+		this->e = _e;
+		this->f = _f;
+		this->g = _g;
+		this->h = _h;
+		has_inner_corenr = true;
+	}
+
+	bool Fiducial::HasInnerCorners()
+	{
+		return has_inner_corenr;
+	}
+#endif
 
 bool Fiducial::Is_inside(const Fiducial &f)
 {
@@ -270,6 +346,20 @@ cv::Point2f Fiducial::GetCorner(int corner)
 	case 3:
 		return d;
 		break;
+#ifdef USE_EIGHT_POINTS
+	case 4:
+		return e;
+		break;
+	case 5:
+		return f;
+		break;
+	case 6:
+		return g;
+		break;
+	case 7:
+		return h;
+		break;
+#endif
 	}
 	return a;
 }
@@ -278,6 +368,10 @@ void Fiducial::OritentateCorners()
 {
 	
 	int markerDirection = GetOrientation();
+#ifdef USE_EIGHT_POINTS
+	cv::Point2f te,tf,tg,th;
+	te = cv::Point2f(e); tf= cv::Point2f(f); tg = cv::Point2f(g); th = cv::Point2f(h);
+#endif
 	cv::Point2f ta,tb,tc,td;
 	ta = cv::Point2f(a); tb = cv::Point2f(b); tc = cv::Point2f(c); td = cv::Point2f(d);
 	//a0 b1 c2 d3
@@ -288,22 +382,39 @@ void Fiducial::OritentateCorners()
 		b = tc;
 		c = td;
 		d = ta;
+#ifdef USE_EIGHT_POINTS
+		e = tf;
+		f = tg;
+		g = th;
+		h = te;
+#endif
 		break;
 	case 1:
 		a = tc;
 		b = td;
 		c = ta;
 		d = tb;
+#ifdef USE_EIGHT_POINTS
+		e = tg;
+		f = th;
+		g = te;
+		h = tf;
+#endif
 		break;
 	case 2:
 
 		break;
 	case 3:
-		
 		a = td;
 		b = ta;
 		c = tb;
 		d = tc;
+#ifdef USE_EIGHT_POINTS
+		e = th;
+		f = te;
+		g = tf;
+		h = tg;
+#endif
 		break;
 	}
 }
@@ -315,7 +426,14 @@ void Fiducial::CalculateIntrinsics()
 		/******************************************************
 		* Define target points
 		*******************************************************/
-		cv::Mat ObjPoints(4,3,CV_32FC1);
+		cv::Mat ObjPoints;
+#ifdef USE_EIGHT_POINTS
+		if(HasInnerCorners())
+			ObjPoints = cv::Mat(8,3,CV_32FC1);
+		else
+#endif
+			ObjPoints = cv::Mat(4,3,CV_32FC1);
+
 		ObjPoints.at<float>(0,0)=0;
 		ObjPoints.at<float>(0,1)=size;
 		ObjPoints.at<float>(0,2)=0;
@@ -328,10 +446,34 @@ void Fiducial::CalculateIntrinsics()
 		ObjPoints.at<float>(3,0)=0;
 		ObjPoints.at<float>(3,1)=0;
 		ObjPoints.at<float>(3,2)=0;
+#ifdef USE_EIGHT_POINTS
+		if(HasInnerCorners())
+		{
+			ObjPoints.at<float>(4,0)=5;
+			ObjPoints.at<float>(4,1)=size-5;
+			ObjPoints.at<float>(4,2)=0;
+			ObjPoints.at<float>(5,0)=size-5;
+			ObjPoints.at<float>(5,1)=size-5;
+			ObjPoints.at<float>(5,2)=0;
+			ObjPoints.at<float>(6,0)=size-5;
+			ObjPoints.at<float>(6,1)=5;
+			ObjPoints.at<float>(6,2)=0;
+			ObjPoints.at<float>(7,0)=5;
+			ObjPoints.at<float>(7,1)=5;
+			ObjPoints.at<float>(7,2)=0;
+		}
+#endif
 		/******************************************************
 		* Define source points
 		*******************************************************/
-		cv::Mat ImagePoints(4,2,CV_32FC1);
+		cv::Mat ImagePoints;
+#ifdef USE_EIGHT_POINTS
+		if(HasInnerCorners())
+			ImagePoints= cv::Mat(8,2,CV_32FC1);
+		else
+#endif
+		ImagePoints= cv::Mat(4,2,CV_32FC1);
+
 		ImagePoints.at<float>(0,0)=(a.x);
 		ImagePoints.at<float>(0,1)=(a.y);
 		ImagePoints.at<float>(1,0)=(b.x);
@@ -340,8 +482,21 @@ void Fiducial::CalculateIntrinsics()
 		ImagePoints.at<float>(2,1)=(c.y);
 		ImagePoints.at<float>(3,0)=(d.x);
 		ImagePoints.at<float>(3,1)=(d.y);
+#ifdef USE_EIGHT_POINTS
+		if(HasInnerCorners())
+		{
+			ImagePoints.at<float>(4,0)=(e.x);
+			ImagePoints.at<float>(4,1)=(e.y);
+			ImagePoints.at<float>(5,0)=(f.x);
+			ImagePoints.at<float>(5,1)=(f.y);
+			ImagePoints.at<float>(6,0)=(g.x);
+			ImagePoints.at<float>(6,1)=(g.y);
+			ImagePoints.at<float>(7,0)=(h.x);
+			ImagePoints.at<float>(7,1)=(h.y);
+		}
+#endif
 		/******************************************************
-		* Define source points
+		* Pose Estimation
 		*******************************************************/
 		cv::solvePnP(ObjPoints, ImagePoints, Globals::CameraMatrix, Globals::Distortion,rotation_vector,translation_vector);
 		rotation_vector.convertTo(rotation_vector,CV_32F);

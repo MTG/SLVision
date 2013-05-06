@@ -121,6 +121,7 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 		int tmpid = GetId(BinaryListToInt(fiducial_nodes));
 		if(tmpid >= 0)
 		{
+			candidate.SetId(tmpid);
 			candidate.SetOrientation(axis);
 			candidate.SetSize(GetSize(BinaryListToInt(fiducial_nodes)));
 			candidate.OritentateCorners();

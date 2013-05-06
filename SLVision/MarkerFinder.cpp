@@ -96,6 +96,57 @@ AliveList MarkerFinder::GetAlive()
 	return to_return;
 }
 
+bool MarkerFinder::IsSquare(int index)
+{
+	approxPolyDP (  contours[index]  ,approxCurve , double ( contours[index].size() ) *0.05, true );
+
+	if ( approxCurve.size() ==4  && cv::isContourConvex ( cv::Mat ( approxCurve ) ) )
+	{
+		//ensure that the   distace between consecutive points is large enough
+		float minDist=1e10;
+		for ( int j=0;j<4;j++ )
+		{
+			float d= std::sqrt ( ( float ) ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) * ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) +
+					 ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) * ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) );
+			if ( d<minDist ) 
+				minDist=d;
+		}
+		//check that distance is not very small
+		if ( minDist>10 )
+		{
+			return true;
+		}
+	}
+	return false;
+						/*
+						//calculates the area
+						double area = cv::contourArea(contours[idx]);
+						//calculates the centroid
+						cv::Moments fiducial_blob_moments = cv::moments(contours[idx],true);
+						double x = (float)(fiducial_blob_moments.m10 / fiducial_blob_moments.m00);
+						double y = (float)(fiducial_blob_moments.m01 / fiducial_blob_moments.m00);
+						
+						//add the points
+						SquareCanditates.push_back ( candidate(area,x,y,std::vector<cv::Point2f>()) );
+						//MarkerCanditates.back().idx=i;
+						for ( int j=0;j<4;j++ )
+						{
+							SquareCanditates.back().points.push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+						}
+						////
+						if(hierarchy[idx][2] != -1)
+						{
+							int idx2 = hierarchy[idx][2];
+							cv::Scalar color( rand()&255, rand()&255, rand()&255 );
+							drawContours( main_image, contours, idx2, color, 1, 8, hierarchy );
+							while (hierarchy[idx2][0] != -1)
+							{
+								idx2 = hierarchy[idx2][0];
+								drawContours( main_image, contours, idx2, color, 1, 8, hierarchy );
+							}
+						}*/
+}
+
 
 void MarkerFinder::Process(cv::Mat&	main_image)
 {
@@ -137,7 +188,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	int minSize=_minSize*std::max(thres.cols,thres.rows)*4;
 	int maxSize=_maxSize*std::max(thres.cols,thres.rows)*4;
 	cv::findContours ( thres2 , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
-	cv::vector<cv::Point>  approxCurve;
+//	cv::vector<cv::Point>  approxCurve;
 	/******************************************************
 	* Find Squares
 	*******************************************************/
@@ -153,37 +204,60 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 		//}
 		if ( minSize< contours[idx].size() &&contours[idx].size()<maxSize  )
 		{
-			approxPolyDP (  contours[idx]  ,approxCurve , double ( contours[idx].size() ) *0.05, true );
-			if ( approxCurve.size() ==4 )
+			if( IsSquare(idx) )
 			{
-				if ( cv::isContourConvex ( cv::Mat ( approxCurve ) ) )
+				//calculates the area
+				double area = cv::contourArea(contours[idx]);
+				//calculates the centroid
+				cv::Moments fiducial_blob_moments = cv::moments(contours[idx],true);
+				double x = (float)(fiducial_blob_moments.m10 / fiducial_blob_moments.m00);
+				double y = (float)(fiducial_blob_moments.m01 / fiducial_blob_moments.m00);
+#ifndef USE_EIGHT_POINTS
+				//add the points
+				SquareCanditates.push_back ( candidate(area,x,y,std::vector<cv::Point2f>()) );
+				//MarkerCanditates.back().idx=i;
+				for ( int j=0;j<4;j++ )
 				{
-					//ensure that the   distace between consecutive points is large enough
-					float minDist=1e10;
-					for ( int j=0;j<4;j++ )
+					SquareCanditates.back().points.push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+				}
+#else
+				std::vector<cv::Point2f> points;
+				for ( int j=0;j<4;j++ )
+					points.push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+				/******************************************************
+				* Search for the internal square
+				*******************************************************/
+				bool found = false;
+				if(hierarchy[idx][2] != -1)
+				{
+					int idx2 = hierarchy[idx][2];
+					cv::Scalar color( 0,0,255 );
+					if(IsSquare(idx2))
 					{
-						float d= std::sqrt ( ( float ) ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) * ( approxCurve[j].x-approxCurve[ ( j+1 ) %4].x ) +
-											 ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) * ( approxCurve[j].y-approxCurve[ ( j+1 ) %4].y ) );
-						if ( d<minDist ) minDist=d;
+						found = true;
+						//drawContours( main_image, contours, idx2, color, 1, 8, hierarchy );
 					}
-					//check that distance is not very small
-					if ( minDist>10 )
+					while (hierarchy[idx2][0] != -1 && ! found)
 					{
-						//calculates the area
-						double area = cv::contourArea(contours[idx]);
-						//calculates the centroid
-						cv::Moments fiducial_blob_moments = cv::moments(contours[idx],true);
-						double x = (float)(fiducial_blob_moments.m10 / fiducial_blob_moments.m00);
-						double y = (float)(fiducial_blob_moments.m01 / fiducial_blob_moments.m00);
-						//add the points
-						SquareCanditates.push_back ( candidate(area,x,y,std::vector<cv::Point2f>()) );
-						//MarkerCanditates.back().idx=i;
-						for ( int j=0;j<4;j++ )
+						idx2 = hierarchy[idx2][0];
+						if(IsSquare(idx2))
 						{
-							SquareCanditates.back().points.push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+							//drawContours( main_image, contours, idx2, color, 1, 8, hierarchy );
+							found = true;
 						}
 					}
 				}
+				std::vector<cv::Point2f> interior_points;
+				if(found)
+				{
+					for ( int j=0;j<4;j++ )
+						interior_points.push_back ( cv::Point2f ( approxCurve[j].x,approxCurve[j].y ) );
+				}
+				/******************************************************
+				* fill candidates list
+				*******************************************************/
+				SquareCanditates.push_back ( candidate(area,x,y,points,interior_points) );
+#endif
 			}
 		}
 	}
@@ -206,15 +280,85 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 		/******************************************************
 		* Decode Markers
 		*******************************************************/
+		
+
 		Fiducial temp = Fiducial();
+#ifdef USE_EIGHT_POINTS
+		if(Squares[i].interior_points.size() == 4)
+		{
+			temp.Update(Squares[i].x,
+						Squares[i].y,
+						Squares[i].points[0],
+						Squares[i].points[1],
+						Squares[i].points[2],
+						Squares[i].points[3],
+						Squares[i].interior_points[0],
+						Squares[i].interior_points[1],
+						Squares[i].interior_points[2],
+						Squares[i].interior_points[3],
+						Squares[i].area,
+						0);
+		}
+		else
+#endif
 		temp.Update(Squares[i].x,Squares[i].y,Squares[i].points[0],Squares[i].points[1],Squares[i].points[2],Squares[i].points[3],Squares[i].area,0);
+		/*************************************
+		* Update Fiducial List
+		**************************************/
+		float minimum_distance = 99999999.0f;
+		int tmp_ssid = 0;
+		for(FiducialMap::iterator it = fiducial_map.begin(); it!= fiducial_map.end(); it++)
+		{
+			if( it->second->CanUpdate(temp,minimum_distance) )
+			{
+				tmp_ssid = it->first;
+			}
+		}
+		if(tmp_ssid != 0)
+		{
+			temp = Fiducial(*fiducial_map[tmp_ssid]);
+			temp.Update(Squares[i].x,Squares[i].y,Squares[i].points[0],Squares[i].points[1],Squares[i].points[2],Squares[i].points[3],Squares[i].area,0);
+		}
+		/*************************************
+		* Decode Fiducial and pose Estimation
+		**************************************/
 		int tmp_id = finder.DecodeFiducial(fiducial_image, temp);
 		if(tmp_id >= 0)
 		{
 			if(Globals::is_view_enabled)
 			{
+				/*************************************
+				* Update Fiducial List
+				**************************************/
+				if(tmp_ssid == 0)
+				{
+					if(temp.GetFiducialID() == -1) break;
+					//add fiducial
+					fiducial_map[Globals::ssidGenerator++] = new Fiducial(temp);
+					tmp_ssid = Globals::ssidGenerator-1;
+				}
+				else if( tmp_ssid > 0)
+				{
+					fiducial_map[tmp_ssid]->Update(temp);
+				}
+
 				/******************************************************
-				* Draw vertices
+				* Draw FiducialID and SSID
+				*******************************************************/
+				std::stringstream s;
+				s << "FID: " << tmp_id << " SID: " << tmp_ssid;
+				cv::putText(main_image, s.str(), cv::Point(temp.GetX(),temp.GetY()), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				/******************************************************
+				* Draw Pose
+				*******************************************************/
+#ifdef DRAW_POSE
+				cv::Mat objectPoints (8,3,CV_32FC1);
+				cv::vector<cv::Point2f> imagePoints;
+				cv::Mat Tvec = temp.GetTranslationVector();
+				cv::Mat Rvec = temp.GetRotationVector();
+#ifdef DRAW_POSE_COMPLETE
+				/******************************************************
+				* Draw Square
 				*******************************************************/
 				cv::putText(main_image, "a", temp.GetCorner(0), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
 				cv::putText(main_image, "b", temp.GetCorner(1), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
@@ -227,16 +371,28 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 						cv::line(main_image,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
 					else
 						cv::line(main_image,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
-					tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
+//					tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
 				}
-				/******************************************************
-				* Draw 3Daxis
-				*******************************************************/
-
+#ifdef USE_EIGHT_POINTS
+				if(temp.HasInnerCorners())
+				{
+					cv::putText(main_image, "e", temp.GetCorner(4), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					cv::putText(main_image, "f", temp.GetCorner(5), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					cv::putText(main_image, "g", temp.GetCorner(6), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					cv::putText(main_image, "h", temp.GetCorner(7), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					///show perimeter
+					for(int k = 0; k < 4; k++)
+					{
+						if (k!= 3)
+							cv::line(main_image,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+						else
+							cv::line(main_image,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
+					}
+				}
+#endif
 				/*************************************
 				* Draw pose params  cube
 				**************************************/
-				cv::Mat objectPoints (8,3,CV_32FC1);
 				objectPoints.at<float>(0,0)=0;
 				objectPoints.at<float>(0,1)=temp.GetSize();
 				objectPoints.at<float>(0,2)=0;
@@ -269,9 +425,6 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 				objectPoints.at<float>(7,1)=0;
 				objectPoints.at<float>(7,2)=temp.GetSize();
 
-				cv::vector<cv::Point2f> imagePoints;
-				cv::Mat Tvec = temp.GetTranslationVector();
-				cv::Mat Rvec = temp.GetRotationVector();
 				if(!(Tvec.rows == 0 || Tvec.cols == 0 || Rvec.rows == 0 || Rvec.cols == 0))
 				{
 					cv::projectPoints(objectPoints,temp.GetRotationVector(), temp.GetTranslationVector(),Globals::CameraMatrix,Globals::Distortion,imagePoints);
@@ -286,7 +439,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 					for (int i=0;i<4;i++)
 						cv::line(main_image,imagePoints[i],imagePoints[i+4],cv::Scalar(255,255,0,255),1,CV_AA);
 				}
-
+#endif
 				/*************************************
 				* Draw pose params  axis
 				**************************************/
@@ -314,13 +467,14 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 				cv::putText(main_image, "Y", imagePoints[2], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(0,255,0));
 				cv::line(main_image,imagePoints[0],imagePoints[3],cv::Scalar(255,0,0,255),2,CV_AA);
 				cv::putText(main_image, "Z", imagePoints[3], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(255,0,0));
+#endif //DRAWPOSE
+				
+
+
 			}
 		}
 	}
-	
-	
 
-	cv::putText(main_image, "hola don pepito", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
 	/******************************************************
 	* Show thresholded Image
 	*******************************************************/
@@ -437,13 +591,6 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 //					cvResize(fiducial_image,fiducial_image_zoomed);
 //
 //					fiducial_finder->DecodeFiducial(fiducial_image, temporal);
-//#ifdef SHOWDEBUG
-//					if(temporal.GetFiducialID() != -1)
-//					{
-//						cvNamedWindow ("fiducial_screen", CV_WINDOW_AUTOSIZE);
-//						cvShowImage("fiducial_screen",fiducial_image);
-//					}
-//#endif
 //
 //					if(tmp_ssid == 0)
 //					{
@@ -456,331 +603,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 //					{
 //						fiducial_map[tmp_ssid]->Update(temporal);
 //					}
-//#ifdef ENABLEPOSE
-//					markerDirection = fiducial_map[tmp_ssid]->GetOrientation();
-//					if(markerDirection==0)
-//					{
-//						src_pnt[0].x = xlist[0];		
-//						src_pnt[1].x = xlist[1];
-//						src_pnt[2].x = xlist[2];
-//						src_pnt[3].x = xlist[3];
-//
-//						src_pnt[0].y = ylist[0];
-//						src_pnt[1].y = ylist[1];
-//						src_pnt[2].y = ylist[2];
-//						src_pnt[3].y = ylist[3];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[0];		
-//						src_pnt[5].x = exlist[3];
-//						src_pnt[6].x = exlist[2];
-//						src_pnt[7].x = exlist[1];
-//
-//						src_pnt[4].y = eylist[0];
-//						src_pnt[5].y = eylist[3];
-//						src_pnt[6].y = eylist[2];
-//						src_pnt[7].y = eylist[1];
-//#endif
-//					}
-//					else if(markerDirection==1)//90
-//					{
-//						src_pnt[0].x = xlist[3];		
-//						src_pnt[1].x = xlist[0];
-//						src_pnt[2].x = xlist[1];
-//						src_pnt[3].x = xlist[2];
-//
-//						src_pnt[0].y = ylist[3];
-//						src_pnt[1].y = ylist[0];
-//						src_pnt[2].y = ylist[1];
-//						src_pnt[3].y = ylist[2];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[1];		
-//						src_pnt[5].x = exlist[0];
-//						src_pnt[6].x = exlist[3];
-//						src_pnt[7].x = exlist[2];
-//
-//						src_pnt[4].y = eylist[1];
-//						src_pnt[5].y = eylist[0];
-//						src_pnt[6].y = eylist[3];
-//						src_pnt[7].y = eylist[2];
-//#endif
-//					}
-//					else if(markerDirection==3)//180
-//					{
-//						src_pnt[0].x = xlist[2];		
-//						src_pnt[1].x = xlist[3];
-//						src_pnt[2].x = xlist[0];
-//						src_pnt[3].x = xlist[1];
-//
-//						src_pnt[0].y = ylist[2];
-//						src_pnt[1].y = ylist[3];
-//						src_pnt[2].y = ylist[0];
-//						src_pnt[3].y = ylist[1];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[2];		
-//						src_pnt[5].x = exlist[1];
-//						src_pnt[6].x = exlist[0];
-//						src_pnt[7].x = exlist[3];
-//
-//						src_pnt[4].y = eylist[2];
-//						src_pnt[5].y = eylist[1];
-//						src_pnt[6].y = eylist[0];
-//						src_pnt[7].y = eylist[3];
-//#endif
-//					}
-//					else if(markerDirection==2)//270
-//					{
-//						src_pnt[0].x = xlist[1];		
-//						src_pnt[1].x = xlist[2];
-//						src_pnt[2].x = xlist[3];
-//						src_pnt[3].x = xlist[0];
-//
-//						src_pnt[0].y = ylist[1];
-//						src_pnt[1].y = ylist[2];
-//						src_pnt[2].y = ylist[3];
-//						src_pnt[3].y = ylist[0];
-//#ifdef USEEIGHTPOINTS
-//						src_pnt[4].x = exlist[3];		
-//						src_pnt[5].x = exlist[2];
-//						src_pnt[6].x = exlist[1];
-//						src_pnt[7].x = exlist[0];
-//
-//						src_pnt[4].y = eylist[3];
-//						src_pnt[5].y = eylist[2];
-//						src_pnt[6].y = eylist[1];
-//						src_pnt[7].y = eylist[0];
-//#endif
-//					}				
-//					
-//					cvInitMatHeader (&image_points, 4, 1, CV_32FC2, src_pnt);
-//					cvInitMatHeader (&object_points, 4, 3, CV_32FC1, baseMarkerPoints);
-//
-//					CvPoint a;
-//
-//#ifdef SHOWDEBUG
-//					std::ostringstream convert;
-//					convert << "   --o: " << markerDirection;
-//					a.x = src_pnt[0].x; a.y = src_pnt[0].y;
-//					Globals::Font::Write(Globals::screen,convert.str().c_str(),a,FONT_AXIS,255,0,0);
-//
-//					a.x = src_pnt[0].x; a.y = src_pnt[0].y;
-//					Globals::Font::Write(Globals::screen,"a",a,FONT_AXIS,255,0,0);
-//					a.x = src_pnt[1].x; a.y = src_pnt[1].y;
-//					Globals::Font::Write(Globals::screen,"b",a,FONT_AXIS,255,0,0);
-//					a.x = src_pnt[2].x; a.y = src_pnt[2].y;
-//					Globals::Font::Write(Globals::screen,"c",a,FONT_AXIS,255,0,0);
-//					a.x = src_pnt[3].x; a.y = src_pnt[3].y;
-//					Globals::Font::Write(Globals::screen,"d",a,FONT_AXIS,255,0,0);
-//
-//#ifdef USEEIGHTPOINTS
-//					a.x = src_pnt[4].x; a.y = src_pnt[4].y;
-//					Globals::Font::Write(Globals::screen,"a",a,FONT_AXIS,255,0,255);
-//					a.x = src_pnt[5].x; a.y = src_pnt[5].y;
-//					Globals::Font::Write(Globals::screen,"b",a,FONT_AXIS,255,0,255);
-//					a.x = src_pnt[6].x; a.y = src_pnt[6].y;
-//					Globals::Font::Write(Globals::screen,"c",a,FONT_AXIS,255,0,255);
-//					a.x = src_pnt[7].x; a.y = src_pnt[7].y;
-//					Globals::Font::Write(Globals::screen,"d",a,FONT_AXIS,255,0,255);
-//#endif
-//#endif
-//					/*************************************
-//					* Find extrinsic fiducial params
-//					**************************************/
-//					int fidsize = 5;
-//					double halfSize=fidsize;///2.;
-//
-//#ifdef USEEIGHTPOINTS
-//					cv::Mat ObjPoints(8,3,CV_32FC1);
-//#else
-//					cv::Mat ObjPoints(4,3,CV_32FC1);
-//#endif
-//					ObjPoints.at<float>(0,0)=0;
-//					ObjPoints.at<float>(0,1)=halfSize;
-//					ObjPoints.at<float>(0,2)=0;
-//					ObjPoints.at<float>(1,0)=halfSize;
-//					ObjPoints.at<float>(1,1)=halfSize;
-//					ObjPoints.at<float>(1,2)=0;
-//					ObjPoints.at<float>(2,0)=halfSize;
-//					ObjPoints.at<float>(2,1)=0;
-//					ObjPoints.at<float>(2,2)=0;
-//					ObjPoints.at<float>(3,0)=0;
-//					ObjPoints.at<float>(3,1)=0;
-//					ObjPoints.at<float>(3,2)=0;
-//#ifdef USEEIGHTPOINTS
-//					double inc = halfSize/3.0;
-//					ObjPoints.at<float>(4,0)=-inc;
-//					ObjPoints.at<float>(4,1)=halfSize+inc;
-//					ObjPoints.at<float>(4,2)=0;
-//					ObjPoints.at<float>(5,0)=halfSize+inc;
-//					ObjPoints.at<float>(5,1)=halfSize+inc;
-//					ObjPoints.at<float>(5,2)=0;
-//					ObjPoints.at<float>(6,0)=halfSize+inc;
-//					ObjPoints.at<float>(6,1)=-inc;
-//					ObjPoints.at<float>(6,2)=0;
-//					ObjPoints.at<float>(7,0)=-inc;
-//					ObjPoints.at<float>(7,1)=-inc;
-//					ObjPoints.at<float>(7,2)=0;
-//#endif
-//
-//#ifdef USEEIGHTPOINTS
-//					cv::Mat ImagePoints(8,2,CV_32FC1);
-//					int numpoints = 8;
-//#else
-//					cv::Mat ImagePoints(4,2,CV_32FC1);
-//					int numpoints = 4;
-//#endif
-//					for (int c=0;c<numpoints;c++)
-//					{
-//						ImagePoints.at<float>(c,0)=(src_pnt[c].x);
-//						ImagePoints.at<float>(c,1)=(src_pnt[c].y);
-//					}
-//
-//					cv::Mat raux,taux;
-//					cv::solvePnP(ObjPoints, ImagePoints, Globals::CameraMatrix, Globals::Distortion,raux,taux);
-//					raux.convertTo(Rvec,CV_32F);
-//					taux.convertTo(Tvec ,CV_32F);
-//#endif
-//#ifdef ENABLEPOSE
-//					/*************************************
-//					* Prepare parameters
-//					**************************************/
-//					cv::Mat R(3,3,CV_32F);
-//					Rodrigues(Rvec, R);
-//					fiducial_map[tmp_ssid]->yaw = atan2(-R.ptr<float>(2)[0],sqrt( R.ptr<float>(2)[1]*R.ptr<float>(2)[1] + R.ptr<float>(2)[2]*R.ptr<float>(2)[2]));
-//					fiducial_map[tmp_ssid]->pitch = atan2(R.ptr<float>(2)[1],R.ptr<float>(2)[2]);
-//					fiducial_map[tmp_ssid]->roll = (2.0f*3.141592654f)-atan2(R.ptr<float>(1)[0],R.ptr<float>(0)[0]);
-//
-//					fiducial_map[tmp_ssid]->xpos = Tvec.ptr<float>(0)[0];
-//					fiducial_map[tmp_ssid]->ypos = Tvec.ptr<float>(0)[1];
-//					fiducial_map[tmp_ssid]->zpos = Tvec.ptr<float>(0)[2];
-//					//std::cout << fiducial_map[tmp_ssid]->xpos << "\t" << fiducial_map[tmp_ssid]->ypos << "\t" << fiducial_map[tmp_ssid]->zpos << std::endl;
-//
-//
-//					//Rotate XAxis
-//					cv::Mat Rx= cv::Mat::eye(3,3,CV_32F);
-//					float angle = M_PI;
-//					Rx.at<float>(1,1) = cos(angle);
-//					Rx.at<float>(1,2) = -sin(angle);
-//					Rx.at<float>(2,1) = sin(angle);
-//					Rx.at<float>(2,2) = cos(angle);
-//					R = R*Rx;
-//
-//					//Rotate YAxis
-//					/*cv::Mat Ry= cv::Mat::eye(3,3,CV_32F);
-//					Ry.at<float>(1,1) = cos(angle);
-//					Ry.at<float>(1,2) = -sin(angle);
-//					Ry.at<float>(2,1) = sin(angle);
-//					Ry.at<float>(2,2) = cos(angle);
-//					R = R*Ry;*/
-//
-//
-//					fiducial_map[tmp_ssid]->r11 = -R.ptr<float>(0)[0];
-//					fiducial_map[tmp_ssid]->r12 = R.ptr<float>(0)[1];
-//					fiducial_map[tmp_ssid]->r13 = -R.ptr<float>(0)[2];
-//					fiducial_map[tmp_ssid]->r21 = R.ptr<float>(1)[0];
-//					fiducial_map[tmp_ssid]->r22 = -R.ptr<float>(1)[1];
-//					fiducial_map[tmp_ssid]->r23 = -R.ptr<float>(1)[2];
-//					fiducial_map[tmp_ssid]->r31 = -R.ptr<float>(2)[0];
-//					fiducial_map[tmp_ssid]->r32 = -R.ptr<float>(2)[1];
-//					fiducial_map[tmp_ssid]->r33 = R.ptr<float>(2)[2];
-//
-//#ifdef SHOWDEBUG
-//					std::ostringstream fidinfo;
-//					fidinfo << "--------------------------------------------------------------------------------" << std::endl;
-//					fidinfo << "Fiducial info;" << std::endl;
-//					fidinfo << "\tID: " <<  fiducial_map[tmp_ssid]->GetFiducialID()  <<std::endl;
-//					fidinfo << "\tgX: " <<  fiducial_map[tmp_ssid]->GetX() << "\tgY: " <<  fiducial_map[tmp_ssid]->GetY()  <<std::endl;
-//					fidinfo << "\tX: " <<  fiducial_map[tmp_ssid]->xpos  <<std::endl;
-//					fidinfo << "\tY: " <<  fiducial_map[tmp_ssid]->ypos  <<std::endl;
-//					fidinfo << "\tZ: " <<  fiducial_map[tmp_ssid]->zpos  <<std::endl;
-//					fidinfo << "\tyaw: " <<  fiducial_map[tmp_ssid]->yaw <<"\t" <<fiducial_map[tmp_ssid]->pitch << "\t" << fiducial_map[tmp_ssid]->roll  <<std::endl;
-//					std::cout << fidinfo.str() << std::endl;
-//#endif
-//#endif
-//					if(Globals::is_view_enabled)
-//					{
-//#ifdef DRAWPOSE
-//					/*************************************
-//					* Draw pose params  cube
-//					**************************************/
-//					cv::Mat objectPoints (8,3,CV_32FC1);
-//					halfSize=fidsize/*/2*/;
-//					objectPoints.at<float>(0,0)=0;
-//					objectPoints.at<float>(0,1)=halfSize;
-//					objectPoints.at<float>(0,2)=0;
-//
-//					objectPoints.at<float>(1,0)=halfSize;
-//					objectPoints.at<float>(1,1)=halfSize;
-//					objectPoints.at<float>(1,2)=0;
-//
-//					objectPoints.at<float>(2,0)=halfSize;
-//					objectPoints.at<float>(2,1)=0;
-//					objectPoints.at<float>(2,2)=0;
-//
-//					objectPoints.at<float>(3,0)=0;
-//					objectPoints.at<float>(3,1)=0;
-//					objectPoints.at<float>(3,2)=0;
-//
-//					objectPoints.at<float>(4,0)=0;
-//					objectPoints.at<float>(4,1)=halfSize;
-//					objectPoints.at<float>(4,2)=halfSize;
-//
-//					objectPoints.at<float>(5,0)=halfSize;
-//					objectPoints.at<float>(5,1)=halfSize;
-//					objectPoints.at<float>(5,2)=halfSize;
-//
-//					objectPoints.at<float>(6,0)=halfSize;
-//					objectPoints.at<float>(6,1)=0;
-//					objectPoints.at<float>(6,2)=halfSize;
-//
-//					objectPoints.at<float>(7,0)=0;
-//					objectPoints.at<float>(7,1)=0;
-//					objectPoints.at<float>(7,2)=halfSize;
-//
-//					cv::vector<cv::Point2f> imagePoints;
-//
-//					projectPoints( objectPoints, Rvec, Tvec,  Globals::CameraMatrix,Globals::Distortion,   imagePoints);
-//					
-//					//draw lines of different colours
-//					for (int i=0;i<4;i++)
-//						cvLine(Globals::screen,imagePoints[i],imagePoints[(i+1)%4],CV_RGB(255,255,0),1,8,0);
-//
-//					for (int i=0;i<4;i++)
-//						cvLine(Globals::screen,imagePoints[i+4],imagePoints[4+(i+1)%4],CV_RGB(255,0,255),1,8,0);
-//
-//					for (int i=0;i<4;i++)
-//						cvLine(Globals::screen,imagePoints[i],imagePoints[i+4],CV_RGB(0,255,255),1,8,0);
-//					/*************************************
-//					* Draw pose params  axis
-//					**************************************/
-//					
-//					float size=fidsize*3;
-//					halfSize=fidsize/2;
-//					objectPoints= cv::Mat(4,3,CV_32FC1);
-//					objectPoints.at<float>(0,0)=halfSize;
-//					objectPoints.at<float>(0,1)=halfSize;
-//					objectPoints.at<float>(0,2)=0;
-//					objectPoints.at<float>(1,0)=size;
-//					objectPoints.at<float>(1,1)=halfSize;
-//					objectPoints.at<float>(1,2)=0;
-//					objectPoints.at<float>(2,0)=halfSize;
-//					objectPoints.at<float>(2,1)=size;
-//					objectPoints.at<float>(2,2)=0;
-//					objectPoints.at<float>(3,0)=halfSize;
-//					objectPoints.at<float>(3,1)=halfSize;
-//					objectPoints.at<float>(3,2)=size;
-//
-//					//cv::vector<cv::Point2f> imagePoints;
-//					imagePoints.clear();
-//					cv::projectPoints( objectPoints, Rvec,Tvec, Globals::CameraMatrix,Globals::Distortion, imagePoints);
-//					//draw lines of different colours
-//					cvLine(Globals::screen,imagePoints[0],imagePoints[1],CV_RGB(0,0,255),2,8,0);
-//					Globals::Font::Write(Globals::screen,"X",imagePoints[1],FONT_AXIS,0,0,255);
-//					cvLine(Globals::screen,imagePoints[0],imagePoints[2],CV_RGB(0,255,0),2,8,0);
-//					Globals::Font::Write(Globals::screen,"Y",imagePoints[2],FONT_AXIS,0,255,0);
-//					cvLine(Globals::screen,imagePoints[0],imagePoints[3],CV_RGB(255,0,0),2,8,0);
-//					Globals::Font::Write(Globals::screen,"Z",imagePoints[3],FONT_AXIS,255,0,0);
-//					
-//					#endif
+
 //					}
 //					
 //				}
@@ -806,9 +629,6 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 //	return to_return;
 //}
 //
-//void MarkerFinder::KeyInput(char key)
-//{
-//}
 //
 //void MarkerFinder::RepportOSC()
 //{

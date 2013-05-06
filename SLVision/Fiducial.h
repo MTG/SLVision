@@ -22,6 +22,7 @@
 */
 
 #pragma once
+//#define USE_EIGHT_POINTS
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
@@ -45,6 +46,11 @@ class Fiducial
 	double removed_time;
 	cv::Point2f a,b,c,d;
 	cv::Mat rotation_vector,translation_vector;
+#ifdef USE_EIGHT_POINTS
+	cv::Point2f e,f,g,h;
+	bool has_inner_corenr;
+#endif
+
 public:
 	
 	//CvPoint ea,eb,ec,ed;
@@ -61,6 +67,10 @@ public:
 	void SetSize(int size);
 	void CalculateIntrinsics();
 	void Update(float x, float y,cv::Point2f a,cv::Point2f b,cv::Point2f c,cv::Point2f d, float area, int orientation);
+#ifdef USE_EIGHT_POINTS
+	void Update(float x, float y,cv::Point2f a,cv::Point2f b,cv::Point2f c,cv::Point2f d,cv::Point2f e,cv::Point2f f,cv::Point2f g,cv::Point2f h, float area, int orientation);
+	bool HasInnerCorners();
+#endif
 	void Update(const Fiducial &copy);
 	bool Is_inside(const Fiducial &f);
 	bool CanUpdate(const Fiducial &f, float & minimum_distance);
