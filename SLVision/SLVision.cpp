@@ -27,7 +27,7 @@
 //#include "Calibrator.h"
 #include "GlobalConfig.h"
 #include "TouchFinder.h"
-//#include "HandFinder.h"
+#include "HandFinder.h"
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -64,6 +64,7 @@ cv::Mat EmptyImage;
 int enable_view_window;
 int enable_marker_window;
 int enable_touch_window;
+int enable_hand_window;
 std::string main_window_tittle;
 std::string view_window_tittle;
 
@@ -75,7 +76,7 @@ int waitTime = 10;
 std::pair<double,double> AvrgTime(0,0);//average time required for detection
 MarkerFinder*	markerfinder;
 TouchFinder*	touchfinder;
-//HandFinder*			handfinder;
+HandFinder*		handfinder;
 
 ///Function headers
 void cvEnableView(int pos,void*);
@@ -129,8 +130,10 @@ int main(int argc, char* argv[])
 	*******************************************************/
 	markerfinder = new MarkerFinder();
 	touchfinder = new TouchFinder();
+	handfinder = new HandFinder();
 	TuioServer::Instance().RegisterProcessor(markerfinder);
 	TuioServer::Instance().RegisterProcessor(touchfinder);
+	TuioServer::Instance().RegisterProcessor(handfinder);
 	/******************************************************
 	* Main loop app
 	*******************************************************/
@@ -144,6 +147,7 @@ int main(int argc, char* argv[])
 		*******************************************************/
 		markerfinder->ProcessFrame(InputCamera);
 		touchfinder->ProcessFrame(InputCamera);
+		handfinder->ProcessFrame(InputCamera);
 		/******************************************************
 		* GetFramerate
 		*******************************************************/
@@ -197,6 +201,7 @@ int main(int argc, char* argv[])
 	*******************************************************/
 	delete(touchfinder);
 	delete(markerfinder);
+	delete(handfinder);
     return 0;
 }
 
@@ -226,6 +231,10 @@ void cvEnableTouch(int pos,void* name)
 	touchfinder->ShowScreen(pos);
 }
 
+void cvEnableHand(int pos,void* name)
+{
+	handfinder->ShowScreen(pos);
+}
 
 void CreateGUI()
 {
@@ -234,6 +243,7 @@ void CreateGUI()
 		cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
 		cv::createTrackbar("ShowMarker", main_window_tittle,&enable_marker_window, 1, cvEnableMarker);
 		cv::createTrackbar("ShowTouch", main_window_tittle,&enable_touch_window, 1, cvEnableTouch);
+		cv::createTrackbar("ShowHand", main_window_tittle,&enable_hand_window, 1, cvEnableHand);
 		guicreated = true;
 	}
 }

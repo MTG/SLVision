@@ -21,15 +21,25 @@
 	under the License.
 */
 
-//#include "HandFinder.h"
-//#include "GlobalConfig.h"
+#include "HandFinder.h"
+#include "GlobalConfig.h"
+#include "Globals.h"
 //#include "TuioServer.h"
 //
 //#define MINIMUM_CENTROID_DISTANCE 80
 //HandFinder* HandFinder::instance = NULL;
 //
-//HandFinder::HandFinder(void):FrameProcessor("HandFinder")
-//{
+HandFinder::HandFinder(void):
+	Threshold_value(datasaver::GlobalConfig::getRef("FrameProcessor:HandFinder:threshold:threshold_value",33)),
+	min_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:minimum_tpuch_area",200)),
+	FrameProcessor("HandFinder")
+{
+	if(enable_processor == 1) Enable(true);
+	else Enable(false);
+
+	//create gui
+	BuildGui();
+
 //	firstcontour=NULL;
 //	polycontour=NULL;
 //	blob_moments = (CvMoments*)malloc( sizeof(CvMoments) );
@@ -60,8 +70,13 @@
 //	guiMenu->SetValue("2-Min_Area",(float)min_area);
 //	guiMenu->SetValue("3-Max_Area",(float)max_area);
 //	guiMenu->SetValue("4-Min_pinch_blob",(float)min_pinch_blob_size);
-//}
-//
+}
+
+HandFinder::~HandFinder(void)
+{
+}
+
+
 //void HandFinder::UpdatedValuesFromGui()
 //{
 //	int &cf_enabled = datasaver::GlobalConfig::getRef("FrameProcessor:hand_finder:enable",1);
@@ -92,11 +107,8 @@
 //	min_pinch_blob_size = (int) guiMenu->GetValue("4-Min_pinch_blob");
 //	cf_min_pinch_blob = min_pinch_blob_size;
 //}
-//
-//HandFinder::~HandFinder(void)
-//{
-//}
-//
+
+
 //bool HandFinder::TouchInHand(float x, float y)
 //{
 //	if(this->IsEnabled())
@@ -110,32 +122,95 @@
 //	return false;
 //}
 //
-//AliveList HandFinder::GetAlive()
-//{
-//	AliveList toreturn;
+AliveList HandFinder::GetAlive()
+{
+	AliveList toreturn;
 //	if(this->IsEnabled())
 //	{
 //		for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
 //			toreturn.push_back(it->first);
 //	}
-//	return toreturn;
-//}
+	return toreturn;
+}
 //
 //void HandFinder::KeyInput(char key)
 //{
 //}
 //
-//
-//IplImage* HandFinder::Process(IplImage*	main_image)
-//{
-//	cvClearMemStorage(main_storage);
-//	cvClearMemStorage(main_storage_poligon);
-//
-//	cvThreshold(main_image,main_processed_image,threshold_value,255, CV_THRESH_BINARY);
-//
-//	cvCopy(main_processed_image,main_processed_contour);	
-//	cvFindContours (main_processed_contour, main_storage, &firstcontour, sizeof (CvContour), CV_CHAIN_APPROX_SIMPLE/*CV_RETR_CCOMP*/);
-//
+
+void HandFinder::Process(cv::Mat&	main_image)
+{
+	/******************************************************
+	* Convert image to graycsale
+	*******************************************************/
+	if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
+	else     grey=main_image;
+	/******************************************************
+	* Apply threshold
+	*******************************************************/
+	cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY);
+	thres_contours = thres.clone();
+	/******************************************************
+	* Find contours
+	*******************************************************/
+	cv::findContours ( thres_contours , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
+	int idx = 0;
+    /******************************************************
+	* Find Hand candidates
+	*******************************************************/
+	for( ; idx >= 0; idx = hierarchy[idx][0] )
+    {
+		/******************************************************
+		* Filter by area
+		*******************************************************/
+		float area = (float)cv::contourArea(contours[idx]);
+		if(area >= min_area)
+		{
+			/******************************************************
+			* reduce contour complexity
+			*******************************************************/
+			cv::vector<cv::Point> approxCurve;
+			cv::approxPolyDP (  contours[idx]  ,approxCurve , /*double ( contours[idx].size() ) *0.05*/2, true );
+			std::cout << approxCurve.size() << std::endl;
+			for(int i = 0; i < approxCurve.size(); i++)
+			{
+				if(i+1 != approxCurve.size())
+					cv::line(Globals::CameraFrame,approxCurve[i],approxCurve[i+1],cv::Scalar(0,255,255,255),1,CV_AA);
+				else
+					cv::line(Globals::CameraFrame,approxCurve[i],approxCurve[0],cv::Scalar(0,255,255,255),1,CV_AA);
+			}
+			/******************************************************
+			* Find convex Hull
+			*******************************************************/
+			cv::vector<int> hull;
+			cv::convexHull( cv::Mat(approxCurve), hull, false );
+			for(int i = 0; i < hull.size(); i++)
+			{
+				if(i+1 != hull.size())
+					cv::line(Globals::CameraFrame,approxCurve[hull[i]],approxCurve[hull[i+1]],cv::Scalar(0,0,255,255),1,CV_AA);
+				else
+					cv::line(Globals::CameraFrame,approxCurve[hull[i]],approxCurve[hull[0]],cv::Scalar(0,0,255,255),1,CV_AA);
+			}
+			/******************************************************
+			* Find defects (Hull valleys)
+			*******************************************************/
+			std::vector<cv::Vec4i> defects;
+			cv::convexityDefects(cv::Mat(approxCurve), hull, defects);
+			for(int i = 0; i < defects.size(); i++)
+			{
+				if(i+1 != defects.size())
+					cv::line(Globals::CameraFrame,approxCurve[defects[i][2]],approxCurve[defects[i+1][2]],cv::Scalar(255,0,255,255),1,CV_AA);
+				else
+					cv::line(Globals::CameraFrame,approxCurve[defects[i][2]],approxCurve[defects[0][2]],cv::Scalar(255,0,255,255),1,CV_AA);
+			}
+
+	
+		}
+	}
+
+
+
+
 //	if(firstcontour != NULL)
 //	{
 //		polycontour=cvApproxPoly(firstcontour,sizeof(CvContour),main_storage_poligon,CV_POLY_APPROX_DP,4,1);
@@ -239,10 +314,18 @@
 //		}
 //	}
 //	return main_processed_image;
-//}
-//
-//void HandFinder::RepportOSC()
-//{
+	
+	/******************************************************
+	* Show thresholded Image
+	*******************************************************/
+	if (this->show_screen)
+	{
+		cv::imshow(this->name,thres);
+	}
+}
+
+void HandFinder::RepportOSC()
+{
 //	if(!this->IsEnabled())return;
 //	to_remove.clear();
 //	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
@@ -274,9 +357,16 @@
 //	{
 //		hands.erase(*it);
 //	}
-//}
+}
+
 //
 //std::map<unsigned long, Hand*>* HandFinder::GetHands()
 //{
 //	return &hands;
 //}
+
+void HandFinder::BuildGui(bool force)
+{
+	cv::createTrackbar("Enable", name,&enable_processor, 1, NULL);
+	cv::createTrackbar("th.value", name,&Threshold_value, 255, NULL);
+}

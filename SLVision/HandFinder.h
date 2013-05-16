@@ -21,14 +21,31 @@
 	under the License.
 */
 
-//#pragma once
-//#include "frameprocessor.h"
+#pragma once
+#include "frameprocessor.h"
 //#include "Hand.h"
 //#include <map>
 //
-//class HandFinder :
-//	public FrameProcessor
-//{
+class HandFinder :
+	public FrameProcessor
+{
+	cv::Mat									grey, thres, thres_contours;
+	int &									Threshold_value;
+	std::vector<std::vector<cv::Point> >	contours;
+	/******************************************************
+	* Hierarchy structure
+	* -------------------
+	*
+	*  hierarchy[id][0]=next; 
+	*  hierarchy[id][1]=previous; 
+	*  hierarchy[id][2]=first_child; 
+	*  hierarchy[id][3]=parent;
+	*
+	*  if hierarchy value == -1 ---> not found  else gets  the contour index
+	*
+	*******************************************************/
+	std::vector<cv::Vec4i>					hierarchy;
+	int										& min_area;
 //	IplImage*		main_processed_image;
 //	IplImage*		main_processed_contour;
 //	CvMemStorage*	main_storage;
@@ -47,18 +64,19 @@
 //	int max_area;
 //	int min_area;
 //
-//public:
+public:
 //	static HandFinder* instance;
-//	HandFinder(void);
-//	~HandFinder(void);
+	HandFinder(void);
+	~HandFinder(void);
 //
-//	AliveList GetAlive();
+	AliveList GetAlive();
 //	bool TouchInHand(float x, float y);
 //	std::map<unsigned long, Hand*>* GetHands();
-//protected:
+protected:
 //	void KeyInput(char key);
 //	void UpdatedValuesFromGui(); 
-//	IplImage* Process(IplImage*	main_image);
-//	void RepportOSC();
-//};
+	void Process(cv::Mat&	main_image);
+	void BuildGui(bool force = false);
+	void RepportOSC();
+};
 
