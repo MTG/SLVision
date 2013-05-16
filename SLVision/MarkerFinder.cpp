@@ -61,13 +61,6 @@ void MarkerFinder::InitGeometry()
 MarkerFinder::~MarkerFinder(void)
 {
 
-//	cvReleaseImage(&main_processed_image);	
-//	cvReleaseImage(&main_processed_contour);
-//	cvReleaseImage(&fiducial_image);	
-//	cvReleaseMat (&map_matrix);
-//	cvReleaseMemStorage(&main_storage_poligon);
-//	cvReleaseMemStorage(&main_storage);
-//	delete(fiducial_finder);
 }
 
 AliveList MarkerFinder::GetAlive()
@@ -158,11 +151,11 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	int idx = 0;
     for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
-		//80's effect
+		//80's effect :)
 		//if ( minSize< contours[idx].size() &&contours[idx].size()<maxSize  )
 		//{
         //cv::Scalar color( rand()&255, rand()&255, rand()&255 );
-        //drawContours( main_image, contours, idx, color, CV_FILLED, 8, hierarchy );
+        //drawContours( Globals::CameraFrame, contours, idx, color, CV_FILLED, 8, hierarchy );
 		//}
 		if ( minSize< contours[idx].size() && contours[idx].size()< maxSize  )
 		{
@@ -197,14 +190,14 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 					if(IsSquare(idx2))
 					{
 						found = true;
-						//drawContours( main_image, contours, idx2, color, 1, 8, hierarchy );
+						//drawContours( Globals::CameraFrame, contours, idx2, color, 1, 8, hierarchy );
 					}
 					while (hierarchy[idx2][0] != -1 && ! found)
 					{
 						idx2 = hierarchy[idx2][0];
 						if(IsSquare(idx2))
 						{
-							//drawContours( main_image, contours, idx2, color, 1, 8, hierarchy );
+							//drawContours( Globals::CameraFrame, contours, idx2, color, 1, 8, hierarchy );
 							found = true;
 						}
 					}
@@ -307,7 +300,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 				*******************************************************/
 				std::stringstream s;
 				s << "FID: " << tmp_id << " SID: " << tmp_ssid;
-				cv::putText(main_image, s.str(), cv::Point2f(temp.GetX()+20,temp.GetY()), cv::FONT_HERSHEY_DUPLEX, 0.5f, cv::Scalar(255,0,255));
+				cv::putText(Globals::CameraFrame, s.str(), cv::Point2f(temp.GetX()+20,temp.GetY()), cv::FONT_HERSHEY_DUPLEX, 0.5f, cv::Scalar(255,0,255));
 				/******************************************************
 				* Draw Pose
 				*******************************************************/
@@ -320,33 +313,33 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 				/******************************************************
 				* Draw Square
 				*******************************************************/
-				cv::putText(main_image, "a", temp.GetCorner(0), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-				cv::putText(main_image, "b", temp.GetCorner(1), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-				cv::putText(main_image, "c", temp.GetCorner(2), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-				cv::putText(main_image, "d", temp.GetCorner(3), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				cv::putText(Globals::CameraFrame, "a", temp.GetCorner(0), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				cv::putText(Globals::CameraFrame, "b", temp.GetCorner(1), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				cv::putText(Globals::CameraFrame, "c", temp.GetCorner(2), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+				cv::putText(Globals::CameraFrame, "d", temp.GetCorner(3), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
 				///show perimeter
 				for(int k = 0; k < 4; k++)
 				{
 					if (k!= 3)
-						cv::line(main_image,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+						cv::line(Globals::CameraFrame,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
 					else
-						cv::line(main_image,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
+						cv::line(Globals::CameraFrame,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
 //					tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
 				}
 #ifdef USE_EIGHT_POINTS
 				if(temp.HasInnerCorners())
 				{
-					cv::putText(main_image, "e", temp.GetCorner(4), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-					cv::putText(main_image, "f", temp.GetCorner(5), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-					cv::putText(main_image, "g", temp.GetCorner(6), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
-					cv::putText(main_image, "h", temp.GetCorner(7), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					cv::putText(Globals::CameraFrame, "e", temp.GetCorner(4), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					cv::putText(Globals::CameraFrame, "f", temp.GetCorner(5), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					cv::putText(Globals::CameraFrame, "g", temp.GetCorner(6), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
+					cv::putText(Globals::CameraFrame, "h", temp.GetCorner(7), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,255,0));
 					///show perimeter
 					for(int k = 0; k < 4; k++)
 					{
 						if (k!= 3)
-							cv::line(main_image,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
+							cv::line(Globals::CameraFrame,Squares[i].points[k],Squares[i].points[k+1],cv::Scalar(0,0,255,255),1,CV_AA);
 						else
-							cv::line(main_image,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
+							cv::line(Globals::CameraFrame,Squares[i].points[k],Squares[i].points[0],cv::Scalar(0,0,255,255),1,CV_AA);
 					}
 				}
 #endif
@@ -391,13 +384,13 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 			
 					//draw lines of different colours
 					for (int i=0;i<4;i++)
-						cv::line(main_image,imagePoints[i],imagePoints[(i+1)%4],cv::Scalar(0,255,255,255),1,CV_AA);
+						cv::line(Globals::CameraFrame,imagePoints[i],imagePoints[(i+1)%4],cv::Scalar(0,255,255,255),1,CV_AA);
 
 					for (int i=0;i<4;i++)
-						cv::line(main_image,imagePoints[i+4],imagePoints[4+(i+1)%4],cv::Scalar(255,0,255,255),1,CV_AA);
+						cv::line(Globals::CameraFrame,imagePoints[i+4],imagePoints[4+(i+1)%4],cv::Scalar(255,0,255,255),1,CV_AA);
 
 					for (int i=0;i<4;i++)
-						cv::line(main_image,imagePoints[i],imagePoints[i+4],cv::Scalar(255,255,0,255),1,CV_AA);
+						cv::line(Globals::CameraFrame,imagePoints[i],imagePoints[i+4],cv::Scalar(255,255,0,255),1,CV_AA);
 				}
 #endif
 				/*************************************
@@ -421,12 +414,12 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 				imagePoints.clear();
 				cv::projectPoints( objectPoints, Rvec,Tvec, Globals::CameraMatrix,Globals::Distortion, imagePoints);
 				//draw lines of different colours
-				cv::line(main_image,imagePoints[0],imagePoints[1],cv::Scalar(0,0,255,255),2,CV_AA);
-				cv::putText(main_image, "X", imagePoints[1], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(0,0,255));
-				cv::line(main_image,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),2,CV_AA);
-				cv::putText(main_image, "Y", imagePoints[2], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(0,255,0));
-				cv::line(main_image,imagePoints[0],imagePoints[3],cv::Scalar(255,0,0,255),2,CV_AA);
-				cv::putText(main_image, "Z", imagePoints[3], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(255,0,0));
+				cv::line(Globals::CameraFrame,imagePoints[0],imagePoints[1],cv::Scalar(0,0,255,255),2,CV_AA);
+				cv::putText(Globals::CameraFrame, "X", imagePoints[1], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(0,0,255));
+				cv::line(Globals::CameraFrame,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),2,CV_AA);
+				cv::putText(Globals::CameraFrame, "Y", imagePoints[2], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(0,255,0));
+				cv::line(Globals::CameraFrame,imagePoints[0],imagePoints[3],cv::Scalar(255,0,0,255),2,CV_AA);
+				cv::putText(Globals::CameraFrame, "Z", imagePoints[3], cv::FONT_HERSHEY_SIMPLEX, 1.0f, cv::Scalar(255,0,0));
 #endif //DRAWPOSE
 			}
 		}

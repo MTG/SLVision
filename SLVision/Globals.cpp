@@ -42,6 +42,7 @@ unsigned int	Globals::ssidGenerator				= 1;
 cv::Mat Globals::CameraMatrix; // 3x3 matrix (fx 0 cx, 0 fy cy, 0 0 1)
 cv::Mat Globals::Distortion; //4x1 matrix (k1,k2,p1,p2)
 cv::Size Globals::CamSize; //size of the image
+cv::Mat Globals::CameraFrame;
 
 void Globals::LoadDefaultDistortionMatrix()
 {

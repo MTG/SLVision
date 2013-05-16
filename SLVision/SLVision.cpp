@@ -26,7 +26,7 @@
 #include "TuioServer.h"
 //#include "Calibrator.h"
 #include "GlobalConfig.h"
-//#include "TouchFinder.h"
+#include "TouchFinder.h"
 //#include "HandFinder.h"
 
 #include <iostream>
@@ -63,6 +63,7 @@ cv::Mat InputCamera;
 cv::Mat EmptyImage;
 int enable_view_window;
 int enable_marker_window;
+int enable_touch_window;
 std::string main_window_tittle;
 std::string view_window_tittle;
 
@@ -73,7 +74,7 @@ int waitTime = 10;
 //Frame Processors
 std::pair<double,double> AvrgTime(0,0);//average time required for detection
 MarkerFinder*	markerfinder;
-//TouchFinder*		touchfinder;
+TouchFinder*	touchfinder;
 //HandFinder*			handfinder;
 
 ///Function headers
@@ -127,7 +128,9 @@ int main(int argc, char* argv[])
 	* Init Frame Processors
 	*******************************************************/
 	markerfinder = new MarkerFinder();
+	touchfinder = new TouchFinder();
 	TuioServer::Instance().RegisterProcessor(markerfinder);
+	TuioServer::Instance().RegisterProcessor(touchfinder);
 	/******************************************************
 	* Main loop app
 	*******************************************************/
@@ -135,10 +138,12 @@ int main(int argc, char* argv[])
 	{
 		VCapturer.retrieve( InputCamera);
 		double tick = (double)cv::getTickCount();
+		Globals::CameraFrame = InputCamera.clone();
 		/******************************************************
 		* Process Video
 		*******************************************************/
 		markerfinder->ProcessFrame(InputCamera);
+		touchfinder->ProcessFrame(InputCamera);
 		/******************************************************
 		* GetFramerate
 		*******************************************************/
@@ -169,9 +174,9 @@ int main(int argc, char* argv[])
 			{
 				std::stringstream s;
 				s << "(" << 1000*AvrgTime.first/AvrgTime.second << ") fps";
-				cv::putText(InputCamera,s.str(), cv::Point(10,50),cv::FONT_HERSHEY_DUPLEX, 0.6, cv::Scalar(255,0,0,255),2);
+				cv::putText(Globals::CameraFrame,s.str(), cv::Point(10,50),cv::FONT_HERSHEY_DUPLEX, 0.6, cv::Scalar(255,0,0,255),2);
 			}
-			cv::imshow(view_window_tittle,InputCamera);
+			cv::imshow(view_window_tittle,Globals::CameraFrame);
 		}
 		/******************************************************
 		* Draw GUI
@@ -187,6 +192,11 @@ int main(int argc, char* argv[])
 	* Sends an empty OSC bundle message
 	*******************************************************/
 	TuioServer::Instance().SendEmptyBundle();
+	/******************************************************
+	* Delete finders
+	*******************************************************/
+	delete(touchfinder);
+	delete(markerfinder);
     return 0;
 }
 
@@ -211,12 +221,19 @@ void cvEnableMarker(int pos,void* name)
 	markerfinder->ShowScreen(pos);
 }
 
+void cvEnableTouch(int pos,void* name)
+{
+	touchfinder->ShowScreen(pos);
+}
+
+
 void CreateGUI()
 {
 	if(!guicreated)
 	{
 		cv::createTrackbar("ShowCam", main_window_tittle,&enable_view_window, 1, cvEnableView);
 		cv::createTrackbar("ShowMarker", main_window_tittle,&enable_marker_window, 1, cvEnableMarker);
+		cv::createTrackbar("ShowTouch", main_window_tittle,&enable_touch_window, 1, cvEnableTouch);
 		guicreated = true;
 	}
 }

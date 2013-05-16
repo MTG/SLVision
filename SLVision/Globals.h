@@ -41,6 +41,7 @@ public:
 	static cv::Mat CameraMatrix; // 3x3 matrix (fx 0 cx, 0 fy cy, 0 0 1)
 	static cv::Mat Distortion; //4x1 matrix (k1,k2,p1,p2)
     static cv::Size CamSize; //size of the image
+	static cv::Mat CameraFrame;
 
 	/************************
 	* Screen Globals

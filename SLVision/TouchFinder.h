@@ -21,22 +21,41 @@
 	under the License.
 */
 
-//#pragma once
-//#include "frameprocessor.h"
-//#include "Finger.h"
-//
-//typedef std::map<unsigned int, Finger*> Pointmap;
-//
-//class TouchFinder :
-//	public FrameProcessor
-//{
-//private:
-//	Finger temp_touch;
-//	float temp_minimum_distance, test_distance;
-//	unsigned int candidate_id;
-//	std::vector<unsigned int> to_be_removed;
+#pragma once
+#include "frameprocessor.h"
+#include "Touch.h"
+
+typedef std::map<unsigned int, Touch*> Pointmap;
+
+class TouchFinder :
+	public FrameProcessor
+{
+private:
+	Touch temp_touch;
+	float temp_minimum_distance, test_distance;
+	unsigned int candidate_id;
+	std::vector<unsigned int> to_be_removed;
 //	char text[100];
-//protected:
+protected:
+	int										& Threshold_value;
+	int										& max_area;
+	int										& min_area;
+	cv::Mat									grey, thres, thres_contours;
+	std::vector<std::vector<cv::Point> >	contours;
+	/******************************************************
+	* Hierarchy structure
+	* -------------------
+	*
+	*  hierarchy[id][0]=next; 
+	*  hierarchy[id][1]=previous; 
+	*  hierarchy[id][2]=first_child; 
+	*  hierarchy[id][3]=parent;
+	*
+	*  if hierarchy value == -1 ---> not found  else gets  the contour index
+	*
+	*******************************************************/
+	std::vector<cv::Vec4i>					hierarchy;
+
 //	IplImage*		main_processed_image;
 //	IplImage*		main_processed_contour;
 //	int				threshold_value;
@@ -45,15 +64,18 @@
 //	int				max_blob_size;
 //	int				min_blob_size;
 //	CvMoments*		blob_moments;
-//	Pointmap		pointmap;
+	Pointmap		pointmap;
 //
 //	void KeyInput(char key);
 //	void UpdatedValuesFromGui(); 
 //	IplImage* Process(IplImage*	main_image);
 //	void RepportOSC();
-//public:
-//	TouchFinder(void);
-//	~TouchFinder(void);
-//	AliveList GetAlive();
-//};
+	void Process(cv::Mat&	main_image);
+	void BuildGui(bool force = false);
+	void RepportOSC();
+public:
+	TouchFinder(void);
+	~TouchFinder(void);
+	AliveList GetAlive();
+};
 

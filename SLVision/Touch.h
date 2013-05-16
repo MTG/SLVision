@@ -24,7 +24,7 @@
 #pragma once
 #include "LowPass.h"
 
-class Finger
+class Touch
 {
 protected:
 	bool is_updated;
@@ -33,14 +33,13 @@ protected:
 //	LowPass xcoord, ycoord;
 	float x, y;
 public:
-	
 	float area;
 
-	Finger();
-	Finger(const Finger &copy);
+	Touch();
+	Touch(const Touch &copy);
 	void Update(float x, float y, float area);
-	void Update(const Finger &copy);
-	//bool CanUpdate( const Finger &tch, float & minimum_distance);
+	void Update(const Touch &copy);
+	//bool CanUpdate( const Touch &tch, float & minimum_distance);
 	bool IsUpdated(bool keep_flag=false);
 	bool IsOnTheAir();
 	void SetHandData(int handID, bool on_the_air);

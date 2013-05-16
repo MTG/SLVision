@@ -21,10 +21,10 @@
 	under the License.
 */
 
-#include "Finger.h"
+#include "Touch.h"
 #include <iostream>
 
-Finger::Finger():
+Touch::Touch():
 	x(0),
 	y(0),
 	is_updated(false),
@@ -38,7 +38,7 @@ Finger::Finger():
 //	ycoord.Reset();
 }
 
-Finger::Finger(const Finger &copy):
+Touch::Touch(const Touch &copy):
 	x(copy.x),
 	y(copy.y),
 	is_updated(true),
@@ -50,7 +50,7 @@ Finger::Finger(const Finger &copy):
 {
 }
 
-void Finger::Update(float x, float y, float area)
+void Touch::Update(float x, float y, float area)
 {
 	this->x = x;
 	this->y = y;
@@ -60,7 +60,7 @@ void Finger::Update(float x, float y, float area)
 //	ycoord.addvalue(y);
 }
 
-/*bool Finger::CanUpdate( const Finger &tch, float & minimum_distance)
+/*bool Touch::CanUpdate( const Touch &tch, float & minimum_distance)
 {
 	//if ( fabs((float)(tch.area-area)) <= AREA_OFFSET )
 	//{
@@ -74,7 +74,7 @@ void Finger::Update(float x, float y, float area)
 	return false;
 }*/
 
-bool Finger::IsUpdated(bool keep_flag)
+bool Touch::IsUpdated(bool keep_flag)
 {
 	if(is_updated)
 	{
@@ -85,23 +85,23 @@ bool Finger::IsUpdated(bool keep_flag)
 	return false;
 }
 
-void Finger::Update(const Finger &copy)
+void Touch::Update(const Touch &copy)
 {
 	this->Update(copy.x,copy.y,copy.area);
 }
 
-bool Finger::IsOnTheAir()
+bool Touch::IsOnTheAir()
 {
 	return this->is_on_the_air;
 }
 
-void Finger::SetHandData(int handID, bool on_the_air)
+void Touch::SetHandData(int handID, bool on_the_air)
 {
 	this->handID = handID;
 	this->is_on_the_air = on_the_air;
 }
 
-float Finger::GetX()
+float Touch::GetX()
 {
 	/*if(this->is_on_the_air)
 	{
@@ -111,7 +111,7 @@ float Finger::GetX()
 	return x;
 }
 
-float Finger::GetY()
+float Touch::GetY()
 {
 	/*if(this->is_on_the_air)
 	{

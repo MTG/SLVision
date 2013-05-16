@@ -31,13 +31,11 @@ typedef std::map<unsigned int, Fiducial*> FiducialMap;
 class candidate
 {
 public:
-#ifdef USE_EIGHT_POINTS
-	std::vector<cv::Point2f> interior_points;
-#endif
 	std::vector<cv::Point2f> points;
-
 	float area, x, y;
 #ifdef USE_EIGHT_POINTS
+	std::vector<cv::Point2f> interior_points;
+
 	candidate( float _area, float _x, float _y, std::vector<cv::Point2f>& _points, std::vector<cv::Point2f>& _interior_points):
 		interior_points(std::vector<cv::Point2f>(_interior_points)),
 		points(std::vector<cv::Point2f>(_points)),
@@ -73,8 +71,18 @@ protected:
 	FiducialMap								fiducial_map;
 	FiducialFinder							finder;
 	std::vector<std::vector<cv::Point> >	contours;
-	//hierarchy[id][0]=next; hierarchy[id][0]=previous; hierarchy[id][0]=first_child; hierarchy[id][0]=parent;  
-	//if hierarchy == -1 ---> not found  else gets  the contour index
+	/******************************************************
+	* Hierarchy structure
+	* -------------------
+	*
+	*  hierarchy[id][0]=next; 
+	*  hierarchy[id][1]=previous; 
+	*  hierarchy[id][2]=first_child; 
+	*  hierarchy[id][3]=parent;
+	*
+	*  if hierarchy value == -1 ---> not found  else gets  the contour index
+	*
+	*******************************************************/
 	std::vector<cv::Vec4i>					hierarchy;
 	cv::vector<cv::Point>					approxCurve;
 	cv::Mat									fiducial_image,fiducial_image_zoomed;
