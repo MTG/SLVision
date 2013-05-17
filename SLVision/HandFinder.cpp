@@ -143,8 +143,9 @@ void HandFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Convert image to graycsale
 	*******************************************************/
-	if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
-	else     grey=main_image;
+	//if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
+	//else     grey=main_image;
+	grey=main_image;
 	/******************************************************
 	* Apply threshold
 	*******************************************************/
@@ -155,22 +156,22 @@ void HandFinder::Process(cv::Mat&	main_image)
 	*******************************************************/
 	cv::findContours ( thres_contours , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
 	int idx = 0;
-    /******************************************************
-	* Find Hand candidates
-	*******************************************************/
-	for( ; idx >= 0; idx = hierarchy[idx][0] )
+    //******************************************************
+	//* Find Hand candidates
+	//*******************************************************
+	/*for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
-		/******************************************************
-		* Filter by area
-		*******************************************************/
+		//******************************************************
+		// Filter by area
+		//*******************************************************
 		float area = (float)cv::contourArea(contours[idx]);
 		if(area >= min_area)
 		{
-			/******************************************************
-			* reduce contour complexity
-			*******************************************************/
+			//******************************************************
+			//* reduce contour complexity
+			//*******************************************************
 			cv::vector<cv::Point> approxCurve;
-			cv::approxPolyDP (  contours[idx]  ,approxCurve , /*double ( contours[idx].size() ) *0.05*/2, true );
+			cv::approxPolyDP (  contours[idx]  ,approxCurve , 2, true );
 			std::cout << approxCurve.size() << std::endl;
 			for(int i = 0; i < approxCurve.size(); i++)
 			{
@@ -179,9 +180,9 @@ void HandFinder::Process(cv::Mat&	main_image)
 				else
 					cv::line(Globals::CameraFrame,approxCurve[i],approxCurve[0],cv::Scalar(0,255,255,255),1,CV_AA);
 			}
-			/******************************************************
-			* Find convex Hull
-			*******************************************************/
+			//******************************************************
+			//* Find convex Hull
+			//*******************************************************
 			cv::vector<int> hull;
 			cv::convexHull( cv::Mat(approxCurve), hull, false );
 			for(int i = 0; i < hull.size(); i++)
@@ -191,9 +192,9 @@ void HandFinder::Process(cv::Mat&	main_image)
 				else
 					cv::line(Globals::CameraFrame,approxCurve[hull[i]],approxCurve[hull[0]],cv::Scalar(0,0,255,255),1,CV_AA);
 			}
-			/******************************************************
-			* Find defects (Hull valleys)
-			*******************************************************/
+			//******************************************************
+			//* Find defects (Hull valleys)
+			//*******************************************************
 			std::vector<cv::Vec4i> defects;
 			cv::convexityDefects(cv::Mat(approxCurve), hull, defects);
 			for(int i = 0; i < defects.size(); i++)
@@ -206,7 +207,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 
 	
 		}
-	}
+	}*/
 
 
 

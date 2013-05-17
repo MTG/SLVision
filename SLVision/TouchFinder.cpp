@@ -54,12 +54,13 @@ void TouchFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Convert image to graycsale
 	*******************************************************/
-	if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
-	else     grey=main_image;
+	//if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
+	//else     grey=main_image;
+	grey=main_image;
 	/******************************************************
 	* Apply threshold
 	*******************************************************/
-	cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY_INV);
+	cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY);
 	thres_contours = thres.clone();
 	/******************************************************
 	* Find contours

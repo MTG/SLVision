@@ -121,8 +121,9 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Convert image to graycsale
 	*******************************************************/
-	if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
-	else     grey=main_image;
+	//if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
+	//else     grey=main_image;
+	grey=main_image;
 	/******************************************************
 	* Apply threshold
 	*******************************************************/
@@ -130,10 +131,12 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	{
 		if (block_size<3) block_size=3;
 		if (block_size%2!=1) block_size++;
-		cv::adaptiveThreshold ( grey,thres,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY_INV,block_size,threshold_C );
+		cv::adaptiveThreshold ( grey,thres,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY,block_size,threshold_C );
 	}
 	else 
-		cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY_INV);
+		cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY);
+	cv::bitwise_not(thres,thres);
+
 	/******************************************************
 	* Find contours
 	*******************************************************/
@@ -149,8 +152,10 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	*******************************************************/
 	std::vector<candidate> SquareCanditates;
 	int idx = 0;
+	if(contours.size() == 0) return;
     for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
+		if (idx == -1) break;
 		//80's effect :)
 		//if ( minSize< contours[idx].size() &&contours[idx].size()<maxSize  )
 		//{
@@ -220,6 +225,7 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	* Find Markers
 	*******************************************************/
 	std::vector<candidate> Squares;
+	if(SquareCanditates.size() == 0) return;
 	SquareDetector(SquareCanditates, Squares);
 	for (size_t i=0;i<Squares.size();i++) 
 	{
@@ -568,8 +574,8 @@ void MarkerFinder::BuildGui(bool force)
 	cv::createTrackbar("Use Adaptive", name,&use_adaptive_bar_value, 1, NULL);
 	if(use_adaptive_bar_value == 1)
 	{
-		cv::createTrackbar("block_size", name,&block_size, 200, NULL);
-		cv::createTrackbar("C", name,&threshold_C, 20, NULL);
+		cv::createTrackbar("block_size", name,&block_size, 255, NULL);
+		cv::createTrackbar("C", name,&threshold_C, 40, NULL);
 	}
 	else
 	{
