@@ -58,6 +58,7 @@ int cameraID;
 cv::VideoCapture VCapturer;
 //Camera input
 cv::Mat InputCamera;
+cv::Mat InputCameraGrey;
 
 //Window treatment
 cv::Mat EmptyImage;
@@ -145,19 +146,20 @@ int main(int argc, char* argv[])
 		/******************************************************
 		* Convert image to graycsale
 		*******************************************************/
-		if ( InputCamera.type() ==CV_8UC3 )   cv::cvtColor ( InputCamera,InputCamera,CV_BGR2GRAY );
+		
+		if ( InputCamera.type() ==CV_8UC3 )   cv::cvtColor ( InputCamera,InputCameraGrey,CV_BGR2GRAY );
 		Globals::CameraFrame = InputCamera.clone();
 		/******************************************************
 		* Process Video
 		*******************************************************/
-		markerfinder->ProcessFrame(InputCamera);
+		markerfinder->ProcessFrame(InputCameraGrey);
 		///
-		cv::GaussianBlur(InputCamera,InputCamera,cv::Size(3,3),0);
-		cv::medianBlur(InputCamera,InputCamera,11);
+		//cv::GaussianBlur(InputCamera,InputCamera,cv::Size(3,3),0);
+		//cv::medianBlur(InputCamera,InputCamera,11);
 		///
 		
-		touchfinder->ProcessFrame(InputCamera);
-		handfinder->ProcessFrame(InputCamera);
+		touchfinder->ProcessFrame(InputCameraGrey);
+		handfinder->ProcessFrame(InputCameraGrey);
 		/******************************************************
 		* GetFramerate
 		*******************************************************/
