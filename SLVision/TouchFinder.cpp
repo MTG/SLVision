@@ -30,9 +30,9 @@
 //#include "HandFinder.h"
 //
 TouchFinder::TouchFinder(void):
-	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:threshold_value",33)),
-	max_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:maximum_touch_area",800)),
-	min_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:minimum_tpuch_area",200)),
+	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:threshold_value",205,
+	max_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:maximum_touch_area",1209
+	min_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:minimum_tpuch_area",205)),
 	FrameProcessor("TouchFinder")
 {
 	if(enable_processor == 1) Enable(true);
@@ -65,11 +65,12 @@ void TouchFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Find contours
 	*******************************************************/
-	cv::findContours ( thres_contours , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
+	cv::findContours ( thres_contours , contours, hierarchy,CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE );
 	int idx = 0;
     /******************************************************
 	* Find touch candidates
 	*******************************************************/
+	if(hierarchy.size()!= 0)
 	for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
 		//calculates the area
