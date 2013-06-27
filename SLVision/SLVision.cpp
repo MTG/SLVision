@@ -152,13 +152,17 @@ int main(int argc, char* argv[])
 		/******************************************************
 		* Process Video
 		*******************************************************/
+		//Find SLFiducials and calculates its pose
 		markerfinder->ProcessFrame(InputCameraGrey);
-		///
-		//cv::GaussianBlur(InputCamera,InputCamera,cv::Size(3,3),0);
-		//cv::medianBlur(InputCamera,InputCamera,11);
-		///
-		
+	
+		//noise reduction
+		cv::GaussianBlur(InputCameraGrey,InputCameraGrey,cv::Size(3,3),0);
+		cv::medianBlur(InputCameraGrey,InputCameraGrey,11);
+	
+		//Find Touches 
 		touchfinder->ProcessFrame(InputCameraGrey);
+		
+		//Find Hands
 		handfinder->ProcessFrame(InputCameraGrey);
 		/******************************************************
 		* GetFramerate

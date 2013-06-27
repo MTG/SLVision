@@ -159,7 +159,7 @@ void HandFinder::Process(cv::Mat&	main_image)
     //******************************************************
 	//* Find Hand candidates
 	//*******************************************************
-	/*for( ; idx >= 0; idx = hierarchy[idx][0] )
+	for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
 		//******************************************************
 		// Filter by area
@@ -204,10 +204,12 @@ void HandFinder::Process(cv::Mat&	main_image)
 				else
 					cv::line(Globals::CameraFrame,approxCurve[defects[i][2]],approxCurve[defects[0][2]],cv::Scalar(255,0,255,255),1,CV_AA);
 			}
-
+			//******************************************************
+			//* Find fingers
+			//*******************************************************
 	
 		}
-	}*/
+	}
 
 
 
