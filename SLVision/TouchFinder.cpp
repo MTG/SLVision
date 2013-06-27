@@ -30,9 +30,9 @@
 //#include "HandFinder.h"
 //
 TouchFinder::TouchFinder(void):
-	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:threshold_value",205,
-	max_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:maximum_touch_area",1209
-	min_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:minimum_tpuch_area",205)),
+	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:threshold_value",205)),
+	max_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:maximum_touch_area",1209)),
+	min_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:minimum_tpuch_area",261)),
 	FrameProcessor("TouchFinder")
 {
 	if(enable_processor == 1) Enable(true);
