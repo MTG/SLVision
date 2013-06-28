@@ -23,9 +23,9 @@
 
 #pragma once
 #include "frameprocessor.h"
-//#include "Hand.h"
-//#include <map>
-//
+#include "Hand.h"
+#include <map>
+
 class HandFinder :
 	public FrameProcessor
 {
@@ -54,7 +54,7 @@ class HandFinder :
 //	CvSeq*			firstcontour;
 //	CvSeq*			polycontour;
 //	CvPoint			hand_centroid;
-//	std::map<unsigned long, Hand*> hands;
+	std::map<unsigned long, Hand> hands;
 //	std::vector<unsigned long> to_remove;
 //
 //	int				threshold_value;
@@ -78,5 +78,7 @@ protected:
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);
 	void RepportOSC();
+	bool IsNearEdge( cv::Point & p );
+	bool IsFinger( cv::Point & defect, cv::Point & hull );
 };
 

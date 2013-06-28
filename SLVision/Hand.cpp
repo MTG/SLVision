@@ -20,9 +20,57 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-/*
+
 #include "Hand.h"
-#include "Globals.h"
+#include "Fiducial.h"
+
+	Hand::Hand(void)
+	{
+		Reset();
+	}
+
+	Hand::Hand(unsigned long _sessionID, const cv::Point & _centroid)
+	{
+		Reset();
+		sessionID = _sessionID;
+		center_hand = cv::Point(_centroid);
+	}
+
+	bool Hand::IsItTheSame( cv::Point &point )
+	{
+		if(fabsf(insqdist(center_hand.x, center_hand.y, point.x, point.y)) <= HAND_CENTROID_SIMILARITY)
+			return true;
+		return false;
+	}
+
+	void Hand::Reset()
+	{
+		path.clear();
+		hull.clear();
+		defects.clear();
+		sessionID = 0;
+		startarm = cv::Point(0,0);
+		center_hand = cv::Point(0,0);
+		fingers[0] = cv::Point(0,0);
+		fingers[1] = cv::Point(0,0);
+		fingers[2] = cv::Point(0,0);
+		fingers[3] = cv::Point(0,0);
+		fingers[4] = cv::Point(0,0);
+		is_open = false;
+		is_confirmed = false;
+		is_on_the_surface = false;
+	}
+
+	void Hand::UpdateData( cv::Point &point )
+	{
+		this->center_hand = cv::Point(point);
+	}
+
+	unsigned long Hand::GetSID()
+	{
+		return sessionID;
+	}
+/*#include "Globals.h"
 #include "Fiducial.h"
 #define MIN_DIST_EDGES 10
 #define SMOOTH_LWP_CENTER 4

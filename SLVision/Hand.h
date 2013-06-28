@@ -20,53 +20,38 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-//
-//#pragma once
-//#include <cv.h>
-//#include "TuioServer.h"
-//#include "Hand_Vertex.h"
-//#include "LowPass.h"
-//
-//class Hand
-//{
-//	
-//public:
-//	std::vector <Hand_Vertex>     vertexs;
-//	std::vector <Hand_Vertex>    hand_hole;
-//	std::vector <CvPoint>	fingers;
-//protected:
-//	///vars
-//    
-//    std::vector <Hand_Vertex*>    hull_vertexs;
-//    std::vector <Hand_Vertex*>    hand_vertexs;
-//	
-//    bool                is_hand_detected;
-//    unsigned long       sessionID;
-//    float               area;
-//    float               length;
-//    CvPoint             centroid;
-//	CvPoint				centroidLwP;
-//    CvPoint             from, to;
-//    bool                first_update;
-//	bool				is_open;
-//	bool				confirmed_hand;
-//	bool				is_pinching;
-//	bool				sendEndPinching;
-//	int edge; //-1 none 0 down 1 up 2 left 3 right
-//	bool updated;
-//    ///Methods
-//	void InitVars();
-//    Hand_Vertex* GetNearest(int x, int y);
-//    Hand_Vertex* GetNext(Hand_Vertex* v);
-//    bool FindHandFrom(int indexplus);
-//    void GetNextIndexVertex(int & actual);
-//    void GetPreviousIndexVertex(int & actual);
-//
-//	LowPass *lp_centerhandx;
-//	LowPass *lp_centerhandy;
-//public:
-//	Hand(void);
-//	Hand(unsigned long _sessionID, const CvPoint & _centroid);
+
+#pragma once
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <vector>
+
+#define HAND_CENTROID_SIMILARITY 15
+class Hand
+{
+protected:
+	unsigned long sessionID;
+	cv::Point startarm;
+	cv::Point center_hand;
+	cv::Point fingers[5];
+	
+	bool is_open;
+	bool is_confirmed;
+	bool is_on_the_surface;
+
+public:
+	std::vector<std::vector<cv::Point> > path;
+	cv::vector<int> hull;
+	std::vector<cv::Vec4i> defects;
+
+	//Functions
+	Hand(void);
+	Hand(unsigned long _sessionID, const cv::Point & _centroid);
+	bool IsItTheSame( cv::Point &point );
+	void UpdateData( cv::Point &point );
+	unsigned long GetSID();
+private:
+	void Reset();
 //	~Hand(void);
 //    float Distance(const CvPoint & _centroid);
 //    unsigned long GetSessionID();
@@ -93,5 +78,5 @@
 //	void SetPinch(CvSeq* seq);
 //
 //	bool IsFinger(float x, float y);
-//};
+};
 

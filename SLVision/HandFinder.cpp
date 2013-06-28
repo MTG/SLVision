@@ -24,6 +24,7 @@
 #include "HandFinder.h"
 #include "GlobalConfig.h"
 #include "Globals.h"
+
 //#include "TuioServer.h"
 //
 //#define MINIMUM_CENTROID_DISTANCE 80
@@ -40,6 +41,7 @@ HandFinder::HandFinder(void):
 	//create gui
 	BuildGui();
 
+	hands.clear();
 //	firstcontour=NULL;
 //	polycontour=NULL;
 //	blob_moments = (CvMoments*)malloc( sizeof(CvMoments) );
@@ -197,17 +199,59 @@ void HandFinder::Process(cv::Mat&	main_image)
 			//*******************************************************
 			std::vector<cv::Vec4i> defects;
 			cv::convexityDefects(cv::Mat(approxCurve), hull, defects);
+			float x, y;
+			x = 0; y = 0;
+			int num_vert = 0;
 			for(int i = 0; i < defects.size(); i++)
 			{
+				x += approxCurve[defects[i][2]].x;
+				y += approxCurve[defects[i][2]].y;
+				num_vert++;
 				if(i+1 != defects.size())
 					cv::line(Globals::CameraFrame,approxCurve[defects[i][2]],approxCurve[defects[i+1][2]],cv::Scalar(255,0,255,255),1,CV_AA);
 				else
 					cv::line(Globals::CameraFrame,approxCurve[defects[i][2]],approxCurve[defects[0][2]],cv::Scalar(255,0,255,255),1,CV_AA);
+
+				//cv::line(Globals::CameraFrame,approxCurve[defects[i][1]],approxCurve[defects[i][2]],cv::Scalar(255,255,255,255),1,CV_AA);
 			}
+			//******************************************************
+			//* Find centerhand
+			//*******************************************************
+			x = x / num_vert;
+			y = y / num_vert;
+			cv::circle(Globals::CameraFrame,cv::Point(x,y),10,cv::Scalar(255,0,0),5);
+
+			Hand& candidate = Hand();
+			for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
+			{
+				if(it->second.IsItTheSame(cv::Point(x,y)))
+					candidate = it->second;
+			}
+			if( candidate.GetSID() == 0)
+			{
+				unsigned long newsid = Globals::ssidGenerator++;
+				hands[newsid] = Hand(newsid,cv::Point(x,y));
+			}
+
+			//candidate->UpdateData(cv::Point(x,y));
+
 			//******************************************************
 			//* Find fingers
 			//*******************************************************
-	
+			for(int i = 0; i < defects.size(); i++)
+			{
+				//float q = fabsf(insqdist(approxCurve[defects[i][1]].x, approxCurve[defects[i][1]].y, x, y));
+				if(IsNearEdge( approxCurve[defects[i][1]] ))
+				{
+					cv::line(Globals::CameraFrame,approxCurve[defects[i][1]],cv::Point(x,y),cv::Scalar(255,0,0,255),1,CV_AA);
+				}
+				else 
+					cv::line(Globals::CameraFrame,approxCurve[defects[i][1]],cv::Point(x,y),cv::Scalar(255,255,255,255),1,CV_AA);
+			}
+
+			//******************************************************
+			//* Find pinch
+			//*******************************************************
 		}
 	}
 
@@ -325,6 +369,18 @@ void HandFinder::Process(cv::Mat&	main_image)
 	{
 		cv::imshow(this->name,thres);
 	}
+}
+
+
+bool HandFinder::IsNearEdge( cv::Point & p )
+{
+	if ( p.x > 10 && p.y > 10 && p.x <= Globals::CamSize.width-10 && p.y <= Globals::CamSize.height-10)
+		return false;
+	return true;
+}
+
+bool HandFinder::IsFinger( cv::Point & defect, cv::Point & hull )
+{
 }
 
 void HandFinder::RepportOSC()
