@@ -31,6 +31,7 @@ float ivect_point_dist(float ax, float ay, float bx, float by, float cx, float c
 float fnsqdist(float x, float y, float a, float b);
 float insqdist(float x, float y, float a, float b);
 float nsqdist(const CvPoint &a, const CvPoint &b);
+float nsqdist2(const cv::Point &a, const cv::Point &b);
 double IsLeft(double ax, double ay, double bx, double by, float px, float py);
 
 class Fiducial

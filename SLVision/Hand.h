@@ -26,32 +26,39 @@
 #include <opencv2/core/core.hpp>
 #include <vector>
 
-#define HAND_CENTROID_SIMILARITY 15
+#define HAND_CENTROID_SIMILARITY 100
 class Hand
 {
 protected:
 	unsigned long sessionID;
 	cv::Point startarm;
 	cv::Point center_hand;
+	cv::Point centroid;
 	cv::Point fingers[5];
+	
 	
 	bool is_open;
 	bool is_confirmed;
 	bool is_on_the_surface;
 
-public:
-	std::vector<std::vector<cv::Point> > path;
+	cv::vector<cv::Point> blobPath;
 	cv::vector<int> hull;
 	std::vector<cv::Vec4i> defects;
+public:
 
 	//Functions
 	Hand(void);
 	Hand(unsigned long _sessionID, const cv::Point & _centroid);
 	bool IsItTheSame( cv::Point &point );
-	void UpdateData( cv::Point &point );
+	void UpdateData( cv::Point &point, cv::vector<cv::Point> &path );
 	unsigned long GetSID();
+	bool IsValid();
+
+	void Draw();
+	bool is_updated;
 private:
 	void Reset();
+	float IsNearEdge( cv::Point & p );
 //	~Hand(void);
 //    float Distance(const CvPoint & _centroid);
 //    unsigned long GetSessionID();

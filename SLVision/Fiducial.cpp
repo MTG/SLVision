@@ -499,6 +499,11 @@ void Fiducial::CalculateIntrinsics()
 * general purpose functions
 *****************************************/
 
+float nsqdist2(const cv::Point &a, const cv::Point &b)
+{
+	return insqdist(a.x,a.y,b.x,b.y);
+}
+
 float nsqdist(const cv::Point2f &a, const cv::Point2f &b)
 {
 	return insqdist(a.x,a.y,b.x,b.y);

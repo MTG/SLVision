@@ -174,85 +174,64 @@ void HandFinder::Process(cv::Mat&	main_image)
 			//*******************************************************
 			cv::vector<cv::Point> approxCurve;
 			cv::approxPolyDP (  contours[idx]  ,approxCurve , 2, true );
-			std::cout << approxCurve.size() << std::endl;
-			for(int i = 0; i < approxCurve.size(); i++)
-			{
-				if(i+1 != approxCurve.size())
-					cv::line(Globals::CameraFrame,approxCurve[i],approxCurve[i+1],cv::Scalar(0,255,255,255),1,CV_AA);
-				else
-					cv::line(Globals::CameraFrame,approxCurve[i],approxCurve[0],cv::Scalar(0,255,255,255),1,CV_AA);
-			}
 			//******************************************************
-			//* Find convex Hull
+			//* calculates centroid
 			//*******************************************************
-			cv::vector<int> hull;
-			cv::convexHull( cv::Mat(approxCurve), hull, false );
-			for(int i = 0; i < hull.size(); i++)
-			{
-				if(i+1 != hull.size())
-					cv::line(Globals::CameraFrame,approxCurve[hull[i]],approxCurve[hull[i+1]],cv::Scalar(0,0,255,255),1,CV_AA);
-				else
-					cv::line(Globals::CameraFrame,approxCurve[hull[i]],approxCurve[hull[0]],cv::Scalar(0,0,255,255),1,CV_AA);
-			}
+			cv::Moments hand_blob_moments = cv::moments(contours[idx],true);
+			float x = (float)(hand_blob_moments.m10 / hand_blob_moments.m00);
+			float y = (float)(hand_blob_moments.m01 / hand_blob_moments.m00);
+//			cv::circle(Globals::CameraFrame,cv::Point(x,y),10,cv::Scalar(255,0,0),5);
 			//******************************************************
-			//* Find defects (Hull valleys)
+			//* Find Hand Candidate
 			//*******************************************************
-			std::vector<cv::Vec4i> defects;
-			cv::convexityDefects(cv::Mat(approxCurve), hull, defects);
-			float x, y;
-			x = 0; y = 0;
-			int num_vert = 0;
-			for(int i = 0; i < defects.size(); i++)
-			{
-				x += approxCurve[defects[i][2]].x;
-				y += approxCurve[defects[i][2]].y;
-				num_vert++;
-				if(i+1 != defects.size())
-					cv::line(Globals::CameraFrame,approxCurve[defects[i][2]],approxCurve[defects[i+1][2]],cv::Scalar(255,0,255,255),1,CV_AA);
-				else
-					cv::line(Globals::CameraFrame,approxCurve[defects[i][2]],approxCurve[defects[0][2]],cv::Scalar(255,0,255,255),1,CV_AA);
-
-				//cv::line(Globals::CameraFrame,approxCurve[defects[i][1]],approxCurve[defects[i][2]],cv::Scalar(255,255,255,255),1,CV_AA);
-			}
-			//******************************************************
-			//* Find centerhand
-			//*******************************************************
-			x = x / num_vert;
-			y = y / num_vert;
-			cv::circle(Globals::CameraFrame,cv::Point(x,y),10,cv::Scalar(255,0,0),5);
-
-			Hand& candidate = Hand();
+			unsigned long candidate = 0;
 			for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
 			{
 				if(it->second.IsItTheSame(cv::Point(x,y)))
-					candidate = it->second;
+					candidate = it->first;
 			}
-			if( candidate.GetSID() == 0)
+			if( candidate == 0)
 			{
 				unsigned long newsid = Globals::ssidGenerator++;
 				hands[newsid] = Hand(newsid,cv::Point(x,y));
+				candidate = newsid;
 			}
-
-			//candidate->UpdateData(cv::Point(x,y));
-
 			//******************************************************
-			//* Find fingers
+			//* Update Hand
 			//*******************************************************
-			for(int i = 0; i < defects.size(); i++)
+			if(candidate != 0 && hands.find(candidate) != hands.end())
 			{
-				//float q = fabsf(insqdist(approxCurve[defects[i][1]].x, approxCurve[defects[i][1]].y, x, y));
-				if(IsNearEdge( approxCurve[defects[i][1]] ))
-				{
-					cv::line(Globals::CameraFrame,approxCurve[defects[i][1]],cv::Point(x,y),cv::Scalar(255,0,0,255),1,CV_AA);
-				}
-				else 
-					cv::line(Globals::CameraFrame,approxCurve[defects[i][1]],cv::Point(x,y),cv::Scalar(255,255,255,255),1,CV_AA);
+				hands[candidate].UpdateData(cv::Point(x,y),approxCurve);
 			}
+
+			
+
+
+			
 
 			//******************************************************
 			//* Find pinch
 			//*******************************************************
+
 		}
+
+		to_be_removed.clear();
+		for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
+		{
+			if(!it->second.is_updated) to_be_removed.push_back(it->first);
+			it->second.is_updated = false;
+		}
+		for (std::vector<unsigned long>::iterator it = to_be_removed.begin(); it != to_be_removed.end(); it++)
+		{
+			hands.erase(*it);
+		}
+
+		if(Globals::is_view_enabled)
+		{
+			for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
+				it->second.Draw();
+		}
+
 	}
 
 
@@ -369,18 +348,6 @@ void HandFinder::Process(cv::Mat&	main_image)
 	{
 		cv::imshow(this->name,thres);
 	}
-}
-
-
-bool HandFinder::IsNearEdge( cv::Point & p )
-{
-	if ( p.x > 10 && p.y > 10 && p.x <= Globals::CamSize.width-10 && p.y <= Globals::CamSize.height-10)
-		return false;
-	return true;
-}
-
-bool HandFinder::IsFinger( cv::Point & defect, cv::Point & hull )
-{
 }
 
 void HandFinder::RepportOSC()

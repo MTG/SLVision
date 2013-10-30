@@ -23,31 +23,31 @@
 
 #include "Hand.h"
 #include "Fiducial.h"
+#include "Globals.h"
 
 	Hand::Hand(void)
 	{
 		Reset();
+		centroid = cv::Point(-1,-1);
 	}
 
 	Hand::Hand(unsigned long _sessionID, const cv::Point & _centroid)
 	{
 		Reset();
 		sessionID = _sessionID;
+		centroid = cv::Point(_centroid);
 		center_hand = cv::Point(_centroid);
 	}
 
 	bool Hand::IsItTheSame( cv::Point &point )
 	{
-		if(fabsf(insqdist(center_hand.x, center_hand.y, point.x, point.y)) <= HAND_CENTROID_SIMILARITY)
+		if(fabsf(insqdist(centroid.x, centroid.y, point.x, point.y)) <= HAND_CENTROID_SIMILARITY)
 			return true;
 		return false;
 	}
 
 	void Hand::Reset()
 	{
-		path.clear();
-		hull.clear();
-		defects.clear();
 		sessionID = 0;
 		startarm = cv::Point(0,0);
 		center_hand = cv::Point(0,0);
@@ -59,16 +59,132 @@
 		is_open = false;
 		is_confirmed = false;
 		is_on_the_surface = false;
+		is_updated = false;
+		hull.clear();
+		blobPath.clear();
+		defects.clear();
 	}
 
-	void Hand::UpdateData( cv::Point &point )
+	void Hand::UpdateData( cv::Point &point, cv::vector<cv::Point> &path  )
 	{
+		is_updated = true;
 		this->center_hand = cv::Point(point);
+		this->blobPath = cv::vector<cv::Point>(path);
+		//******************************************************
+		//* Find convex Hull
+		//*******************************************************
+		hull.clear();
+		cv::convexHull( cv::Mat(blobPath), hull, false );
+		//******************************************************
+		//* Find defects (Hull valleys)
+		//*******************************************************
+		defects.clear();
+		cv::convexityDefects(cv::Mat(blobPath), hull, defects);
+		float x, y;
+		x = 0; y = 0;
+		int num_vert = 0;
+		for(int i = 0; i < defects.size(); i++)
+		{
+			x += blobPath[defects[i][2]].x;
+			y += blobPath[defects[i][2]].y;
+			num_vert++;
+		}
+		//******************************************************
+		//* Find centerhand
+		//*******************************************************
+		x = x / num_vert;
+		y = y / num_vert;
+		center_hand = cv::Point(x,y);
+		//******************************************************
+		//* Find fingers and startarm
+		//*******************************************************
+		float min = 99;
+		unsigned int edge_index = 0;
+		cv::Point edge_point = cv::Point(0,0);
+		for(int i = 0; i < defects.size(); i++)
+		{
+			float tmp = IsNearEdge( blobPath[defects[i][1]] );
+			if( tmp < min)
+			{
+				min = tmp;
+				edge_index = defects[i][1];
+			}
+		}
+
+
+		for(int i = 0; i < defects.size(); i++)
+		{
+			if(defects[i][1]  == edge_index)
+			{
+				cv::line(Globals::CameraFrame,blobPath[defects[i][1]],cv::Point(x,y),cv::Scalar(255,0,0,255),1,CV_AA);
+			}
+			else
+			{
+
+				//float insqdist(float x, float y, float a, float b)
+				//if (fabs( nsqdist2(blobPath[defects[i][1]], blobPath[defects[i][2]]) )>50)
+				{
+					//cv::line(Globals::CameraFrame,blobPath[defects[i][1]],cv::Point(x,y),cv::Scalar(255,255,255,255),1,CV_AA);
+					cv::line(Globals::CameraFrame,blobPath[defects[i][1]],blobPath[defects[i][2]],cv::Scalar(255,255,255,255),1,CV_AA);
+				}
+
+
+				
+			}
+		}
+	}
+
+	float Hand::IsNearEdge( cv::Point & p )
+	{
+		float shortest = 9000;
+		if(p.x  < shortest) shortest = p.x;
+		if(p.y  < shortest) shortest = p.y;
+		if(p.x - Globals::CamSize.width >= 0 &&  p.x - Globals::CamSize.width < shortest) shortest = p.x - Globals::CamSize.width;
+		if(p.y - Globals::CamSize.height >= 0 &&  p.y - Globals::CamSize.height < shortest) shortest = p.y - Globals::CamSize.height;
+
+		if ( p.x > 10 && p.y > 10 && p.x <= Globals::CamSize.width-10 && p.y <= Globals::CamSize.height-10)
+			return 99;
+		return shortest;
+	}
+
+	void Hand::Draw()
+	{
+		for(int i = 0; i < blobPath.size(); i++)
+		{
+			if(i+1 != blobPath.size())
+				cv::line(Globals::CameraFrame,blobPath[i],blobPath[i+1],cv::Scalar(0,255,255,255),1,CV_AA);
+			else
+				cv::line(Globals::CameraFrame,blobPath[i],blobPath[0],cv::Scalar(0,255,255,255),1,CV_AA);
+		}
+		cv::circle(Globals::CameraFrame,centroid,10,cv::Scalar(50,255,50),5);
+		for(int i = 0; i < hull.size(); i++)
+		{
+			if(i+1 != hull.size())
+				cv::line(Globals::CameraFrame,blobPath[hull[i]],blobPath[hull[i+1]],cv::Scalar(0,0,255,255),1,CV_AA);
+			else
+				cv::line(Globals::CameraFrame,blobPath[hull[i]],blobPath[hull[0]],cv::Scalar(0,0,255,255),1,CV_AA);
+		}
+		for(int i = 0; i < defects.size(); i++)
+		{
+			if(i+1 != defects.size())
+				cv::line(Globals::CameraFrame,blobPath[defects[i][2]],blobPath[defects[i+1][2]],cv::Scalar(255,0,255,255),1,CV_AA);
+			else
+				cv::line(Globals::CameraFrame,blobPath[defects[i][2]],blobPath[defects[0][2]],cv::Scalar(255,0,255,255),1,CV_AA);
+		}
+
+		cv::circle(Globals::CameraFrame,center_hand,10,cv::Scalar(255,0,0),5);
 	}
 
 	unsigned long Hand::GetSID()
 	{
 		return sessionID;
+	}
+
+	bool Hand::IsValid()
+	{
+		if(centroid.x == -1 && centroid.y == -1)
+			return false;
+		return true;
 	}
 /*#include "Globals.h"
 #include "Fiducial.h"

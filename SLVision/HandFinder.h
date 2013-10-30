@@ -55,6 +55,7 @@ class HandFinder :
 //	CvSeq*			polycontour;
 //	CvPoint			hand_centroid;
 	std::map<unsigned long, Hand> hands;
+	std::vector<unsigned long> to_be_removed;
 //	std::vector<unsigned long> to_remove;
 //
 //	int				threshold_value;
@@ -78,7 +79,5 @@ protected:
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);
 	void RepportOSC();
-	bool IsNearEdge( cv::Point & p );
-	bool IsFinger( cv::Point & defect, cv::Point & hull );
 };
 
