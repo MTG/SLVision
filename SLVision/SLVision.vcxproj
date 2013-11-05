@@ -41,15 +41,15 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(IncludePath);C:\OpenCV2.4.5\build\include\opencv;C:\OpenCV2.4.5\build\include</IncludePath>
-    <LibraryPath>$(LibraryPath);C:\OpenCV2.4.5\build\x86\vc10\lib</LibraryPath>
+    <IncludePath>$(IncludePath);C:\opencv\build\include</IncludePath>
+    <LibraryPath>$(LibraryPath);C:\opencv\build\x86\vc10\lib</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(IncludePath);C:\OpenCV2.4.5\build\include\opencv;C:\OpenCV2.4.5\build\include</IncludePath>
-    <LibraryPath>$(LibraryPath);C:\OpenCV2.4.5\build\x86\vc10\lib</LibraryPath>
+    <IncludePath>$(IncludePath);C:\opencv\build\include</IncludePath>
+    <LibraryPath>$(LibraryPath);C:\opencv\build\x86\vc10\lib</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
