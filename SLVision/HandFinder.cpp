@@ -168,6 +168,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 		//******************************************************
 		// Filter by area
 		//*******************************************************
+		if (contours.size() <= idx)break;
 		float area = (float)cv::contourArea(contours[idx]);
 		if(area >= min_area)
 		{
