@@ -26,6 +26,7 @@
 #include "HandFinder.h"
 #include "GlobalConfig.h"
 #include "Globals.h"
+#include "TuioServer.h"
 
 //#include "TuioServer.h"
 //
@@ -206,12 +207,6 @@ void HandFinder::Process(cv::Mat&	main_image)
 			{
 				hands[candidate].UpdateData(cv::Point(x,y),approxCurve);
 			}
-
-			
-
-
-			
-
 			//******************************************************
 			//* Find pinch
 			//*******************************************************
@@ -355,37 +350,37 @@ void HandFinder::Process(cv::Mat&	main_image)
 
 void HandFinder::RepportOSC()
 {
-//	if(!this->IsEnabled())return;
-//	to_remove.clear();
-//	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
-//	{
-//		if(it->second->IsUpdated())
-//		{
-//			//send OSC MEssage
-//			TuioServer::Instance().AddHand(
-//				it->first,
-//				it->second->IsConfirmedAsHand(),
-//				it->second->IsOpened(),
-//				it->second->TCentroidX(), //Globals::GetX(it->second->TCentroidX()),//it->second->TCentroidX(), 
-//				it->second->TCentroidY(), //Globals::GetY(it->second->TCentroidY()),//it->second->TCentroidY(), 
-//				it->second->GetArea());		
-//			
-//			TuioServer::Instance().AddHandPath(it->first,it->second->vertexs);
-//			if(it->second->IsPinching() || it->second->IsPinchingEnd())
-//			{
-//				TuioServer::Instance().AddHandPinch(it->first,it->second->hand_hole);
-//			}
-//		}
-//		else
-//		{
-//			to_remove.push_back(it->first);
-//		}
-//	}
-//
-//	for( std::vector<unsigned long>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
-//	{
-//		hands.erase(*it);
-//	}
+	if(!this->IsEnabled())return;
+	to_remove.clear();
+	for(std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
+	{
+		if(it->second.IsUpdated())
+		{
+			//send OSC MEssage
+			TuioServer::Instance().AddHand(
+				it->first,
+				it->second.IsConfirmedAsHand(),
+				it->second.IsOpen(),
+				it->second.GetCentreX(), //Globals::GetX(it->second->TCentroidX()),//it->second->TCentroidX(), 
+				it->second.GetCentreY(), //Globals::GetY(it->second->TCentroidY()),//it->second->TCentroidY(), 
+				it->second.GetArea());		
+			
+			/*TuioServer::Instance().AddHandPath(it->first,it->second->vertexs);
+			if(it->second->IsPinching() || it->second->IsPinchingEnd())
+			{
+				TuioServer::Instance().AddHandPinch(it->first,it->second->hand_hole);
+			}*/
+		}
+		else
+		{
+			to_remove.push_back(it->first);
+		}
+	}
+
+	for( std::vector<unsigned int>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
+	{
+		hands.erase(*it);
+	}
 }
 
 //
