@@ -41,6 +41,7 @@ protected:
 	
 	bool is_open;
 	bool is_confirmed;
+	bool id_hand;
 	bool is_on_the_surface;
 
 	cv::vector<cv::Point> blobPath;

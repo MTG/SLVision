@@ -115,9 +115,10 @@
 
 		if(edge_index == -1) //not a hand (misssed arm)
 		{
-			is_confirmed = false;
+			id_hand = false;
 			return;
 		}
+		else id_hand = true;
 
 		//fingers???
 
@@ -158,7 +159,7 @@
 
 	void Hand::Draw(bool force)
 	{
-		if(!force && !is_confirmed) return;
+		if(!force && !id_hand) return;
 		for(int i = 0; i < blobPath.size(); i++)
 		{
 			if(i+1 != blobPath.size())
