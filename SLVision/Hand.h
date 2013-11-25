@@ -56,7 +56,7 @@ public:
 	unsigned long GetSID();
 	bool IsValid();
 
-	void Draw();
+	void Draw(bool force = false);
 	bool is_updated;
 private:
 	void Reset();

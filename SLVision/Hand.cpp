@@ -101,7 +101,7 @@
 		//* Find fingers and startarm
 		//*******************************************************
 		float min = 99;
-		unsigned int edge_index = 0;
+		int edge_index = -1;
 		cv::Point edge_point = cv::Point(0,0);
 		for(int i = 0; i < defects.size(); i++)
 		{
@@ -113,8 +113,15 @@
 			}
 		}
 
+		if(edge_index == -1) //not a hand (misssed arm)
+		{
+			is_confirmed = false;
+			return;
+		}
 
-		for(int i = 0; i < defects.size(); i++)
+		//fingers???
+
+		/*for(int i = 0; i < defects.size(); i++)
 		{
 			if(defects[i][1]  == edge_index)
 			{
@@ -133,7 +140,7 @@
 
 				
 			}
-		}
+		}*/
 	}
 
 	float Hand::IsNearEdge( cv::Point & p )
@@ -149,8 +156,9 @@
 		return shortest;
 	}
 
-	void Hand::Draw()
+	void Hand::Draw(bool force)
 	{
+		if(!force && !is_confirmed) return;
 		for(int i = 0; i < blobPath.size(); i++)
 		{
 			if(i+1 != blobPath.size())

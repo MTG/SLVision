@@ -129,11 +129,11 @@ HandFinder::~HandFinder(void)
 AliveList HandFinder::GetAlive()
 {
 	AliveList toreturn;
-//	if(this->IsEnabled())
-//	{
-//		for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
-//			toreturn.push_back(it->first);
-//	}
+	if(this->IsEnabled())
+	{
+		for(std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
+			toreturn.push_back(it->first);
+	}
 	return toreturn;
 }
 //
@@ -355,7 +355,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 
 void HandFinder::RepportOSC()
 {
-//	if(!this->IsEnabled())return;
+	if(!this->IsEnabled())return;
 //	to_remove.clear();
 //	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
 //	{
