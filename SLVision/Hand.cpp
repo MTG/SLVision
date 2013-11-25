@@ -188,32 +188,6 @@
 			return false;
 		return true;
 	}
-
-	bool Hand::IsUpdated()
-	{
-		if(is_updated)
-		{
-			is_updated = false;
-			return true;
-		}
-		return false;
-	}
-
-	bool Hand::IsOpen()
-	{
-		return this->is_open;
-	}
-
-	int Hand::GetCentreX()
-	{
-		return this->center_hand.x;
-	}
-
-	int Hand::GetCentreY()
-	{
-		return this->center_hand.y;
-	}
-
 /*#include "Globals.h"
 #include "Fiducial.h"
 #define MIN_DIST_EDGES 10
@@ -679,6 +653,16 @@ void Hand::draw(float x, float y)
 		else Globals::Font::Write(Globals::screen,buffer,centroid,FONT_AXIS,0,255,0);
 		
 	}
+}
+
+bool Hand::IsUpdated()
+{
+	if(updated)
+	{
+		updated = false;
+		return true;
+	}
+	return false;
 }
 
 int Hand::IsConfirmedAsHand()

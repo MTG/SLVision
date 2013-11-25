@@ -38,7 +38,7 @@ protected:
 	cv::Point centroid;
 	cv::Point fingers[5];
 	
-	bool is_updated;
+	
 	bool is_open;
 	bool is_confirmed;
 	bool is_on_the_surface;
@@ -57,10 +57,7 @@ public:
 	bool IsValid();
 
 	void Draw();
-	bool IsUpdated();
-	bool IsOpen();
-	int GetCentreX(); 
-	int GetCentreY();
+	bool is_updated;
 private:
 	void Reset();
 	float IsNearEdge( cv::Point & p );
@@ -75,7 +72,7 @@ private:
 //    void ComputeHand(float area, float length);
 //    void draw(float x = 0, float y = 0);
 //
-	
+//	bool IsUpdated();
 //	int IsConfirmedAsHand();
 //	int IsOpened();
 //	CvPoint GetCentroid();
