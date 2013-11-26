@@ -37,6 +37,12 @@
 #include <string>
 #include <sstream>
 
+
+//#define USE_LIVE_VIDEO 1
+#ifdef USE_LIVE_VIDEO
+#define INFILE "C:\\Users\\Public\\Videos\\Sample Videos\\Wildlife.wmv"
+#endif
+
 //Window tittles
 #define MAIN_TITTLE					"SLVision"
 #define CAMERA_TITTLE				"Camera view"
@@ -96,7 +102,13 @@ int main(int argc, char* argv[])
 	*******************************************************/
 	//Open camera
 	cameraID = datasaver::GlobalConfig::getRef("MAIN:CAMERA_ID",CAMERA_ID);
+
+#ifdef USE_LIVE_VIDEO
+	VCapturer.open(INFILE);
+#else
 	VCapturer.open(cameraID);
+#endif
+
 	if(!VCapturer.isOpened())
 	{
 		std::cout << "Unable to open camera id: " << cameraID << std::endl;
@@ -142,7 +154,11 @@ int main(int argc, char* argv[])
 	*******************************************************/
 	while(is_running)
 	{
+#ifdef USE_LIVE_VIDEO
+		VCapturer.read( InputCamera);
+#else
 		VCapturer.retrieve( InputCamera);
+#endif
 		double tick = (double)cv::getTickCount();
 		
 		/******************************************************
