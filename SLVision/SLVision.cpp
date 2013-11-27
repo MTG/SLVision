@@ -149,6 +149,55 @@ int main(int argc, char* argv[])
 	TuioServer::Instance().RegisterProcessor(markerfinder);
 	TuioServer::Instance().RegisterProcessor(touchfinder);
 	TuioServer::Instance().RegisterProcessor(handfinder);
+
+
+
+	/******************************************************
+	* Video recorder
+	*******************************************************/
+
+	//std::string::size_type pAt = source.find_last_of('.');                  // Find extension point
+    const std::string NAME = "out.avi";   // Form the new name with container
+    int ex = static_cast<int>(VCapturer.get(CV_CAP_PROP_FOURCC));     // Get Codec Type- Int form
+
+    // Transform from int to char via Bitwise operators
+    char EXT[] = {(char)(ex & 0XFF) , (char)((ex & 0XFF00) >> 8),(char)((ex & 0XFF0000) >> 16),(char)((ex & 0XFF000000) >> 24), 0};
+
+    cv::Size S = cv::Size((int) VCapturer.get(CV_CAP_PROP_FRAME_WIDTH),    // Acquire input size
+                  (int) VCapturer.get(CV_CAP_PROP_FRAME_HEIGHT));
+
+    //cv::VideoWriter outputVideo;                                        // Open the output
+    //if (askOutputType)
+    //    outputVideo.open(NAME, ex=-1, VCapturer.get(CV_CAP_PROP_FPS), S, true);
+    //else
+    //    outputVideo.open(NAME, ex, VCapturer.get(CV_CAP_PROP_FPS), S, true);
+
+	cv::VideoWriter outputVideo("out.avi", 
+               VCapturer.get(CV_CAP_PROP_FOURCC),
+               VCapturer.get(CV_CAP_PROP_FPS),
+               cv::Size(VCapturer.get(CV_CAP_PROP_FRAME_WIDTH),
+               VCapturer.get(CV_CAP_PROP_FRAME_HEIGHT)));
+    if (!outputVideo.isOpened())
+    {
+        std::cout  << "Could not open the output video for write: " << "out.avi" << std::endl;
+        return -1;
+    }
+
+	std::cout << "Input frame resolution: Width=" << S.width << "  Height=" << S.height
+         << " of nr#: " << VCapturer.get(CV_CAP_PROP_FRAME_COUNT) << std::endl;
+    std::cout << "Input codec type: " << EXT << std::endl;
+
+	//int channel = 2; // Select the channel to save
+    //switch(argv[2][0])
+    //{
+    //case 'R' : channel = 2; break;
+    //case 'G' : channel = 1; break;
+    //case 'B' : channel = 0; break;
+    //}
+    cv::Mat src, res;
+    cv::vector<cv::Mat> spl;
+	
+
 	/******************************************************
 	* Main loop app
 	*******************************************************/
@@ -160,6 +209,7 @@ int main(int argc, char* argv[])
 		VCapturer.retrieve( InputCamera);
 #endif
 		double tick = (double)cv::getTickCount();
+		outputVideo << InputCamera;
 		
 		/******************************************************
 		* Convert image to graycsale
