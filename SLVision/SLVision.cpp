@@ -43,6 +43,12 @@
 #define INFILE "C:\\Users\\Public\\Videos\\Sample Videos\\Wildlife.wmv"
 #endif
 
+//#define RECORD_VIDEO 1
+#ifdef RECORD_VIDEO
+#define OUTFILE "out.avi"
+#define RECORDFPS 30
+#endif
+
 //Window tittles
 #define MAIN_TITTLE					"SLVision"
 #define CAMERA_TITTLE				"Camera view"
@@ -155,47 +161,30 @@ int main(int argc, char* argv[])
 	/******************************************************
 	* Video recorder
 	*******************************************************/
-
-	//std::string::size_type pAt = source.find_last_of('.');                  // Find extension point
-    const std::string NAME = "out.avi";   // Form the new name with container
-    int ex = static_cast<int>(VCapturer.get(CV_CAP_PROP_FOURCC));     // Get Codec Type- Int form
-
+#ifdef RECORD_VIDEO
+    int ex = static_cast<int>(CV_FOURCC('D','I','V','X'));     // Get Codec Type- Int form
     // Transform from int to char via Bitwise operators
     char EXT[] = {(char)(ex & 0XFF) , (char)((ex & 0XFF00) >> 8),(char)((ex & 0XFF0000) >> 16),(char)((ex & 0XFF000000) >> 24), 0};
 
     cv::Size S = cv::Size((int) VCapturer.get(CV_CAP_PROP_FRAME_WIDTH),    // Acquire input size
                   (int) VCapturer.get(CV_CAP_PROP_FRAME_HEIGHT));
 
-    //cv::VideoWriter outputVideo;                                        // Open the output
-    //if (askOutputType)
-    //    outputVideo.open(NAME, ex=-1, VCapturer.get(CV_CAP_PROP_FPS), S, true);
-    //else
-    //    outputVideo.open(NAME, ex, VCapturer.get(CV_CAP_PROP_FPS), S, true);
-
-	cv::VideoWriter outputVideo("out.avi", 
-               VCapturer.get(CV_CAP_PROP_FOURCC),
-               VCapturer.get(CV_CAP_PROP_FPS),
-               cv::Size(VCapturer.get(CV_CAP_PROP_FRAME_WIDTH),
-               VCapturer.get(CV_CAP_PROP_FRAME_HEIGHT)));
+	cv::VideoWriter outputVideo;
+	
+	outputVideo.open(OUTFILE, 
+               ex,
+               RECORDFPS,
+               S);
     if (!outputVideo.isOpened())
     {
-        std::cout  << "Could not open the output video for write: " << "out.avi" << std::endl;
-        return -1;
+        std::cout  << "Could not open the output video for write: " << OUTFILE << std::endl;
     }
 
 	std::cout << "Input frame resolution: Width=" << S.width << "  Height=" << S.height
-         << " of nr#: " << VCapturer.get(CV_CAP_PROP_FRAME_COUNT) << std::endl;
+         << " of nr#: " << RECORDFPS << std::endl;
     std::cout << "Input codec type: " << EXT << std::endl;
 
-	//int channel = 2; // Select the channel to save
-    //switch(argv[2][0])
-    //{
-    //case 'R' : channel = 2; break;
-    //case 'G' : channel = 1; break;
-    //case 'B' : channel = 0; break;
-    //}
-    cv::Mat src, res;
-    cv::vector<cv::Mat> spl;
+#endif
 	
 
 	/******************************************************
@@ -209,8 +198,10 @@ int main(int argc, char* argv[])
 		VCapturer.retrieve( InputCamera);
 #endif
 		double tick = (double)cv::getTickCount();
+#ifdef RECORD_VIDEO
+		if (outputVideo.isOpened())
 		outputVideo << InputCamera;
-		
+#endif
 		/******************************************************
 		* Convert image to graycsale
 		*******************************************************/
