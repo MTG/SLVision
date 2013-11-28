@@ -54,15 +54,33 @@ public:
 	~TuioServer(void);
 	void RegisterProcessor(FrameProcessor * processor);
 	void StartBundle();
-	void Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, float x, float y, float z, float yaw, float pitch, float roll);
-	void Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, float x, float y, float z, float yaw, float pitch, float roll,
-		float r11, float r12, float r13, float r21, float r22, float r23, float r31, float r32, float r33);
-	void AddPointerMessage(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press);
 	void SendBundle();
 	void SendEmptyBundle();
+
+	void Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, 
+							float x, float y, float z, 
+							float yaw, float pitch, float roll);
 	
-//	void AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area);
-//	void AddHandPath(unsigned int sid, std::vector<Hand_Vertex> &path);
+	void Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned int fid, 
+							float x, float y, float z, 
+							float yaw, float pitch, float roll,
+							float r11, float r12, float r13, 
+							float r21, float r22, float r23, 
+							float r31, float r32, float r33);
+	
+	void AddPointerMessage(	unsigned int sid, unsigned int uid, unsigned int cid, 
+							float x, float y, float width, float press);
+	
+	void AddHand(unsigned int sid, 
+				 float centroidx, float centroidy, 
+				 float area,
+				 float start_armx, float start_army,
+				 float end_armx, float end_army,
+				 float handx, float handy, float hand_influence,
+				 float pinchx, float pincy, float pinc_influence,
+				 int numfingers);
+
+	void AddHandPath(unsigned int sid, std::vector<cv::Point> &path);
 //	void AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path);
 	/*void AddHandFingers(unsigned int sid, float x1, float y1, 
 		float x2, float y2, float x3, float y3, float x4, float y4, float x5, float y5);*/

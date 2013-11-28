@@ -182,11 +182,13 @@
 		fingers[2] = cv::Point(-1,-1);
 		fingers[3] = cv::Point(-1,-1);
 		fingers[4] = cv::Point(-1,-1);
+		numfingers =0;
 		if(finger_candidates.size() <= 5)
 		{
 			for(unsigned int i = 0; i < finger_candidates.size(); i++)
 			{
 				fingers[i] = cv::Point(blobPath[defects[finger_candidates[i]][1]]);
+				numfingers ++;
 			}
 		}
 		else
@@ -194,6 +196,7 @@
 			for(int i = 0; i < 5; i++)
 			{
 				fingers[i] = cv::Point(blobPath[defects[finger_candidates[i]][1]]);
+				numfingers++;
 			}
 		}
 
@@ -287,7 +290,15 @@
 
 	bool Hand::IsValid()
 	{
-		if(centroid.x == -1 && centroid.y == -1)
-			return false;
-		return true;
+		return is_hand;
+	}
+
+	bool Hand::IsUpdated()
+	{
+		if(is_updated)
+		{
+			is_updated = false;
+			return true;
+		}
+		return false;
 	}

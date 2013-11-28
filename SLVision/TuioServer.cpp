@@ -132,31 +132,39 @@ void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned 
 }
 
 
-//void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area)
-//{
-//	
-//	if(!bundle_started)StartBundle();
-//	(*packet_stream) << osc::BeginMessage( "/tuio2/hand" ) << (int)sid << (int)confirmed << (int)open << x << y << area <<osc::EndMessage;
-//	messages++;
-//	if(messages > 5) SendBundle();
-//	
-//}
-//
-//void TuioServer::AddHandPath(unsigned int sid,std::vector<Hand_Vertex> &path)
-//{
-//	
-//	if(!bundle_started)StartBundle();
-//	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/path" ) << (int)sid ;
-//	for(std::vector<Hand_Vertex>::iterator it = path.begin(); it != path.end(); it++)
-//	{
-//		(*packet_stream) << (float)it->GetDistortionatedX() << (float)it->GetDistortionatedY() << (int)it->GetDescription() ;
-//
-//	}
-//	(*packet_stream) <<osc::EndMessage;
-//	messages++;
-//	if(messages > 5) SendBundle();
-//	
-//}
+void TuioServer::AddHand(unsigned int sid, 
+				 float centroidx, float centroidy, 
+				 float area,
+				 float start_armx, float start_army,
+				 float end_armx, float end_army,
+				 float handx, float handy, float hand_influence,
+				 float pinchx, float pinchy, float pinch_influence,
+				 int numfingers)
+{
+	if(!bundle_started)StartBundle();
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand" ) << 
+		(int)sid << centroidx << centroidy << area << 
+		start_armx << start_army << end_armx << end_army <<
+		handx << handy << hand_influence <<
+		pinchx << pinchy <<pinch_influence <<
+		(int)numfingers <<osc::EndMessage;
+	messages++;
+	if(messages > 5) SendBundle();
+}
+
+void TuioServer::AddHandPath(unsigned int sid,std::vector<cv::Point> &path)
+{
+	
+	if(!bundle_started)StartBundle();
+	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/path" ) << (int)sid ;
+	for(std::vector<cv::Point>::iterator it = path.begin(); it != path.end(); it++)
+	{
+		(*packet_stream) << (float)it->x << (float)it->y;
+	}
+	(*packet_stream) <<osc::EndMessage;
+	messages++;
+	if(messages > 5) SendBundle();
+}
 //
 //void TuioServer::AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path)
 //{

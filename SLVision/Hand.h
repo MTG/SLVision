@@ -37,6 +37,7 @@ protected:
 	float area; //blob area
 	cv::Point centroid;  //blob centroid
 	cv::Point fingers[5]; //Finger
+	int numfingers;
 
 	cv::Point center_hand;  //center of the hand (excluding the arm)
 	float influence_radius; //hand radius (excluding the arm)
@@ -52,6 +53,8 @@ protected:
 	cv::vector<cv::Point> blobPath;
 	cv::vector<int> hull;
 	std::vector<cv::Vec4i> defects;
+
+	bool is_updated;
 
 	//auxiliar data
 	int edge_index;
@@ -69,7 +72,19 @@ public:
 	unsigned long GetSID();
 	bool IsValid();
 	void Draw(bool force = false);
-	bool is_updated;
+
+	bool IsUpdated();
+	cv::Point GetCentroid(){return centroid;}
+	float GetArea(){return area;}
+	cv::Point GetStartArm(){return startarm;}
+	cv::Point GetEndArm(){return endarm;}
+	cv::Point GetHandPoint(){return center_hand;}
+	float GetHandInfluence(){return influence_radius;}
+	cv::Point GetPinchPoint(){return pinch_centre;}
+	float GetPinchInfluence(){return pinch_area;}
+	int GetNumFingers(){return numfingers;}
+	cv::vector<cv::Point>& GetPath(){return blobPath;}
+
 private:
 	void Reset();
 	float IsNearEdge( cv::Point & p );

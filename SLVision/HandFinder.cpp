@@ -26,7 +26,7 @@
 #include "HandFinder.h"
 #include "GlobalConfig.h"
 #include "Globals.h"
-//#include "TuioServer.h"
+#include "TuioServer.h"
 
 HandFinder::HandFinder(void):
 	Threshold_value(datasaver::GlobalConfig::getRef("FrameProcessor:HandFinder:threshold:threshold_value",33)),
@@ -136,8 +136,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 		to_be_removed.clear();
 		for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
 		{
-			if(!it->second.is_updated) to_be_removed.push_back(it->first);
-			it->second.is_updated = false;
+			if(!it->second.IsUpdated()) to_be_removed.push_back(it->first);
 		}
 		for (std::vector<unsigned long>::iterator it = to_be_removed.begin(); it != to_be_removed.end(); it++)
 		{
@@ -163,36 +162,47 @@ void HandFinder::Process(cv::Mat&	main_image)
 void HandFinder::RepportOSC()
 {
 	if(!this->IsEnabled())return;
-//	to_remove.clear();
-//	for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
-//	{
-//		if(it->second->IsUpdated())
-//		{
-//			//send OSC MEssage
-//			TuioServer::Instance().AddHand(
-//				it->first,
-//				it->second->IsConfirmedAsHand(),
-//				it->second->IsOpened(),
-//				it->second->TCentroidX(), //Globals::GetX(it->second->TCentroidX()),//it->second->TCentroidX(), 
-//				it->second->TCentroidY(), //Globals::GetY(it->second->TCentroidY()),//it->second->TCentroidY(), 
-//				it->second->GetArea());		
-//			
-//			TuioServer::Instance().AddHandPath(it->first,it->second->vertexs);
+	to_remove.clear();
+	for(std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
+	{
+		if(it->second.IsUpdated()&& it->second.IsValid())
+		{
+			//send OSC MEssage
+			//id, centroidx, centroidy, area, 
+			//startarmx, startarmy, endarmx, endarmy, 
+			//handx, handy, handinfluence,
+			//pinchx, pinchy, pinchinfluence, 
+			//numfingers
+			TuioServer::Instance().AddHand(
+				it->first,
+				it->second.GetCentroid().x, it->second.GetCentroid().y, it->second.GetArea(),
+				it->second.GetStartArm().x, it->second.GetStartArm().y,
+				it->second.GetEndArm().x, it->second.GetEndArm().y,
+				it->second.GetHandPoint().x, it->second.GetHandPoint().y, it->second.GetHandInfluence(),
+				it->second.GetPinchPoint().x, it->second.GetPinchPoint().y, it->second.GetPinchInfluence(),
+				it->second.GetNumFingers()
+				);		
+
+			//id blob path
+			TuioServer::Instance().AddHandPath(it->first,it->second.GetPath());
+
+			//Check finger integrity and mix data
+			//id, finger0x, finger0y, ... , finger4y
 //			if(it->second->IsPinching() || it->second->IsPinchingEnd())
 //			{
 //				TuioServer::Instance().AddHandPinch(it->first,it->second->hand_hole);
 //			}
-//		}
-//		else
-//		{
-//			to_remove.push_back(it->first);
-//		}
-//	}
-//
-//	for( std::vector<unsigned long>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
-//	{
-//		hands.erase(*it);
-//	}
+		}
+		else
+		{
+			to_remove.push_back(it->first);
+		}
+	}
+
+	for( std::vector<int>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
+	{
+		hands.erase(*it);
+	}
 }
 
 void HandFinder::BuildGui(bool force)

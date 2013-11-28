@@ -49,6 +49,8 @@ class HandFinder : public FrameProcessor
 	int										& min_area;
 	std::map<unsigned long, Hand>			hands;
 	std::vector<unsigned long>				to_be_removed;
+
+	std::vector<int> to_remove;
 public:
 	HandFinder(void);
 	~HandFinder(void);
