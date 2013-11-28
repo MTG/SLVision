@@ -518,7 +518,7 @@ float fnsqdist(float x, float y, float a, float b)
 	return sqrt(uu*uu + vv*vv);
 }
 
-float insqdist(float x, float y, float a, float b)
+float insqdist(int x, int y, int a, int b)
 {
 	float uu = (float)(a-x);
 	float vv = (float)(b-y);

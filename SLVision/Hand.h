@@ -36,8 +36,7 @@ protected:
 	
 	float area; //blob area
 	cv::Point centroid;  //blob centroid
-	cv::Point fingers[5];
-
+	cv::Point fingers[5]; //Finger
 
 	cv::Point center_hand;  //center of the hand (excluding the arm)
 	float influence_radius; //hand radius (excluding the arm)
@@ -47,11 +46,8 @@ protected:
 	
 	cv::Point pinch_centre;  //centre of the pinch area
 	float pinch_area;  //pinch area radius
-	
-	bool is_open;
-	bool is_confirmed;
+
 	bool is_hand;
-	bool is_on_the_surface;
 
 	cv::vector<cv::Point> blobPath;
 	cv::vector<int> hull;
@@ -64,7 +60,6 @@ protected:
 	float temp_dist;
 	std::vector<int> finger_candidates;
 public:
-
 	//Functions
 	Hand(void);
 	Hand(unsigned long _sessionID, const cv::Point & _centroid, float area);
@@ -73,37 +68,10 @@ public:
 	void AddPinch( cv::vector<cv::Point> &path, float area );
 	unsigned long GetSID();
 	bool IsValid();
-
 	void Draw(bool force = false);
 	bool is_updated;
 private:
 	void Reset();
 	float IsNearEdge( cv::Point & p );
-//	~Hand(void);
-//    float Distance(const CvPoint & _centroid);
-//    unsigned long GetSessionID();
-//    void Update(const CvPoint & _centroid);
-//
-//    void Clear();
-//    void AddVertex(int x, int y);
-//    void AddVertexConvex(int x, int y);
-//    void ComputeHand(float area, float length);
-//    void draw(float x = 0, float y = 0);
-//
-//	bool IsUpdated();
-//	int IsConfirmedAsHand();
-//	int IsOpened();
-//	CvPoint GetCentroid();
-//	float GetArea();
-//	float TCentroidX();
-//	float TCentroidY();
-//	float GetLwPCentroidX();
-//	float GetLwPCentroidY();
-//
-//	bool IsPinching();
-//	bool IsPinchingEnd();
-//	void SetPinch(CvSeq* seq);
-//
-//	bool IsFinger(float x, float y);
 };
 

@@ -45,19 +45,6 @@ HandFinder::~HandFinder(void)
 {
 }
 
-//bool HandFinder::TouchInHand(float x, float y)
-//{
-//	if(this->IsEnabled())
-//	{
-//		for(std::map<unsigned long, Hand*>::iterator it = hands.begin(); it != hands.end(); it++)
-//		{
-//			if(it->second->IsFinger(x,y))
-//				return true;
-//		}
-//	}
-//	return false;
-//}
-//
 AliveList HandFinder::GetAlive()
 {
 	AliveList toreturn;
@@ -68,11 +55,6 @@ AliveList HandFinder::GetAlive()
 	}
 	return toreturn;
 }
-//
-//void HandFinder::KeyInput(char key)
-//{
-//}
-//
 
 void HandFinder::Process(cv::Mat&	main_image)
 {
@@ -212,12 +194,6 @@ void HandFinder::RepportOSC()
 //		hands.erase(*it);
 //	}
 }
-
-//
-//std::map<unsigned long, Hand*>* HandFinder::GetHands()
-//{
-//	return &hands;
-//}
 
 void HandFinder::BuildGui(bool force)
 {

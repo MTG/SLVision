@@ -60,9 +60,6 @@
 		fingers[2] = cv::Point(-1,-1);
 		fingers[3] = cv::Point(-1,-1);
 		fingers[4] = cv::Point(-1,-1);
-		is_open = false;
-		is_confirmed = false;
-		is_on_the_surface = false;
 		is_updated = false;
 		hull.clear();
 		blobPath.clear();
@@ -92,7 +89,7 @@
 		//Start arm calculation
 		auxiliar_distance = 99;
 		edge_index = -1;
-		for(int i = 0; i < defects.size(); i++)
+		for(unsigned int i = 0; i < defects.size(); i++)
 		{
 			temp_dist = IsNearEdge( blobPath[defects[i][1]] );
 			if( temp_dist < auxiliar_distance)
@@ -115,7 +112,7 @@
 		///Find further point of the path
 		further_index = -1;
 		auxiliar_distance = 0;
-		for(int i = 0; i < defects.size(); i++)
+		for(unsigned int i = 0; i < defects.size(); i++)
 		{
 			if(defects[i][1] != edge_index)
 			{
@@ -137,7 +134,7 @@
 		center_hand.y = 0;
 		finger_candidates.clear();
 		int q=0;
-		for(int i = 0; i < defects.size(); i++)
+		for(unsigned int i = 0; i < defects.size(); i++)
 		{
 			if( insqdist(endarm.x, 
 						 endarm.y, 
@@ -161,12 +158,12 @@
 			}
 		}
 
-		center_hand.x /= (float)q;
-		center_hand.y /= (float)q;
+		center_hand.x = (int)floor((float)center_hand.x/(float)q);
+		center_hand.y = (int)floor((float)center_hand.y/(float)q);
 
 		//Check influence_hand_radius
 		influence_radius = 0;
-		for(int i = 0; i < finger_candidates.size(); i++)
+		for(unsigned int i = 0; i < finger_candidates.size(); i++)
 		{
 			temp_dist = insqdist(center_hand.x, 
 						 center_hand.y, 
@@ -187,7 +184,7 @@
 		fingers[4] = cv::Point(-1,-1);
 		if(finger_candidates.size() <= 5)
 		{
-			for(int i = 0; i < finger_candidates.size(); i++)
+			for(unsigned int i = 0; i < finger_candidates.size(); i++)
 			{
 				fingers[i] = cv::Point(blobPath[defects[finger_candidates[i]][1]]);
 			}
@@ -209,17 +206,17 @@
 		int q = 0;
 		pinch_centre.x = 0;
 		pinch_centre.y = 0;
-		for( int i = 0; i < path.size(); i++)
+		for( unsigned int i = 0; i < path.size(); i++)
 		{
 			pinch_centre.x += path[i].x;
 			pinch_centre.y += path[i].y;
 			q++;
 		}
-		pinch_centre.x /= (float)q;
-		pinch_centre.y /= (float)q;
+		pinch_centre.x = (int)floor((float)pinch_centre.x/(float)q);
+		pinch_centre.y = (int)floor((float)pinch_centre.y/(float)q);
 		
 		pinch_area = 0;
-		for( int i = 0; i < path.size(); i++)
+		for( unsigned int i = 0; i < path.size(); i++)
 		{
 			temp_dist = insqdist(pinch_centre.x, 
 						 pinch_centre.y, 
@@ -236,10 +233,10 @@
 	float Hand::IsNearEdge( cv::Point & p )
 	{
 		float shortest = 9000;
-		if(p.x  < shortest) shortest = p.x;
-		if(p.y  < shortest) shortest = p.y;
-		if(p.x - Globals::CamSize.width >= 0 &&  p.x - Globals::CamSize.width < shortest) shortest = p.x - Globals::CamSize.width;
-		if(p.y - Globals::CamSize.height >= 0 &&  p.y - Globals::CamSize.height < shortest) shortest = p.y - Globals::CamSize.height;
+		if(p.x  < shortest) shortest = (float)p.x;
+		if(p.y  < shortest) shortest = (float)p.y;
+		if(p.x - Globals::CamSize.width >= 0 &&  p.x - Globals::CamSize.width < shortest) shortest = (float)(p.x - Globals::CamSize.width);
+		if(p.y - Globals::CamSize.height >= 0 &&  p.y - Globals::CamSize.height < shortest) shortest = (float)(p.y - Globals::CamSize.height);
 
 		if ( p.x > 10 && p.y > 10 && p.x <= Globals::CamSize.width-10 && p.y <= Globals::CamSize.height-10)
 			return 99;
@@ -251,7 +248,7 @@
 		if(!force && !is_hand) return;
 
 		//draw blob path
-		for(int i = 0; i < blobPath.size(); i++)
+		for(unsigned int i = 0; i < blobPath.size(); i++)
 		{
 			if(i+1 != blobPath.size())
 				cv::line(Globals::CameraFrame,blobPath[i],blobPath[i+1],cv::Scalar(0,255,255,255),1,CV_AA);
@@ -264,7 +261,7 @@
 		cv::circle(Globals::CameraFrame,endarm,10,cv::Scalar(255,0,255),5);
 
 		//draw hand influence
-		cv::circle(Globals::CameraFrame,center_hand,influence_radius,cv::Scalar(0,0,255),3);
+		cv::circle(Globals::CameraFrame,center_hand,(int)floor(influence_radius),cv::Scalar(0,0,255),3);
 
 		//draw fingers
 		for(int i = 0; i < 5; i++)
@@ -278,7 +275,7 @@
 		//draw pinch
 		if(pinch_area != 0)
 		{
-			cv::circle(Globals::CameraFrame,pinch_centre,pinch_area,cv::Scalar(0,255,255),3);
+			cv::circle(Globals::CameraFrame,pinch_centre,(int)floor(pinch_area),cv::Scalar(0,255,255),3);
 		}
 
 	}

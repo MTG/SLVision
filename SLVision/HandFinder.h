@@ -28,13 +28,10 @@
 #include "Hand.h"
 #include <map>
 
-class HandFinder :
-	public FrameProcessor
+class HandFinder : public FrameProcessor
 {
 	cv::Mat									grey, thres, thres_contours;
-
 	int &									Threshold_value;
-
 	std::vector<std::vector<cv::Point> >	contours;
 	/******************************************************
 	* Hierarchy structure
@@ -50,8 +47,8 @@ class HandFinder :
 	*******************************************************/
 	std::vector<cv::Vec4i>					hierarchy;
 	int										& min_area;
-	std::map<unsigned long, Hand> hands;
-	std::vector<unsigned long> to_be_removed;
+	std::map<unsigned long, Hand>			hands;
+	std::vector<unsigned long>				to_be_removed;
 public:
 	HandFinder(void);
 	~HandFinder(void);
