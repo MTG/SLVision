@@ -32,7 +32,9 @@ class HandFinder :
 	public FrameProcessor
 {
 	cv::Mat									grey, thres, thres_contours;
+
 	int &									Threshold_value;
+
 	std::vector<std::vector<cv::Point> >	contours;
 	/******************************************************
 	* Hierarchy structure

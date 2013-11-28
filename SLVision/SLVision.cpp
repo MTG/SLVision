@@ -38,9 +38,9 @@
 #include <sstream>
 
 
-//#define USE_LIVE_VIDEO 1
+#define USE_LIVE_VIDEO 1
 #ifdef USE_LIVE_VIDEO
-#define INFILE "C:\\Users\\Public\\Videos\\Sample Videos\\Wildlife.wmv"
+#define INFILE "C:\\Users\\daniel\\Desktop\\hand_gestures\\hand_gestures.avi"
 #endif
 
 //#define RECORD_VIDEO 1
@@ -193,6 +193,8 @@ int main(int argc, char* argv[])
 	while(is_running)
 	{
 #ifdef USE_LIVE_VIDEO
+		if(VCapturer.get(CV_CAP_PROP_POS_FRAMES) >= VCapturer.get(CV_CAP_PROP_FRAME_COUNT))
+			VCapturer.set(CV_CAP_PROP_POS_FRAMES,0);
 		VCapturer.read( InputCamera);
 #else
 		VCapturer.retrieve( InputCamera);

@@ -26,15 +26,11 @@
 #include "HandFinder.h"
 #include "GlobalConfig.h"
 #include "Globals.h"
-
 //#include "TuioServer.h"
-//
-//#define MINIMUM_CENTROID_DISTANCE 80
-//HandFinder* HandFinder::instance = NULL;
-//
+
 HandFinder::HandFinder(void):
 	Threshold_value(datasaver::GlobalConfig::getRef("FrameProcessor:HandFinder:threshold:threshold_value",33)),
-	min_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:minimum_tpuch_area",200)),
+	min_area(datasaver::GlobalConfig::getRef("FrameProcessor:HandFinder:threshold:minimum_tpuch_area",200)),
 	FrameProcessor("HandFinder")
 {
 	if(enable_processor == 1) Enable(true);
@@ -145,6 +141,19 @@ AliveList HandFinder::GetAlive()
 void HandFinder::Process(cv::Mat&	main_image)
 {
 	/******************************************************
+	* Redraw GUI if needed
+	*******************************************************/
+	/*if(use_adaptive_bar_value == 0 && use_adaptive_threshold == true)
+	{
+		use_adaptive_threshold = false;
+		BuildGui(true);
+	}
+	else if (use_adaptive_bar_value == 1 && use_adaptive_threshold == false)
+	{
+		use_adaptive_threshold = true;
+		BuildGui(true);
+	}*/
+	/******************************************************
 	* Convert image to graycsale
 	*******************************************************/
 	//if ( main_image.type() ==CV_8UC3 )   cv::cvtColor ( main_image,grey,CV_BGR2GRAY );
@@ -153,7 +162,15 @@ void HandFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Apply threshold
 	*******************************************************/
-	cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY);
+	/*if(use_adaptive_threshold)
+	{
+		if (block_size<3) block_size=3;
+		if (block_size%2!=1) block_size++;
+		cv::adaptiveThreshold ( grey,thres,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY,block_size,threshold_C );
+	}
+	else */
+		cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY | CV_THRESH_OTSU);
+
 	thres_contours = thres.clone();
 	/******************************************************
 	* Find contours
@@ -398,4 +415,15 @@ void HandFinder::BuildGui(bool force)
 {
 	cv::createTrackbar("Enable", name,&enable_processor, 1, NULL);
 	cv::createTrackbar("th.value", name,&Threshold_value, 255, NULL);
+	/*cv::createTrackbar("Enable", name,&enable_processor, 1, NULL);
+	cv::createTrackbar("Use Adaptive", name,&use_adaptive_bar_value, 1, NULL);
+	if(use_adaptive_bar_value == 1)
+	{
+		cv::createTrackbar("block_size", name,&block_size, 255, NULL);
+		cv::createTrackbar("C", name,&threshold_C, 40, NULL);
+	}
+	else
+	{
+		cv::createTrackbar("th.value", name,&Threshold_value, 255, NULL);
+	}*/
 }

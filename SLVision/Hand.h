@@ -33,20 +33,34 @@ class Hand
 {
 protected:
 	unsigned long sessionID;
-	cv::Point startarm;
-	cv::Point center_hand;
+	
+	
 	cv::Point centroid;
 	cv::Point fingers[5];
+
+
+	cv::Point center_hand;  //center of the hand (excluding the arm)
+	float influence_radius; //hand radius (excluding the arm)
+
+	cv::Point startarm;  // point where the arm starts (use to be a point on a side of the table)
+	cv::Point endarm; //point where the hand ends
 	
 	
 	bool is_open;
 	bool is_confirmed;
-	bool id_hand;
+	bool is_hand;
 	bool is_on_the_surface;
 
 	cv::vector<cv::Point> blobPath;
 	cv::vector<int> hull;
 	std::vector<cv::Vec4i> defects;
+
+	//auxiliar data
+	int edge_index;
+	int further_index;
+	float auxiliar_distance;
+	float temp_dist;
+	std::vector<int> finger_candidates;
 public:
 
 	//Functions
