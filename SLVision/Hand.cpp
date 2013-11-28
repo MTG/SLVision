@@ -33,12 +33,14 @@
 		centroid = cv::Point(-1,-1);
 	}
 
-	Hand::Hand(unsigned long _sessionID, const cv::Point & _centroid)
+	Hand::Hand(unsigned long _sessionID, const cv::Point & _centroid, float area)
 	{
 		Reset();
 		sessionID = _sessionID;
 		centroid = cv::Point(_centroid);
 		center_hand = cv::Point(_centroid);
+		this->area = area;
+		pinch_area = 0;
 	}
 
 	bool Hand::IsItTheSame( cv::Point &point )
@@ -65,10 +67,12 @@
 		hull.clear();
 		blobPath.clear();
 		defects.clear();
+		pinch_area = 0;
 	}
 
-	void Hand::UpdateData( cv::Point &point, cv::vector<cv::Point> &path  )
+	void Hand::UpdateData( cv::Point &point, cv::vector<cv::Point> &path ,  float area )
 	{
+		this->area = area;
 		is_updated = true;
 		this->center_hand = cv::Point(point);
 		this->blobPath = cv::vector<cv::Point>(path);
@@ -160,7 +164,7 @@
 		center_hand.x /= (float)q;
 		center_hand.y /= (float)q;
 
-		//Chack influence_hand_radius
+		//Check influence_hand_radius
 		influence_radius = 0;
 		for(int i = 0; i < finger_candidates.size(); i++)
 		{
@@ -197,7 +201,36 @@
 		}
 
 		//Cross_reference_fingers??
+		pinch_area = 0;
+	}
+
+	void Hand::AddPinch( cv::vector<cv::Point> &path, float area )
+	{
+		int q = 0;
+		pinch_centre.x = 0;
+		pinch_centre.y = 0;
+		for( int i = 0; i < path.size(); i++)
+		{
+			pinch_centre.x += path[i].x;
+			pinch_centre.y += path[i].y;
+			q++;
+		}
+		pinch_centre.x /= (float)q;
+		pinch_centre.y /= (float)q;
 		
+		pinch_area = 0;
+		for( int i = 0; i < path.size(); i++)
+		{
+			temp_dist = insqdist(pinch_centre.x, 
+						 pinch_centre.y, 
+						 path[i].x, 
+						 path[i].y);
+
+			if( temp_dist > pinch_area)
+			{
+				pinch_area = temp_dist;
+			}
+		}
 	}
 
 	float Hand::IsNearEdge( cv::Point & p )
@@ -241,6 +274,13 @@
 				cv::circle(Globals::CameraFrame,fingers[i],5,cv::Scalar(0,255,0),5);
 			}
 		}
+
+		//draw pinch
+		if(pinch_area != 0)
+		{
+			cv::circle(Globals::CameraFrame,pinch_centre,pinch_area,cv::Scalar(0,255,255),3);
+		}
+
 	}
 
 	unsigned long Hand::GetSID()

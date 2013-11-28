@@ -34,8 +34,8 @@ class Hand
 protected:
 	unsigned long sessionID;
 	
-	
-	cv::Point centroid;
+	float area; //blob area
+	cv::Point centroid;  //blob centroid
 	cv::Point fingers[5];
 
 
@@ -45,6 +45,8 @@ protected:
 	cv::Point startarm;  // point where the arm starts (use to be a point on a side of the table)
 	cv::Point endarm; //point where the hand ends
 	
+	cv::Point pinch_centre;  //centre of the pinch area
+	float pinch_area;  //pinch area radius
 	
 	bool is_open;
 	bool is_confirmed;
@@ -65,9 +67,10 @@ public:
 
 	//Functions
 	Hand(void);
-	Hand(unsigned long _sessionID, const cv::Point & _centroid);
+	Hand(unsigned long _sessionID, const cv::Point & _centroid, float area);
 	bool IsItTheSame( cv::Point &point );
-	void UpdateData( cv::Point &point, cv::vector<cv::Point> &path );
+	void UpdateData( cv::Point &point, cv::vector<cv::Point> &path, float area );
+	void AddPinch( cv::vector<cv::Point> &path, float area );
 	unsigned long GetSID();
 	bool IsValid();
 
