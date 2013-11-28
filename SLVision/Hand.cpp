@@ -128,6 +128,12 @@
 		auxiliar_distance = auxiliar_distance /2.0f;
 		//
 
+		if(further_index == -1) //too less points
+		{
+			is_hand = false;
+			return;
+		}
+
 		endarm = cv::Point(blobPath[further_index].x,blobPath[further_index].y);
 
 		center_hand.x = 0;

@@ -129,16 +129,17 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Apply threshold
 	*******************************************************/
-	/*if(use_adaptive_threshold)
+	if(use_adaptive_threshold)
 	{
 		if (block_size<3) block_size=3;
 		if (block_size%2!=1) block_size++;
 		cv::adaptiveThreshold ( grey,thres,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY,block_size,threshold_C );
 	}
 	else 
-		cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY);*/
+		cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY);
 
-	cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY | CV_THRESH_OTSU);
+	cv::medianBlur(thres,thres,3);
+
 	cv::bitwise_not(thres,thres);
 
 	/******************************************************
