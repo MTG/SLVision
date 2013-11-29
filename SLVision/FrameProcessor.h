@@ -22,7 +22,7 @@
  *	daniel.gallardo@upf.edu
  *	Barcelona 2011
  */
-#define DRAW_EVERYTHING 1
+//#define DRAW_EVERYTHING 1
 
 #pragma once
 #include <opencv2/opencv.hpp>
