@@ -108,15 +108,6 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 		axis = 0;
 		//Get the fiducial orientation
 		GetMinDistToFiducialAxis(axis,bx,by);
-
-		
-		//std::cout <<axis << " " << bx << " " << by<< std::endl;
-		//for(intList::iterator it = fiducial_nodes.begin(); it != fiducial_nodes.end(); it++)
-		//{
-		//	std::cout << (*it);
-		//}
-		//std::cout << std::endl;
-
 		/******************************************************
 		* Fiducial Decode
 		*******************************************************/
@@ -129,9 +120,7 @@ int FiducialFinder::DecodeFiducial(cv::Mat& src, Fiducial & candidate)
 			candidate.OritentateCorners();
 			candidate.CalculateIntrinsics();
 			return tmpid;
-		}
-		//std::cout <<tmpid<< std::endl;
-		//std::cout <<std::endl;			
+		}	
 	}
 	candidate.OritentateCorners();
 	candidate.CalculateIntrinsics();

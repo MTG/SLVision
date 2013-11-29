@@ -55,9 +55,9 @@ public:
 	HandFinder(void);
 	~HandFinder(void);
 	AliveList GetAlive();
+	void RepportOSC();
 protected:
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);
-	void RepportOSC();
 };
 

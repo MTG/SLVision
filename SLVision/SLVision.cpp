@@ -38,7 +38,7 @@
 #include <sstream>
 
 
-//#define USE_LIVE_VIDEO 1
+#define USE_LIVE_VIDEO 1
 #ifdef USE_LIVE_VIDEO
 #define INFILE "C:\\Users\\daniel\\Desktop\\hand_gestures\\fiducial.avi"
 #endif
@@ -267,6 +267,9 @@ int main(int argc, char* argv[])
 		/******************************************************
 		* Sends OSC Data
 		*******************************************************/
+		markerfinder->RepportOSC();
+		touchfinder->RepportOSC();
+		handfinder->RepportOSC();
 		TuioServer::Instance().SendBundle();
 	}
 	/******************************************************

@@ -63,6 +63,7 @@ public:
 	MarkerFinder(void);
 	~MarkerFinder(void);
 	AliveList GetAlive();
+	void RepportOSC();
 protected:
 	cv::Mat									grey, thres, thres2;
 	int										&use_adaptive_bar_value;
@@ -95,7 +96,7 @@ protected:
 
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);
-	void RepportOSC();
+	
 	void InitGeometry();
 	int perimeter ( std::vector<cv::Point2f> &a );
 	void SquareDetector(std::vector<candidate>& MarkerCanditates, std::vector<candidate>& dest);

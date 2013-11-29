@@ -39,7 +39,6 @@ TuioServer &TuioServer::Instance()
 
 TuioServer::TuioServer(/*const char* address, int port*/)
 {
-	//InitializeNetworking();
 	long unsigned int ip	= GetHostByName( (datasaver::GlobalConfig::getRef<std::string>("OSC:ADDRESS", "127.0.0.1")).c_str() );
 	transmitSocket			= new UdpTransmitSocket(IpEndpointName(ip, datasaver::GlobalConfig::getRef("OSC:PORT", 3333) ));
 	
@@ -47,7 +46,6 @@ TuioServer::TuioServer(/*const char* address, int port*/)
 	packet_stream			= new osc::OutboundPacketStream(buffer,IP_MTU_SIZE);
 	messages				= 0;
 
-	//(*packet_stream) << osc::BeginBundleImmediate;
 	bundle_started			= false;
 	frame_seq				= 0;
 }
@@ -165,21 +163,6 @@ void TuioServer::AddHandPath(unsigned int sid,std::vector<cv::Point> &path)
 	messages++;
 	if(messages > 5) SendBundle();
 }
-//
-//void TuioServer::AddHandPinch(unsigned int sid, std::vector<Hand_Vertex> &path)
-//{
-//	if(!bundle_started)StartBundle();
-//	(*packet_stream) << osc::BeginMessage( "/tuio2/hand/pinch" ) << (int)sid ;
-//	for(std::vector<Hand_Vertex>::iterator it = path.begin(); it != path.end(); it++)
-//	{
-//		(*packet_stream) << (float)it->GetDistortionatedX() << (float)it->GetDistortionatedY();
-//	}
-//	(*packet_stream) <<osc::EndMessage;
-//	messages++;
-//	if(messages > 5) SendBundle();
-//	
-//	//if(packet_stream->Size
-//}
 
 void TuioServer::SendBundle()	
 {
@@ -191,17 +174,12 @@ void TuioServer::SendBundle()
 	}
 	else
 	{
-		//AddAliveMessage();
 		int q = alive.size();
 		if ( q != AddAliveMessage() )
 		{
 			(*packet_stream) << osc::EndBundle;
 			transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );
 		}
-		/*if(!bundle_started)StartBundle();
-		AddAliveMessage();
-		(*packet_stream) << osc::EndBundle;
-		transmitSocket->Send( packet_stream->Data(), packet_stream->Size() );*/
 	}
 
 	int i = AddAliveMessage();

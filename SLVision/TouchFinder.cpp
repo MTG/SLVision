@@ -118,11 +118,11 @@ void TouchFinder::Process(cv::Mat&	main_image)
 				/******************************************************
 				* Draw contour and data
 				*******************************************************/
-				drawContours( Globals::CameraFrame, contours, idx, cv::Scalar(0,255,255), CV_FILLED, 8, hierarchy );
+				drawContours( Globals::CameraFrame, contours, idx, cv::Scalar(255,0,255), CV_FILLED, 8, hierarchy );
 #ifdef DRAW_EVERYTHING
 				std::stringstream s;
 				s << candidate_id << "  (" <<pointmap[candidate_id]->GetX() << ", " << pointmap[candidate_id]->GetY() <<")";
-				cv::putText(Globals::CameraFrame, s.str(), cv::Point(x,y), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(0,0,255));
+				cv::putText(Globals::CameraFrame, s.str(), cv::Point(x,y), cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(255,255,255));
 #endif
 			}
 		}
@@ -134,56 +134,6 @@ void TouchFinder::Process(cv::Mat&	main_image)
 	{
 		cv::imshow(this->name,thres);
 	}
-
-
-//
-//	////check handfinder on the air fingers
-//	
-//	if(HandFinder::instance != NULL && HandFinder::instance->IsEnabled())
-//	{
-//		std::map<unsigned long, Hand*> hands = *HandFinder::instance->GetHands();
-//		for(std::map<unsigned long, Hand*>::iterator it_hand = hands.begin(); it_hand != hands.end(); it_hand++)
-//		{
-//			for (std::vector <CvPoint>::iterator it_Touch = it_hand->second->fingers.begin(); 
-//				it_Touch != it_hand->second->Touchs.end(); 
-//				it_Touch++)
-//			{
-//				temp_minimum_distance = 99999999.0f;
-//				candidate_id = 0;
-//				temp_touch.Update((*it_Touch).x,(*it_Touch).y,-1);
-//				for(Pointmap::iterator it_point = pointmap.begin(); it_point != pointmap.end(); it_point++)
-//				{
-//					float tmp_dist = fabs(fnsqdist(temp_touch.GetX(),temp_touch.GetY(),it_point->second->GetX(),it_point->second->GetY()));
-//					if( temp_minimum_distance > tmp_dist)
-//					{
-//						candidate_id = it_point->first;
-//						temp_minimum_distance = tmp_dist;
-//					}
-//				}
-//				if(temp_minimum_distance > DISTANCE_OFFSET) candidate_id = 0;
-//				if(candidate_id == 0) //new touch
-//				{
-//						unsigned int new_id = Globals::ssidGenerator++;
-//						temp_touch.SetHandData(it_hand->first, true);
-//						pointmap[new_id] = new Touch(temp_touch);
-//				}
-//				else //update touch
-//				{
-//					if(pointmap[candidate_id]->IsUpdated(true))
-//					{
-//						pointmap[candidate_id]->SetHandData(it_hand->first,false);
-//						//pointmap[candidate_id]->Update(temp_touch.GetX(),temp_touch.GetY(),pointmap[candidate_id]->area);
-//					}
-//					else
-//					{
-//						pointmap[candidate_id]->SetHandData(it_hand->first,true);
-//						pointmap[candidate_id]->Update(temp_touch.GetX(),temp_touch.GetY(),-1);
-//					}
-//				}
-//			}
-//		}
-//	}
-//	return main_processed_image;
 }
 
 void TouchFinder::RepportOSC()

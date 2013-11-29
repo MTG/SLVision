@@ -234,7 +234,6 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	SquareDetector(SquareCanditates, Squares);
 	for (size_t i=0;i<Squares.size();i++) 
 	{
-		
 		///Marker identification
 		for(int k = 0; k < 4; k++)
 			tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);

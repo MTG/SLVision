@@ -26,7 +26,6 @@
 #pragma once
 #include "frameprocessor.h"
 #include "Touch.h"
-
 typedef std::map<unsigned int, Touch*> Pointmap;
 
 class TouchFinder :
@@ -57,25 +56,12 @@ protected:
 	*
 	*******************************************************/
 	std::vector<cv::Vec4i>					hierarchy;
-
-//	IplImage*		main_processed_image;
-//	IplImage*		main_processed_contour;
-//	int				threshold_value;
-//	CvMemStorage*	main_storage;
-//	CvSeq*			firstcontour;
-//	int				max_blob_size;
-//	int				min_blob_size;
-//	CvMoments*		blob_moments;
 	Pointmap		pointmap;
-//
-//	void KeyInput(char key);
-//	void UpdatedValuesFromGui(); 
-//	IplImage* Process(IplImage*	main_image);
-//	void RepportOSC();
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);
-	void RepportOSC();
+	
 public:
+	void RepportOSC();
 	TouchFinder(void);
 	~TouchFinder(void);
 	AliveList GetAlive();
