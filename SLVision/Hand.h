@@ -33,59 +33,60 @@ class Hand
 {
 protected:
 	unsigned long sessionID;
-	cv::Point startarm;
-	cv::Point center_hand;
-	cv::Point centroid;
-	cv::Point fingers[5];
 	
+	float area; //blob area
+	cv::Point centroid;  //blob centroid
+	cv::Point fingers[5]; //Finger
+	int numfingers;
+
+	cv::Point center_hand;  //center of the hand (excluding the arm)
+	float influence_radius; //hand radius (excluding the arm)
+
+	cv::Point startarm;  // point where the arm starts (use to be a point on a side of the table)
+	cv::Point endarm; //point where the hand ends
 	
-	bool is_open;
-	bool is_confirmed;
-	bool is_on_the_surface;
+	cv::Point pinch_centre;  //centre of the pinch area
+	float pinch_area;  //pinch area radius
+
+	bool is_hand;
 
 	cv::vector<cv::Point> blobPath;
 	cv::vector<int> hull;
 	std::vector<cv::Vec4i> defects;
-public:
 
+	bool is_updated;
+
+	//auxiliar data
+	int edge_index;
+	int further_index;
+	float auxiliar_distance;
+	float temp_dist;
+	std::vector<int> finger_candidates;
+public:
 	//Functions
 	Hand(void);
-	Hand(unsigned long _sessionID, const cv::Point & _centroid);
+	Hand(unsigned long _sessionID, const cv::Point & _centroid, float area);
 	bool IsItTheSame( cv::Point &point );
-	void UpdateData( cv::Point &point, cv::vector<cv::Point> &path );
+	void UpdateData( cv::Point &point, cv::vector<cv::Point> &path, float area );
+	void AddPinch( cv::vector<cv::Point> &path, float area );
 	unsigned long GetSID();
 	bool IsValid();
+	void Draw(bool force = false);
 
-	void Draw();
-	bool is_updated;
+	bool IsUpdated();//{return is_updated;}
+	cv::Point GetCentroid(){return centroid;}
+	float GetArea(){return area;}
+	cv::Point GetStartArm(){return startarm;}
+	cv::Point GetEndArm(){return endarm;}
+	cv::Point GetHandPoint(){return center_hand;}
+	float GetHandInfluence(){return influence_radius;}
+	cv::Point GetPinchPoint(){return pinch_centre;}
+	float GetPinchInfluence(){return pinch_area;}
+	int GetNumFingers(){return numfingers;}
+	cv::vector<cv::Point>& GetPath(){return blobPath;}
+
 private:
 	void Reset();
 	float IsNearEdge( cv::Point & p );
-//	~Hand(void);
-//    float Distance(const CvPoint & _centroid);
-//    unsigned long GetSessionID();
-//    void Update(const CvPoint & _centroid);
-//
-//    void Clear();
-//    void AddVertex(int x, int y);
-//    void AddVertexConvex(int x, int y);
-//    void ComputeHand(float area, float length);
-//    void draw(float x = 0, float y = 0);
-//
-//	bool IsUpdated();
-//	int IsConfirmedAsHand();
-//	int IsOpened();
-//	CvPoint GetCentroid();
-//	float GetArea();
-//	float TCentroidX();
-//	float TCentroidY();
-//	float GetLwPCentroidX();
-//	float GetLwPCentroidY();
-//
-//	bool IsPinching();
-//	bool IsPinchingEnd();
-//	void SetPinch(CvSeq* seq);
-//
-//	bool IsFinger(float x, float y);
 };
 

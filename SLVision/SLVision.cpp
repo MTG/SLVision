@@ -37,6 +37,18 @@
 #include <string>
 #include <sstream>
 
+
+#define USE_LIVE_VIDEO 1
+#ifdef USE_LIVE_VIDEO
+#define INFILE "C:\\Users\\daniel\\Desktop\\hand_gestures\\hand_gestures.avi"
+#endif
+
+//#define RECORD_VIDEO 1
+#ifdef RECORD_VIDEO
+#define OUTFILE "out.avi"
+#define RECORDFPS 30
+#endif
+
 //Window tittles
 #define MAIN_TITTLE					"SLVision"
 #define CAMERA_TITTLE				"Camera view"
@@ -96,7 +108,13 @@ int main(int argc, char* argv[])
 	*******************************************************/
 	//Open camera
 	cameraID = datasaver::GlobalConfig::getRef("MAIN:CAMERA_ID",CAMERA_ID);
+
+#ifdef USE_LIVE_VIDEO
+	VCapturer.open(INFILE);
+#else
 	VCapturer.open(cameraID);
+#endif
+
 	if(!VCapturer.isOpened())
 	{
 		std::cout << "Unable to open camera id: " << cameraID << std::endl;
@@ -137,14 +155,55 @@ int main(int argc, char* argv[])
 	TuioServer::Instance().RegisterProcessor(markerfinder);
 	TuioServer::Instance().RegisterProcessor(touchfinder);
 	TuioServer::Instance().RegisterProcessor(handfinder);
+
+
+
+	/******************************************************
+	* Video recorder
+	*******************************************************/
+#ifdef RECORD_VIDEO
+    int ex = static_cast<int>(CV_FOURCC('D','I','V','X'));     // Get Codec Type- Int form
+    // Transform from int to char via Bitwise operators
+    char EXT[] = {(char)(ex & 0XFF) , (char)((ex & 0XFF00) >> 8),(char)((ex & 0XFF0000) >> 16),(char)((ex & 0XFF000000) >> 24), 0};
+
+    cv::Size S = cv::Size((int) VCapturer.get(CV_CAP_PROP_FRAME_WIDTH),    // Acquire input size
+                  (int) VCapturer.get(CV_CAP_PROP_FRAME_HEIGHT));
+
+	cv::VideoWriter outputVideo;
+	
+	outputVideo.open(OUTFILE, 
+               ex,
+               RECORDFPS,
+               S);
+    if (!outputVideo.isOpened())
+    {
+        std::cout  << "Could not open the output video for write: " << OUTFILE << std::endl;
+    }
+
+	std::cout << "Input frame resolution: Width=" << S.width << "  Height=" << S.height
+         << " of nr#: " << RECORDFPS << std::endl;
+    std::cout << "Input codec type: " << EXT << std::endl;
+
+#endif
+	
+
 	/******************************************************
 	* Main loop app
 	*******************************************************/
 	while(is_running)
 	{
+#ifdef USE_LIVE_VIDEO
+		if(VCapturer.get(CV_CAP_PROP_POS_FRAMES) >= VCapturer.get(CV_CAP_PROP_FRAME_COUNT))
+			VCapturer.set(CV_CAP_PROP_POS_FRAMES,0);
+		VCapturer.read( InputCamera);
+#else
 		VCapturer.retrieve( InputCamera);
+#endif
 		double tick = (double)cv::getTickCount();
-		
+#ifdef RECORD_VIDEO
+		if (outputVideo.isOpened())
+		outputVideo << InputCamera;
+#endif
 		/******************************************************
 		* Convert image to graycsale
 		*******************************************************/
@@ -208,6 +267,9 @@ int main(int argc, char* argv[])
 		/******************************************************
 		* Sends OSC Data
 		*******************************************************/
+		markerfinder->RepportOSC();
+		touchfinder->RepportOSC();
+		handfinder->RepportOSC();
 		TuioServer::Instance().SendBundle();
 	}
 	/******************************************************

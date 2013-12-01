@@ -15,3 +15,10 @@ SLVision/camera_params.yml
 SLVision/log.txt
 SLVision/SLVision.vcxproj.user
 SLVision.opensdf
+*.vcxproj.user
+*.sdf
+*.suo
+*._.DS_Store
+*.DS_Store
+*.avi
+*.vcxproj.filters

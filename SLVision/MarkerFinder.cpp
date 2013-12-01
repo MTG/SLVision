@@ -137,6 +137,9 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	}
 	else 
 		cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY);
+
+	cv::medianBlur(thres,thres,3);
+
 	cv::bitwise_not(thres,thres);
 
 	/******************************************************
@@ -231,7 +234,6 @@ void MarkerFinder::Process(cv::Mat&	main_image)
 	SquareDetector(SquareCanditates, Squares);
 	for (size_t i=0;i<Squares.size();i++) 
 	{
-		
 		///Marker identification
 		for(int k = 0; k < 4; k++)
 			tmp_pnt[k] = cv::Point2f(Squares[i].points[k]);
@@ -462,9 +464,9 @@ void MarkerFinder::RepportOSC()
 				it->first,
 				0,
 				it->second->GetFiducialID(),
-				it->second->GetX()/Globals::width,//Globals::GetX(it->second->xpos),//it->second->xpos,
-				it->second->GetY()/Globals::height,//Globals::GetY(it->second->ypos),//it->second->ypos,
-				it->second->zpos,//Globals::GetZValue(it->second->zpos),
+				it->second->GetX(),
+				it->second->GetY(),
+				it->second->zpos,
 				it->second->yaw,
 				it->second->pitch,
 				it->second->roll,

@@ -22,6 +22,7 @@
  *	daniel.gallardo@upf.edu
  *	Barcelona 2011
  */
+//#define DRAW_EVERYTHING 1
 
 #pragma once
 #include <opencv2/opencv.hpp>
@@ -39,8 +40,9 @@ protected:
 	bool show_screen;
 	virtual void Process(cv::Mat&	main_image)=0;
 	virtual void BuildGui(bool force = false)=0;
-	virtual void RepportOSC()=0;
+	
 public:
+	virtual void RepportOSC()=0;
 	FrameProcessor(std::string name);
 	virtual ~FrameProcessor(void);
 	virtual AliveList GetAlive()=0;

@@ -454,6 +454,24 @@ void Fiducial::CalculateIntrinsics()
 		* Prepare parameters
 		*******************************************************/
 		cv::Mat R(3,3,CV_32F);
+		/*///**** /////
+		cv::Mat Rz= cv::Mat::eye(3,3,CV_32F);
+		float angle = M_PI;
+		float c = cos(angle);
+		float s = sin (angle);
+		Rz.at<float>(0,0) = c;				Rz.at<float>(0,1) = -s;				Rz.at<float>(0,2) = 0;
+		Rz.at<float>(1,0) = s;				Rz.at<float>(1,1) = c;				Rz.at<float>(1,2) = 0;
+		Rz.at<float>(2,0) = 0;				Rz.at<float>(2,1) = 0;				Rz.at<float>(2,2) = 1;
+		cv::Mat Rx= cv::Mat::eye(3,3,CV_32F);
+		Rx.at<float>(0,0) = 1;				Rx.at<float>(0,1) = 0;				Rx.at<float>(0,2) = 0;
+		Rx.at<float>(1,0) = 0;				Rx.at<float>(1,1) = c;				Rx.at<float>(1,2) = s;
+		Rx.at<float>(2,0) = 0;				Rx.at<float>(2,1) = -s;				Rx.at<float>(2,2) = c;
+		R = Rx;
+
+		Rodrigues(R, rotation_vector);
+		////****/////
+		//std::cout << rotation_vector.ptr<float>(0)[0] << "  "<< rotation_vector.ptr<float>(0)[1] << "  "<< rotation_vector.ptr<float>(0)[2] << std::endl;
+		//
 		Rodrigues(rotation_vector, R);
 
 		xpos = translation_vector.ptr<float>(0)[0];
@@ -461,6 +479,8 @@ void Fiducial::CalculateIntrinsics()
 		zpos = translation_vector.ptr<float>(0)[2];
 		//std::cout << fiducial_map[tmp_ssid]->xpos << "\t" << fiducial_map[tmp_ssid]->ypos << "\t" << fiducial_map[tmp_ssid]->zpos << std::endl;
 		//Rotate XAxis
+
+//to uncomment :
 		cv::Mat Rx= cv::Mat::eye(3,3,CV_32F);
 		float angle = M_PI;
 		Rx.at<float>(1,1) = cos(angle);
@@ -468,14 +488,6 @@ void Fiducial::CalculateIntrinsics()
 		Rx.at<float>(2,1) = sin(angle);
 		Rx.at<float>(2,2) = cos(angle);
 		R = R*Rx;
-
-		//Rotate YAxis
-		/*cv::Mat Ry= cv::Mat::eye(3,3,CV_32F);
-		Ry.at<float>(1,1) = cos(angle);
-		Ry.at<float>(1,2) = -sin(angle);
-		Ry.at<float>(2,1) = sin(angle);
-		Ry.at<float>(2,2) = cos(angle);
-		R = R*Ry;*/
 
 		r11 = -R.ptr<float>(0)[0];
 		r12 = R.ptr<float>(0)[1];
@@ -493,6 +505,8 @@ void Fiducial::CalculateIntrinsics()
 		yaw = atan2(-r31,sqrt( r32*r32 + r33*r33));
 		pitch = atan2(r32,r33);
 		roll = (2.0f*M_PI)-atan2(r21,r11);
+
+		//std::cout << "ypr " << yaw << "  " << pitch << "  " << roll << std::endl;
 
 	}
 }
@@ -518,7 +532,7 @@ float fnsqdist(float x, float y, float a, float b)
 	return sqrt(uu*uu + vv*vv);
 }
 
-float insqdist(float x, float y, float a, float b)
+float insqdist(int x, int y, int a, int b)
 {
 	float uu = (float)(a-x);
 	float vv = (float)(b-y);
