@@ -73,7 +73,7 @@ public:
 	bool IsValid();
 	void Draw(bool force = false);
 
-	bool IsUpdated();
+	bool IsUpdated();//{return is_updated;}
 	cv::Point GetCentroid(){return centroid;}
 	float GetArea(){return area;}
 	cv::Point GetStartArm(){return startarm;}

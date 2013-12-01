@@ -208,10 +208,12 @@
 
 		//Cross_reference_fingers??
 		pinch_area = 0;
+		is_updated = true;
 	}
 
 	void Hand::AddPinch( cv::vector<cv::Point> &path, float area )
 	{
+		is_updated = true;
 		int q = 0;
 		pinch_centre.x = 0;
 		pinch_centre.y = 0;

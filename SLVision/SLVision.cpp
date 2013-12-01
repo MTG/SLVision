@@ -40,7 +40,7 @@
 
 #define USE_LIVE_VIDEO 1
 #ifdef USE_LIVE_VIDEO
-#define INFILE "C:\\Users\\daniel\\Desktop\\hand_gestures\\fiducial.avi"
+#define INFILE "C:\\Users\\daniel\\Desktop\\hand_gestures\\hand_gestures.avi"
 #endif
 
 //#define RECORD_VIDEO 1

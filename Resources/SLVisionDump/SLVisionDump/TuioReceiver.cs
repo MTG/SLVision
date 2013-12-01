@@ -47,26 +47,8 @@ namespace SLVisionDump
         /// instance of it, it is declared as a singleton class.
         /// </summary>
         #region Constructor and singleton methods
-        private static volatile TuioReceiver pinstance = null;
-        private static object syncRoot = new Object();
-
-        private TuioReceiver()
+        public TuioReceiver()
         {
-        }
-
-        public static TuioReceiver Instance
-        {
-            get
-            {
-                if (pinstance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        pinstance = new TuioReceiver();
-                    }
-                }
-                return pinstance;
-            }
         }
         #endregion
 
@@ -130,6 +112,7 @@ namespace SLVisionDump
                     if (packet != null)
                     {
                         paquets_queue.Enqueue(packet);
+                        
                     }
                     else Console.WriteLine("Received null OSC packet.");
                 }
@@ -138,6 +121,7 @@ namespace SLVisionDump
                     Console.WriteLine("Error geting data from TUIO Socket.");
                     Console.WriteLine(e.Message);
                 }
+                ProcessMessages();
             }
         }
 

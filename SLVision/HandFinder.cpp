@@ -133,7 +133,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 			}
 		}
 
-		to_be_removed.clear();
+/*		to_be_removed.clear();
 		for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
 		{
 			if(!it->second.IsUpdated()) to_be_removed.push_back(it->first);
@@ -141,7 +141,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 		for (std::vector<unsigned long>::iterator it = to_be_removed.begin(); it != to_be_removed.end(); it++)
 		{
 			hands.erase(*it);
-		}
+		}*/
 
 		if(Globals::is_view_enabled)
 		{
