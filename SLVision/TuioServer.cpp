@@ -132,15 +132,15 @@ void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned 
 }
 
 
-void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area)
-{
-	
-	if(!bundle_started)StartBundle();
-	(*packet_stream) << osc::BeginMessage( "/tuio2/hand" ) << (int)sid << (int)confirmed << (int)open << x << y << area <<osc::EndMessage;
-	messages++;
-	if(messages > 5) SendBundle();
-	
-}
+//void TuioServer::AddHand(unsigned int sid, int confirmed, int open, float x, float y, float area)
+//{
+//	
+//	if(!bundle_started)StartBundle();
+//	(*packet_stream) << osc::BeginMessage( "/tuio2/hand" ) << (int)sid << (int)confirmed << (int)open << x << y << area <<osc::EndMessage;
+//	messages++;
+//	if(messages > 5) SendBundle();
+//	
+//}
 //
 //void TuioServer::AddHandPath(unsigned int sid,std::vector<Hand_Vertex> &path)
 //{
