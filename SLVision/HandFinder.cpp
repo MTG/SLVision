@@ -189,10 +189,6 @@ void HandFinder::RepportOSC()
 
 			//Check finger integrity and mix data
 			//id, finger0x, finger0y, ... , finger4y
-//			if(it->second->IsPinching() || it->second->IsPinchingEnd())
-//			{
-//				TuioServer::Instance().AddHandPinch(it->first,it->second->hand_hole);
-//			}
 		}
 		else
 		{
