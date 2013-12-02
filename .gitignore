@@ -22,3 +22,4 @@ SLVision.opensdf
 *.DS_Store
 *.avi
 *.vcxproj.filters
+*.suo
