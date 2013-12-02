@@ -190,7 +190,7 @@
 			numfingers++;
 			if(tfinder != NULL)
 			{
-				unsigned int candidate = tfinder->GetTouch(this->sessionID, blobPath[defects[finger_candidates[i]][1]].x,blobPath[defects[finger_candidates[i]][1]].y);
+				unsigned int candidate = tfinder->GetTouch(blobPath[defects[finger_candidates[i]][1]].x,blobPath[defects[finger_candidates[i]][1]].y,this->sessionID);
 				fingers.push_back(candidate);
 			}
 		}
