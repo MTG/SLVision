@@ -61,6 +61,7 @@ namespace SLVisionDump
                         Console.WriteLine("\tSID: " + (int)data[0] + "\tuid: " + (int)data[1] + "\tcid: " + (int)data[2]);
                         Console.WriteLine("\tX: " + (float)data[3] + "\tY: " + (float)data[4]);
                         Console.WriteLine("\twidth: " + (float)data[5] + "\tpress: " + (float)data[6]);
+                        Console.WriteLine("\ton_the_air: " + (int)data[7] + "\thandID: " + (int)data[8]);
                     }
                     else if (msg.Address.Contains("hand/path"))
                     {

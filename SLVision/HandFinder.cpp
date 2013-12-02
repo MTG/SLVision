@@ -36,6 +36,7 @@ HandFinder::HandFinder(void):
 	if(enable_processor == 1) Enable(true);
 	else Enable(false);
 
+	touch_finder = NULL;
 	//create gui
 	BuildGui();
 	hands.clear();
@@ -72,7 +73,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 	* Find contours
 	*******************************************************/
 	cv::findContours ( thres_contours , contours, hierarchy,CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE );
-	int idx = 0;
+	unsigned int idx = 0;
     //******************************************************
 	//* Find Hand candidates
 	//*******************************************************
@@ -102,13 +103,13 @@ void HandFinder::Process(cv::Mat&	main_image)
 			unsigned long candidate = 0;
 			for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
 			{
-				if(it->second.IsItTheSame(cv::Point(x,y)))
+				if(it->second.IsItTheSame(cv::Point((int)x,(int)y)))
 					candidate = it->first;
 			}
 			if( candidate == 0)
 			{
 				unsigned long newsid = Globals::ssidGenerator++;
-				hands[newsid] = Hand(newsid,cv::Point(x,y),area);
+				hands[newsid] = Hand(newsid,cv::Point((int)x,(int)y),area);
 				candidate = newsid;
 			}
 			//******************************************************
@@ -116,7 +117,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 			//*******************************************************
 			if(candidate != 0 && hands.find(candidate) != hands.end())
 			{
-				hands[candidate].UpdateData(cv::Point(x,y),approxCurve,area);
+				hands[candidate].UpdateData(cv::Point((int)x,(int)y),approxCurve,area,touch_finder);
 				//******************************************************
 				//* Find pinch
 				//*******************************************************
@@ -133,20 +134,10 @@ void HandFinder::Process(cv::Mat&	main_image)
 			}
 		}
 
-/*		to_be_removed.clear();
-		for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
-		{
-			if(!it->second.IsUpdated()) to_be_removed.push_back(it->first);
-		}
-		for (std::vector<unsigned long>::iterator it = to_be_removed.begin(); it != to_be_removed.end(); it++)
-		{
-			hands.erase(*it);
-		}*/
-
 		if(Globals::is_view_enabled)
 		{
 			for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
-				it->second.Draw();
+				it->second.Draw(touch_finder);
 		}
 
 	}
@@ -176,11 +167,11 @@ void HandFinder::RepportOSC()
 			//numfingers
 			TuioServer::Instance().AddHand(
 				it->first,
-				it->second.GetCentroid().x, it->second.GetCentroid().y, it->second.GetArea(),
-				it->second.GetStartArm().x, it->second.GetStartArm().y,
-				it->second.GetEndArm().x, it->second.GetEndArm().y,
-				it->second.GetHandPoint().x, it->second.GetHandPoint().y, it->second.GetHandInfluence(),
-				it->second.GetPinchPoint().x, it->second.GetPinchPoint().y, it->second.GetPinchInfluence(),
+				(float)it->second.GetCentroid().x, (float)it->second.GetCentroid().y, (float)it->second.GetArea(),
+				(float)it->second.GetStartArm().x, (float)it->second.GetStartArm().y,
+				(float)it->second.GetEndArm().x, (float)it->second.GetEndArm().y,
+				(float)it->second.GetHandPoint().x, (float)it->second.GetHandPoint().y, (float)it->second.GetHandInfluence(),
+				(float)it->second.GetPinchPoint().x, (float)it->second.GetPinchPoint().y, (float)it->second.GetPinchInfluence(),
 				it->second.GetNumFingers()
 				);		
 
@@ -196,7 +187,7 @@ void HandFinder::RepportOSC()
 		}
 	}
 
-	for( std::vector<int>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
+	for( std::vector<unsigned long>::iterator it = to_remove.begin(); it != to_remove.end(); it++)
 	{
 		hands.erase(*it);
 	}

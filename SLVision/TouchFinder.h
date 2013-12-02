@@ -33,10 +33,7 @@ class TouchFinder :
 {
 private:
 	Touch temp_touch;
-	float temp_minimum_distance, test_distance;
-	unsigned int candidate_id;
 	std::vector<unsigned int> to_be_removed;
-//	char text[100];
 protected:
 	int										& Threshold_value;
 	int										& max_area;
@@ -59,11 +56,14 @@ protected:
 	Pointmap		pointmap;
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);
-	
+
+	unsigned int UpdateCandidate(Touch* candidate);
 public:
 	void RepportOSC();
 	TouchFinder(void);
 	~TouchFinder(void);
 	AliveList GetAlive();
+	unsigned int GetTouch(float x, float y, unsigned long handid);
+	Touch* GetTouch(unsigned int id);
 };
 

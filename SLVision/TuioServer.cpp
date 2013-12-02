@@ -121,10 +121,10 @@ void TuioServer::Add3DObjectMessage(unsigned int sid, unsigned int uid, unsigned
 	if(messages > 5) SendBundle();
 }
 
-void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press)
+void TuioServer::AddPointerMessage(unsigned int sid, unsigned int uid, unsigned int cid, float x, float y, float width, float press, int is_on_the_air, int handid)
 {
 	if(!bundle_started)StartBundle();
-	(*packet_stream) << osc::BeginMessage( "/tuio2/ptr" ) << (int)sid << (int)uid << (int)cid << x << y << width << press << osc::EndMessage;
+	(*packet_stream) << osc::BeginMessage( "/tuio2/ptr" ) << (int)sid << (int)uid << (int)cid << x << y << width << press << is_on_the_air << handid << osc::EndMessage;
 	messages++;
 	if(messages > 5) SendBundle();
 }

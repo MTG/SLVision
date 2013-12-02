@@ -32,11 +32,9 @@ protected:
 	bool is_updated;
 	bool is_on_the_air;
 	int handID;
-//	LowPass xcoord, ycoord;
 	float x, y;
 public:
 	float area;
-
 	Touch();
 	Touch(const Touch &copy);
 	void Update(float x, float y, float area);
@@ -44,8 +42,9 @@ public:
 	//bool CanUpdate( const Touch &tch, float & minimum_distance);
 	bool IsUpdated(bool keep_flag=false);
 	bool IsOnTheAir();
-	void SetHandData(int handID, bool on_the_air);
+	void SetHandData(int handID, float x, float y);
 	float GetX();
 	float GetY();
+	int GetHandID(){return handID;}
 };
 

@@ -152,6 +152,9 @@ int main(int argc, char* argv[])
 	markerfinder = new MarkerFinder();
 	touchfinder = new TouchFinder();
 	handfinder = new HandFinder();
+
+	handfinder->SetTouchFinder(touchfinder);
+
 	TuioServer::Instance().RegisterProcessor(markerfinder);
 	TuioServer::Instance().RegisterProcessor(touchfinder);
 	TuioServer::Instance().RegisterProcessor(handfinder);

@@ -69,7 +69,7 @@ public:
 							float r31, float r32, float r33);
 	
 	void AddPointerMessage(	unsigned int sid, unsigned int uid, unsigned int cid, 
-							float x, float y, float width, float press);
+							float x, float y, float width, float press, int is_on_the_air, int handid);
 	
 	void AddHand(unsigned int sid, 
 				 float centroidx, float centroidy, 

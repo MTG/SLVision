@@ -55,11 +55,11 @@
 		sessionID = 0;
 		startarm = cv::Point(0,0);
 		center_hand = cv::Point(0,0);
-		fingers[0] = cv::Point(-1,-1);
+/*		fingers[0] = cv::Point(-1,-1);
 		fingers[1] = cv::Point(-1,-1);
 		fingers[2] = cv::Point(-1,-1);
 		fingers[3] = cv::Point(-1,-1);
-		fingers[4] = cv::Point(-1,-1);
+		fingers[4] = cv::Point(-1,-1);*/
 		is_updated = false;
 		hull.clear();
 		blobPath.clear();
@@ -67,7 +67,7 @@
 		pinch_area = 0;
 	}
 
-	void Hand::UpdateData( cv::Point &point, cv::vector<cv::Point> &path ,  float area )
+	void Hand::UpdateData( cv::Point &point, cv::vector<cv::Point> &path ,  float area , TouchFinder* tfinder )
 	{
 		this->area = area;
 		is_updated = true;
@@ -183,26 +183,15 @@
 		}
 
 		//Asign fingers
-		fingers[0] = cv::Point(-1,-1);
-		fingers[1] = cv::Point(-1,-1);
-		fingers[2] = cv::Point(-1,-1);
-		fingers[3] = cv::Point(-1,-1);
-		fingers[4] = cv::Point(-1,-1);
 		numfingers =0;
-		if(finger_candidates.size() <= 5)
+		fingers.clear();
+		for( int i =0; i <finger_candidates.size(); i++)
 		{
-			for(unsigned int i = 0; i < finger_candidates.size(); i++)
+			numfingers++;
+			if(tfinder != NULL)
 			{
-				fingers[i] = cv::Point(blobPath[defects[finger_candidates[i]][1]]);
-				numfingers ++;
-			}
-		}
-		else
-		{  //future_work check distance with theis inmediate deffect (valley) to discriminate the nonfinger candidates
-			for(int i = 0; i < 5; i++)
-			{
-				fingers[i] = cv::Point(blobPath[defects[finger_candidates[i]][1]]);
-				numfingers++;
+				unsigned int candidate = tfinder->GetTouch(this->sessionID, blobPath[defects[finger_candidates[i]][1]].x,blobPath[defects[finger_candidates[i]][1]].y);
+				fingers.push_back(candidate);
 			}
 		}
 
@@ -254,7 +243,7 @@
 		return shortest;
 	}
 
-	void Hand::Draw(bool force)
+	void Hand::Draw(TouchFinder* tfinder, bool force)
 	{
 		if(!force && !is_hand) return;
 
@@ -275,12 +264,18 @@
 		cv::circle(Globals::CameraFrame,center_hand,(int)floor(influence_radius),cv::Scalar(0,0,255),3);
 
 		//draw fingers
-		for(int i = 0; i < 5; i++)
+		for(int i = 0; i < fingers.size(); i++)
 		{
-			if(fingers[i].x != -1)
+			Touch* t = tfinder->GetTouch(fingers[i]);
+			if( t != NULL)
+			{
+				cv::circle(Globals::CameraFrame,cv::Point(t->GetX(),t->GetY()),5,cv::Scalar(0,255,0),5);
+			}
+/*			if(fingers[i].x != -1)
 			{
 				cv::circle(Globals::CameraFrame,fingers[i],5,cv::Scalar(0,255,0),5);
 			}
+			*/
 		}
 
 		//draw pinch

@@ -29,8 +29,8 @@
 #include "Fiducial.h"
 #include "TuioServer.h"
 #define DISTANCE_OFFSET 50
-//#include "HandFinder.h"
-//
+
+
 TouchFinder::TouchFinder(void):
 	Threshold_value (datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:threshold_value",205)),
 	max_area(datasaver::GlobalConfig::getRef("FrameProcessor:TouchFinder:threshold:maximum_touch_area",1209)),
@@ -88,31 +88,10 @@ void TouchFinder::Process(cv::Mat&	main_image)
 			float x = (float)(fiducial_blob_moments.m10 / fiducial_blob_moments.m00);
 			float y = (float)(fiducial_blob_moments.m01 / fiducial_blob_moments.m00);
 			temp_touch.Update(	x, y, area);
-			temp_minimum_distance = 99999999.0f;
-			candidate_id = 0;
-			/******************************************************
-			* Check for existing touches and retreive the ID
-			*******************************************************/
-			for(Pointmap::iterator it = pointmap.begin(); it != pointmap.end(); it++)
-			{
-				float tmp_dist = fabs(fnsqdist(temp_touch.GetX(),temp_touch.GetY(),it->second->GetX(),it->second->GetY()));
-				if( temp_minimum_distance > tmp_dist)
-				{
-					candidate_id = it->first;
-					temp_minimum_distance = tmp_dist;
-				}
-			}
-			if(temp_minimum_distance > DISTANCE_OFFSET) candidate_id = 0;
-			if(candidate_id == 0) //new touch
-			{
-				unsigned int new_id = Globals::ssidGenerator++;
-				pointmap[new_id] = new Touch(temp_touch);
-				candidate_id = new_id;
-			}
-			else //update touch
-			{
-				pointmap[candidate_id]->Update(temp_touch);
-			}
+			
+			///////
+			UpdateCandidate(&temp_touch);
+			///////
 			if(Globals::is_view_enabled)
 			{
 				/******************************************************
@@ -136,6 +115,37 @@ void TouchFinder::Process(cv::Mat&	main_image)
 	}
 }
 
+unsigned int TouchFinder::UpdateCandidate(Touch* temp_touch)
+{
+	int candidate_id= 0;
+	float temp_minimum_distance = 99999999.0f;
+	/******************************************************
+	* Check for existing touches and retreive the ID
+	*******************************************************/
+	for(Pointmap::iterator it = pointmap.begin(); it != pointmap.end(); it++)
+	{
+		float tmp_dist = fabs(fnsqdist(temp_touch->GetX(),temp_touch->GetY(),it->second->GetX(),it->second->GetY()));
+		if( temp_minimum_distance > tmp_dist)
+		{
+			candidate_id = it->first;
+			temp_minimum_distance = tmp_dist;
+		}
+	}
+	if(temp_minimum_distance > DISTANCE_OFFSET) candidate_id = 0;
+	if(candidate_id == 0) //new touch
+	{
+		unsigned int new_id = Globals::ssidGenerator++;
+		pointmap[new_id] = new Touch(*temp_touch);
+		candidate_id = new_id;
+	}
+	else //update touch
+	{
+		pointmap[candidate_id]->Update(*temp_touch);
+	}
+
+	return candidate_id;
+}
+
 void TouchFinder::RepportOSC()
 {
 	if(!this->IsEnabled()) return;
@@ -152,7 +162,9 @@ void TouchFinder::RepportOSC()
 					it->second->GetX(),
 					it->second->GetY(),
 					it->second->area, 
-					0);
+					0,
+					it->second->IsOnTheAir(),
+					it->second->GetHandID());
 			}
 			else
 			{
@@ -191,4 +203,20 @@ void TouchFinder::BuildGui(bool force)
 	cv::createTrackbar("th.value", name,&Threshold_value, 255, NULL);
 	cv::createTrackbar("minblob", name,&min_area, 2000, NULL);
 	cv::createTrackbar("max.blob", name,&max_area, 2000, NULL);
+}
+
+unsigned int TouchFinder::GetTouch(float x, float y, unsigned long handid)
+{
+	Touch candidate = Touch();
+	candidate.SetHandData(handid,x,y);
+	return UpdateCandidate(&candidate);
+}
+
+Touch* TouchFinder::GetTouch(unsigned int id)
+{
+	if (pointmap.find(id) != pointmap.end())
+	{
+		return pointmap[id];
+	}
+	return NULL;
 }

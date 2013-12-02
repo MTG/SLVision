@@ -27,6 +27,7 @@
 #include "frameprocessor.h"
 #include "Hand.h"
 #include <map>
+#include "TouchFinder.h"
 
 class HandFinder : public FrameProcessor
 {
@@ -48,14 +49,15 @@ class HandFinder : public FrameProcessor
 	std::vector<cv::Vec4i>					hierarchy;
 	int										& min_area;
 	std::map<unsigned long, Hand>			hands;
-	std::vector<unsigned long>				to_be_removed;
-
-	std::vector<int> to_remove;
+	//std::vector<unsigned long>				to_be_removed;
+	std::vector<unsigned long> to_remove;
+	TouchFinder *touch_finder;
 public:
 	HandFinder(void);
 	~HandFinder(void);
 	AliveList GetAlive();
 	void RepportOSC();
+	void SetTouchFinder(TouchFinder* tfinder){touch_finder = tfinder;}
 protected:
 	void Process(cv::Mat&	main_image);
 	void BuildGui(bool force = false);

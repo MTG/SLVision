@@ -32,12 +32,8 @@ Touch::Touch():
 	is_updated(false),
 	area(-1),
 	is_on_the_air(false),
-	handID(-1)//,
-//	xcoord(LowPass(4)),
-//	ycoord(LowPass(4))
+	handID(-1)
 {
-//	xcoord.Reset();
-//	ycoord.Reset();
 }
 
 Touch::Touch(const Touch &copy):
@@ -46,9 +42,7 @@ Touch::Touch(const Touch &copy):
 	is_updated(true),
 	area(copy.area),
 	is_on_the_air(copy.is_on_the_air),
-	handID(copy.handID)//,
-//	xcoord(LowPass(copy.xcoord)),
-//	ycoord(LowPass(copy.ycoord))
+	handID(copy.handID)
 {
 }
 
@@ -58,23 +52,8 @@ void Touch::Update(float x, float y, float area)
 	this->y = y;
 	this->area = area;
 	is_updated = true;
-//	xcoord.addvalue(x);
-//	ycoord.addvalue(y);
+	is_on_the_air = false;
 }
-
-/*bool Touch::CanUpdate( const Touch &tch, float & minimum_distance)
-{
-	//if ( fabs((float)(tch.area-area)) <= AREA_OFFSET )
-	//{
-	//	float tmp = fabs(fnsqdist(tch.x,tch.y,x,y));
-	//	if(tmp <= DISTANCE_OFFSET && tmp <= minimum_distance)
-	//	{
-	//		minimum_distance = tmp;
-	//		return true;
-	//	}
-	//}
-	return false;
-}*/
 
 bool Touch::IsUpdated(bool keep_flag)
 {
@@ -89,7 +68,12 @@ bool Touch::IsUpdated(bool keep_flag)
 
 void Touch::Update(const Touch &copy)
 {
-	this->Update(copy.x,copy.y,copy.area);
+	this->x = copy.x;
+	this->y = copy.y;
+	this->area = copy.area;
+	this->is_on_the_air = copy.is_on_the_air;
+	this->handID = copy.handID;
+	this->is_updated = true;
 }
 
 bool Touch::IsOnTheAir()
@@ -97,28 +81,22 @@ bool Touch::IsOnTheAir()
 	return this->is_on_the_air;
 }
 
-void Touch::SetHandData(int handID, bool on_the_air)
+void Touch::SetHandData(int handID, float x, float y)
 {
 	this->handID = handID;
-	this->is_on_the_air = on_the_air;
+	if(!this->is_updated)
+		this->is_on_the_air = true;
+	this->x = x;
+	this->y = y;
+	is_updated = true;
 }
 
 float Touch::GetX()
 {
-	/*if(this->is_on_the_air)
-	{
-		std::cout << "X: " << xcoord.getvalue() << std::endl;
-		return xcoord.getvalue();
-	}*/
 	return x;
 }
 
 float Touch::GetY()
 {
-	/*if(this->is_on_the_air)
-	{
-		std::cout << "Y: " << ycoord.getvalue() << std::endl;
-		return ycoord.getvalue();
-	}*/
 	return y;
 }

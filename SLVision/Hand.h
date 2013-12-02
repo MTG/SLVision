@@ -27,6 +27,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <vector>
+#include "TouchFinder.h"
 
 #define HAND_CENTROID_SIMILARITY 100
 class Hand
@@ -36,7 +37,8 @@ protected:
 	
 	float area; //blob area
 	cv::Point centroid;  //blob centroid
-	cv::Point fingers[5]; //Finger
+	//cv::Point fingers[5]; //Finger
+	std::vector<unsigned int> fingers;
 	int numfingers;
 
 	cv::Point center_hand;  //center of the hand (excluding the arm)
@@ -67,11 +69,11 @@ public:
 	Hand(void);
 	Hand(unsigned long _sessionID, const cv::Point & _centroid, float area);
 	bool IsItTheSame( cv::Point &point );
-	void UpdateData( cv::Point &point, cv::vector<cv::Point> &path, float area );
+	void UpdateData( cv::Point &point, cv::vector<cv::Point> &path, float area, TouchFinder* tfinder );
 	void AddPinch( cv::vector<cv::Point> &path, float area );
 	unsigned long GetSID();
 	bool IsValid();
-	void Draw(bool force = false);
+	void Draw(TouchFinder* tfinder, bool force = false);
 
 	bool IsUpdated();//{return is_updated;}
 	cv::Point GetCentroid(){return centroid;}
