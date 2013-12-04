@@ -125,7 +125,7 @@
 			}
 		}
 		//This value gonna be used as crop distance 
-		auxiliar_distance = auxiliar_distance /2.0f;
+		auxiliar_distance = (auxiliar_distance*2.0f) /3.0f;
 		//
 
 		if(further_index == -1) //too less points
