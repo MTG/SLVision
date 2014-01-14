@@ -66,7 +66,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 	/******************************************************
 	* Apply threshold
 	*******************************************************/
-	cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY | CV_THRESH_OTSU);
+	cv::threshold(grey,thres,Threshold_value,255,cv::THRESH_BINARY/* | CV_THRESH_OTSU*/);
 
 	thres_contours = thres.clone();
 	/******************************************************
@@ -77,6 +77,7 @@ void HandFinder::Process(cv::Mat&	main_image)
     //******************************************************
 	//* Find Hand candidates
 	//*******************************************************
+	
 	for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
 		//******************************************************
@@ -84,7 +85,7 @@ void HandFinder::Process(cv::Mat&	main_image)
 		//*******************************************************
 		if (contours.size() <= idx)break;
 		float area = (float)cv::contourArea(contours[idx]);
-		if(area >= min_area)
+		if(area >= /*min_area*/1000)
 		{
 			//******************************************************
 			//* reduce contour complexity
@@ -108,9 +109,11 @@ void HandFinder::Process(cv::Mat&	main_image)
 			}
 			if( candidate == 0)
 			{
+				std::cout << "hand start" << area << std::endl;
 				unsigned long newsid = Globals::ssidGenerator++;
 				hands[newsid] = Hand(newsid,cv::Point((int)x,(int)y),area);
 				candidate = newsid;
+				std::cout << "hand end" << std::endl;
 			}
 			//******************************************************
 			//* Update Hand
@@ -132,14 +135,12 @@ void HandFinder::Process(cv::Mat&	main_image)
 					}
 				}
 			}
+			if(Globals::is_view_enabled)
+			{
+				for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
+					it->second.Draw(touch_finder);
+			}
 		}
-
-		if(Globals::is_view_enabled)
-		{
-			for ( std::map<unsigned long, Hand>::iterator it = hands.begin(); it != hands.end(); it++)
-				it->second.Draw(touch_finder);
-		}
-
 	}
 
 	/******************************************************
